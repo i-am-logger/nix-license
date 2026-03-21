@@ -1,0 +1,25 @@
+# AI assistant files
+.claude/
+AGENTS.md
+CLAUDE.md
+*.agents.md
+
+# Build artifacts
+result
+result-*
+
+# Nix
+.direnv/
+.devenv/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Backup files
+*.backup
+*.bak

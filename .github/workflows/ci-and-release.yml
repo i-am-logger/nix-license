@@ -1,0 +1,69 @@
+name: CI and Release
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: write
+  pull-requests: write
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  nix-flake-check:
+    name: Nix Flake Check
+    runs-on: ubuntu-latest
+    if: |
+      !(
+        (github.event_name == 'pull_request' && startsWith(github.event.pull_request.title, 'chore(master): release')) ||
+        (github.event_name == 'push' && contains(github.event.head_commit.message, 'release-please--branches--master'))
+      )
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v17
+        with:
+          extra-conf: |
+            extra-substituters = https://nix-community.cachix.org https://cache.nixos.org
+            extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+      - name: Run nix flake check
+        run: nix flake check --print-build-logs
+  nix-lint:
+    name: Nix Lint (statix + deadnix)
+    runs-on: ubuntu-latest
+    if: |
+      !(
+        (github.event_name == 'pull_request' && startsWith(github.event.pull_request.title, 'chore(master): release')) ||
+        (github.event_name == 'push' && contains(github.event.head_commit.message, 'release-please--branches--master'))
+      )
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v17
+      - name: Run statix
+        run: nix run nixpkgs#statix -- check .
+      - name: Run deadnix
+        run: nix run nixpkgs#deadnix -- --fail .
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    needs: [nix-flake-check, nix-lint]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/master' &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
