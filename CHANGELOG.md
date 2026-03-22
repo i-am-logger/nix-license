@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.5.0...nix-license-v0.5.1) (2026-03-22)
+
+
+### Documentation
+
+* check off cryptographic license tokens in features ([4750131](https://github.com/i-am-logger/nix-license/commit/47501311512b22f6237ecb44b5505cb4e1ad8cf2))
+
 ## [0.5.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.4.0...nix-license-v0.5.0) (2026-03-22)
 
 
