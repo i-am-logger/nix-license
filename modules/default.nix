@@ -6,12 +6,32 @@
 #   nixpkgs.config.licenses.*
 #   nixpkgs.config.licenseEnforcement
 
-{ config, lib, oarsSpec, ... }:
+{ config, lib, oarsSpec, saltLicenses, saltSpdx, ... }:
 
 let
   licenseTypes = import ../lib/types.nix { inherit lib oarsSpec; };
+  licenseCheck = import ../lib/license-check.nix { inherit lib; };
+  nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
 
   cfg = config.nix-license;
+
+  # Convert a nixpkgs license to SALT format for evaluation
+  # Fails if license is not found in SALT
+  toSaltLicense = nixpkgsLicense:
+    let
+      saltLic = nixpkgsMap.lookup nixpkgsLicense;
+      name = nixpkgsLicense.shortName or nixpkgsLicense.spdxId or "unknown";
+    in
+    if saltLic != null then saltLic
+    else throw "nix-license: license '${name}' not found in SALT. Add it to SALT or lib/nixpkgs-map.nix.";
+
+  # Check if a package's license conflicts with usage
+  checkPackageLicense = pkg:
+    let
+      licenses = lib.toList (pkg.meta.license or [ ]);
+      results = map (nixLic: licenseCheck.evaluateLicenseUsage cfg.usage (toSaltLicense nixLic)) licenses;
+    in
+    builtins.all (r: r.allowed) results;
 
   severityOption = cat: lib.mkOption {
     type = licenseTypes.policySeverityType;
@@ -163,8 +183,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # Bypass nixpkgs free/unfree check — nix-license handles all license compliance
-    nixpkgs.config.allowUnfree = true;
+    nixpkgs.config = {
+      # In enforce mode, nixpkgs checks each unfree package against our predicate.
+      # In warn mode, bypass nixpkgs check entirely — nix-license handles compliance.
+      allowUnfree = cfg.enforcement != "enforce";
+      allowUnfreePredicate = checkPackageLicense;
+    };
 
     # Usage consistency assertions
     assertions = [

@@ -80,6 +80,7 @@
 
       # SALT license taxonomy
       saltLicenses = salt.licenses;
+      saltSpdx = salt.spdx;
 
       supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = lib.genAttrs supportedSystems;
@@ -96,7 +97,7 @@
       nixosModules = {
         # Standalone module: provides nix-license.* options
         default = args:
-          import ./modules/default.nix (args // { inherit oarsSpec; });
+          import ./modules/default.nix (args // { inherit oarsSpec saltLicenses saltSpdx; });
 
         # mynixos integration: provides my.license.* and my.users.<name>.contentPolicy
         mynixos = args:
@@ -156,9 +157,13 @@
           lib-properties = mkNixTest "lib-properties"
             (import ./tests/lib-properties.nix { inherit lib oarsSpec saltLicenses; });
 
+          # Mapping tests
+          nixpkgs-map = mkNixTest "nixpkgs-map"
+            (import ./tests/nixpkgs-map.nix { inherit lib saltLicenses saltSpdx; });
+
           # Module tests
           module-standalone = mkNixTest "module-standalone"
-            (import ./tests/module-standalone.nix { inherit lib oarsSpec; });
+            (import ./tests/module-standalone.nix { inherit lib oarsSpec saltLicenses saltSpdx; });
         });
 
       # Dev shell with pre-commit hooks installed

@@ -31,9 +31,16 @@ SALT's restriction vocabulary is derived from [OSADL OSLOC](https://github.com/o
 
 When `nix-license.enable = true`:
 
-1. `nixpkgs.config.allowUnfree` is set to `true` — bypasses nixpkgs' binary free/unfree check
-2. nix-license handles all license compliance using SALT restrictions
+1. Every nixpkgs license is mapped to its SALT equivalent (289/289 verified)
+2. Each package's license is evaluated against your declared usage
 3. Usage consistency assertions catch invalid configurations (e.g., `type = "personal"` with `commercial-use = true`)
+
+Two enforcement modes:
+
+| Mode | `allowUnfree` | Behavior |
+|------|---------------|----------|
+| `warn` (default) | `true` | Bypass nixpkgs check, nix-license handles compliance |
+| `enforce` | `false` | `allowUnfreePredicate` checks each unfree package against SALT restrictions — non-compliant packages fail at eval time |
 
 ## License compliance process: OpenChain ISO/IEC 5230
 

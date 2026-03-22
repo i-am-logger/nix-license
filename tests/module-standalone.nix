@@ -1,4 +1,4 @@
-{ lib, oarsSpec }:
+{ lib, oarsSpec, saltLicenses ? { }, saltSpdx ? { } }:
 
 let
   evalModule = extraConfig:
@@ -9,7 +9,7 @@ let
           options.nixpkgs.config = lib.mkOption { type = lib.types.attrs; default = { }; };
           options.assertions = lib.mkOption { type = lib.types.listOf lib.types.attrs; default = [ ]; };
         }
-        { _module.args.oarsSpec = oarsSpec; }
+        { _module.args = { inherit oarsSpec saltLicenses saltSpdx; }; }
         extraConfig
       ];
     }).config;
@@ -42,9 +42,9 @@ in
     let cfg = evalModule defaultUsage;
     in assertFalse "disabled by default" cfg.nix-license.enable;
 
-  enableSetsAllowUnfree =
+  warnModeAllowsUnfree =
     let cfg = evalModule (defaultUsage // { nix-license.enable = true; });
-    in assertTrue "enable sets allowUnfree=true" cfg.nixpkgs.config.allowUnfree;
+    in assertTrue "warn mode sets allowUnfree=true" cfg.nixpkgs.config.allowUnfree;
 
   usageType =
     let
@@ -76,7 +76,7 @@ in
       (cfg.nix-license.usage.type == "commercial"
         && cfg.nix-license.usage.commercial-use
         && cfg.nix-license.enforcement == "enforce"
-        && cfg.nixpkgs.config.allowUnfree);
+        && !cfg.nixpkgs.config.allowUnfree);
 
   scenarioSaas =
     let

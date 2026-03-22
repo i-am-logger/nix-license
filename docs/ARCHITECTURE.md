@@ -9,6 +9,7 @@ nix-license/
 │   ├── content-rating.nix    # Content policy resolution and evaluation
 │   ├── license-check.nix     # License restriction + allowed-use evaluation
 │   ├── licenses.nix          # License definitions from SALT
+│   ├── nixpkgs-map.nix       # Maps nixpkgs licenses to SALT (spdxId → manual → key)
 │   └── token.nix             # Token construction, restriction, validation
 ├── modules/
 │   ├── default.nix           # Standalone NixOS module (nix-license.*)
@@ -19,6 +20,7 @@ nix-license/
 │   ├── lib-licenses.nix      # License restriction + allowed-use checks
 │   ├── lib-token.nix         # Token authorization, restriction, expiry
 │   ├── lib-properties.nix    # Domain model guarantees
+│   ├── nixpkgs-map.nix       # 289/289 nixpkgs→SALT mapping + end-to-end evaluation
 │   └── module-standalone.nix # NixOS module scenarios + assertion tests
 └── docs/
 ```
@@ -38,6 +40,17 @@ Two independent checks per license:
 2. **Allowed-use** (allowlist): if the license specifies who can use it (`educational`, `research`) and the user's type isn't in the list → conflict
 
 Both must pass.
+
+## nixpkgs mapping
+
+`lib/nixpkgs-map.nix` maps every nixpkgs license to its SALT equivalent. Lookup order:
+
+1. `spdxId` → `salt.spdx.${spdxId}` (234 licenses)
+2. Manual map for known mismatches (55 entries, e.g. `asl20` → `apache-2.0`, `unfree` → `proprietary-license`)
+3. `shortName` → `salt.licenses.${shortName}` (direct key match)
+4. `null` → module throws (unknown license must fail)
+
+All 289 nixpkgs licenses are verified to map successfully (tested in `nixpkgs-map.nix`).
 
 ## Usage declaration
 
@@ -89,4 +102,7 @@ All fields required, no defaults.
 | Severity levels form a total order | lib-properties |
 | Content policy presets are ordered (child < teen < unrestricted) | lib-properties |
 | Relaxing a policy never removes access | lib-properties |
+| All 289 nixpkgs licenses map to SALT | nixpkgs-map |
+| All 289 × 4 usage contexts evaluate without error | nixpkgs-map |
 | Usage assertions catch invalid combinations | module-standalone |
+| Enforce mode sets allowUnfree=false with predicate | module-standalone |

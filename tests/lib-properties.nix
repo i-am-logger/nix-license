@@ -106,6 +106,95 @@ in
         else true)
       licenseNames);
 
+  # ── Restriction enforcement: 2600+ × 16 ────────────────────────
+  #
+  # If a SALT license restricts an activity and usage includes that activity → blocked
+
+  restrictionsEnforced =
+    let
+      restrictionKeys = [ "commercial-use" "distribution" "modifications" "saas" ];
+
+      check = ln: ctx:
+        let
+          l = licenses.${ln};
+          restrictions = l.restrictions or { };
+          result = lc.evaluateLicenseUsage ctx l;
+          activeRestrictions = builtins.filter
+            (key: (restrictions.${key} or false) && (ctx.${key} or false))
+            restrictionKeys;
+        in
+        if activeRestrictions != [ ] then
+          if !result.allowed then true
+          else throw "FAIL: ${ln}: restrictions [${builtins.concatStringsSep ", " activeRestrictions}] active but allowed"
+        else true;
+
+      results = builtins.concatMap
+        (ln: map (ctx: check ln ctx) allUsageContexts)
+        licenseNames;
+    in
+    assertTrue "restrictions enforced for all 2600+ × 16"
+      (builtins.all (x: x) results);
+
+  # ── Allowed-use enforcement: 2600+ × 6 types ─────────────────
+
+  allowedUseEnforced =
+    let
+      allTypes = [ "personal" "commercial" "educational" "research" "government" "nonprofit" ];
+
+      check = ln: userType:
+        let
+          l = licenses.${ln};
+          allowedUse = l.allowed-use or null;
+          result = lc.evaluateLicenseUsage { type = userType; } l;
+        in
+        if allowedUse != null then
+          if builtins.elem userType allowedUse then
+            if result.allowed then true
+            else throw "FAIL: ${ln}: type '${userType}' in allowed-use but blocked"
+          else
+            if !result.allowed then true
+            else throw "FAIL: ${ln}: type '${userType}' not in allowed-use but allowed"
+        else true;
+
+      results = builtins.concatMap
+        (ln: map (userType: check ln userType) allTypes)
+        licenseNames;
+    in
+    assertTrue "allowed-use enforced for all 2600+ × 6 types"
+      (builtins.all (x: x) results);
+
+  # ── Obligation triggers: 2600+ × 16 ──────────────────────────
+  #
+  # Obligations fire exactly when their trigger keys match usage
+
+  obligationsTriggered =
+    let
+      check = ln: ctx:
+        let
+          l = licenses.${ln};
+          obligations = l.obligations or { };
+          result = lc.evaluateLicenseUsage ctx l;
+
+          shouldTrigger = builtins.filter
+            (oblName:
+              let triggers = obligations.${oblName} or [ ];
+              in builtins.any (t: t == "any" || (ctx.${t} or false)) triggers)
+            (builtins.attrNames obligations);
+        in
+        if shouldTrigger != [ ] then
+          if builtins.length result.obligations > 0 then true
+          else throw "FAIL: ${ln}: obligations [${builtins.concatStringsSep ", " shouldTrigger}] should trigger but didn't"
+        else
+          if builtins.length result.obligations == 0 then true
+          else throw "FAIL: ${ln}: no obligations should trigger but ${toString (builtins.length result.obligations)} did";
+
+      results = builtins.concatMap
+        (ln: map (ctx: check ln ctx) allUsageContexts)
+        licenseNames;
+    in
+    assertTrue "obligations triggered correctly for all 2600+ × 16"
+      (builtins.all (x: x) results);
+
   # ── Coverage ────────────────────────────────────────────────────
 
   usageContextCount = assertEq "16 contexts (2^4)" (builtins.length allUsageContexts) 16;
