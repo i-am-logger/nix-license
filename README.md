@@ -5,36 +5,28 @@
 
 # nix-license
 
-A NixOS module that checks package licenses against your declared usage at build time. Uses [SALT](https://github.com/i-am-logger/salt) (2649 classified licenses).
+Software systems are built from hundreds of packages, each with its own license. Some licenses prohibit commercial use. Some prohibit redistribution. Some prohibit running the software as a hosted service. Most organizations have no way to know which of these restrictions apply to the software they use — until they're in violation.
 
-You declare who you are and what you do. If a package's license conflicts with your usage, the build fails.
+nix-license solves this by checking every package's license against your organization's declared usage at build time. If a conflict exists, the build does not succeed. You cannot deploy software that violates your license obligations.
 
-```nix
-nix-license = {
-  enable = true;
-  usage = {
-    type = "commercial";
-    commercial-use = true;
-    distribution = false;
-    modifications = true;
-    saas = false;
-  };
-};
-```
+It works by combining two things:
 
-Also provides per-user content policies based on [OARS 1.1](https://github.com/hughsie/oars).
+1. **[SALT](https://github.com/i-am-logger/salt)** — a classification of 2649 software licenses into what they permit, what they require, what they prohibit, and what they disclaim
+2. **A usage declaration** — your organization states who it is (company, university, nonprofit) and what it does with the software (commercial use, distribution, modification, SaaS)
+
+The system also supports per-user content policies for environments where administrators need to control what software is available to specific users (families, schools, shared workstations).
 
 ## Documentation
 
-| Document | Contents |
-|----------|----------|
-| [USAGE.md](docs/USAGE.md) | Installation, configuration, examples |
-| [COMPLIANCE.md](docs/COMPLIANCE.md) | Standards (SALT, OARS, OSADL, OpenChain) |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Library API, tests, module structure |
+| Document | For | Contents |
+|----------|-----|----------|
+| [USAGE.md](docs/USAGE.md) | Engineers | How to install, configure, and use nix-license |
+| [COMPLIANCE.md](docs/COMPLIANCE.md) | Compliance | Standards alignment (SALT, OARS, OSADL, OpenChain) |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Developers | Library API, module structure, test coverage |
 
 ## Disclaimer
 
-Not legal advice. See [SALT](https://github.com/i-am-logger/salt) for license classification details.
+nix-license is a compliance tool, not legal advice. License classifications are based on [SALT](https://github.com/i-am-logger/salt). Consult a qualified attorney for legal decisions.
 
 ## Development
 
