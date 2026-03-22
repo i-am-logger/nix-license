@@ -1,124 +1,80 @@
-[![NixOS](https://img.shields.io/badge/NixOS-5277C3?logo=nixos&logoColor=white)](https://nixos.org)
+[![Nix](https://img.shields.io/badge/Nix-flake-5277C3?logo=nixos&logoColor=white)](https://nixos.wiki/wiki/Flakes)
 [![Release](https://img.shields.io/github/v/release/i-am-logger/nix-license)](https://github.com/i-am-logger/nix-license/releases)
-[![CI and Release](https://github.com/i-am-logger/nix-license/actions/workflows/ci-and-release.yml/badge.svg)](https://github.com/i-am-logger/nix-license/actions/workflows/ci-and-release.yml)
-[![OARS 1.1](https://img.shields.io/badge/OARS-1.1-blue)](https://github.com/hughsie/oars)
-[![SPDX](https://img.shields.io/badge/SPDX-License%20List-blue)](https://spdx.org/licenses/)
+[![CI](https://github.com/i-am-logger/nix-license/actions/workflows/ci-and-release.yml/badge.svg)](https://github.com/i-am-logger/nix-license/actions/workflows/ci-and-release.yml)
+[![SALT](https://img.shields.io/badge/SALT-2649%20licenses-blue)](https://github.com/i-am-logger/salt)
 
 # nix-license
 
-License and content compliance enforced at build time.
+License compliance enforced at build time.
 
-You declare your usage context, content policies, and license entitlements in your NixOS configuration. nix-license evaluates every package against those declarations during the build. If a package conflicts with your policy, the build fails. There is no separate audit step, no report to review, no check to remember — compliance is the build.
+You declare who you are and what you do. nix-license checks every package against [SALT](https://github.com/i-am-logger/salt) (2649 classified licenses). If a package's license conflicts with your declared usage, the build fails.
 
 ## The problem
 
-`allowUnfree = true` is a single boolean that conflates three separate concerns: whether you accept closed-source software, how you're using the software, and whether certain content is appropriate for certain users.
+`allowUnfree = true` tells you nothing about what you can actually do with the software. A company that sets it to get NVIDIA drivers has silently allowed CC-BY-NC software that prohibits commercial use. There's no check, no warning, no enforcement.
 
-A company that sets `allowUnfree = true` to get NVIDIA drivers has silently allowed CC-BY-NC software that prohibits commercial use. A parent who wants to restrict what apps their child can run has no mechanism for it. A school that needs educational-use-only software has no way to declare that.
-
-Existing compliance tools produce reports. Reports get ignored. nix-license makes non-compliant configurations fail to build.
-
-## Three controls
-
-nix-license replaces `allowUnfree` with three independent declarations:
-
-1. **Source availability** -- do you accept closed-source packages?
-2. **Usage context** -- personal, commercial, educational, or government use?
-3. **Content policy** -- what content categories is each user entitled to?
+nix-license replaces this with explicit declarations and build-time enforcement.
 
 ## How it works
 
-### Source availability
+You declare your usage:
 
 ```nix
-nix-license.allowClosedSource = true;
-```
+nix-license = {
+  enable = true;
 
-Replaces `allowUnfree` for the question "do you accept closed-source packages?"
+  usage = {
+    # Who you are
+    type = "commercial";  # personal | commercial | educational | research | government | nonprofit
 
-### Usage context
-
-```nix
-nix-license.usage = {
-  type = "commercial";
-  redistribution = false;
-  saas = false;
-  military = false;
+    # What you do — each matches a SALT restriction key
+    commercial-use = true;
+    distribution = false;
+    modifications = true;
+    saas = false;
+  };
 };
 ```
 
-Packages carry license restrictions. When your declared usage conflicts with a restriction, the package is unavailable:
+nix-license then checks every package's license restrictions against your usage. If a package restricts an activity you declared, the build fails:
 
 ```
-error: Package 'some-tool' (CC-BY-NC-4.0) restricts commercial use.
-       Your declared usage: commercial
+error: Package 'some-tool' (CC-BY-NC-4.0) prohibits commercial-use.
+       Your declared usage includes commercial-use.
 ```
 
-### Content policy
+All fields are required. You must explicitly answer every question.
+
+## Usage examples
 
 ```nix
-# System-wide default
-nix-license.contentPolicy.preset = "child";
+# Personal use — no commercial activity
+usage = { type = "personal"; commercial-use = false; distribution = false; modifications = true; saas = false; };
 
-# Per-user (via mynixos)
+# Company — internal tools
+usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
+
+# SaaS company — hosting software as a service
+usage = { type = "commercial"; commercial-use = true; distribution = true; modifications = true; saas = true; };
+
+# University — educational and research
+usage = { type = "educational"; commercial-use = false; distribution = true; modifications = true; saas = false; };
+
+# Freelancer
+usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
+```
+
+## Content policy
+
+Per-user content ratings based on [OARS 1.1](https://github.com/hughsie/oars):
+
+```nix
 my.users.son.contentPolicy = {
   preset = "child";
   violence-cartoon = "moderate";
 };
 
 my.users.parent.contentPolicy = "unrestricted";
-```
-
-Packages carry [OARS](https://hughsie.github.io/oars/) content ratings. Users carry content entitlements set by the admin. If a package exceeds the user's policy, it's excluded from their environment:
-
-```
-error: Package 'discord' requires content license 'social-chat = intense'
-       but user 'son' is licensed for maximum 'none'.
-```
-
-No PII stored. No birth dates. The admin decides the policy, not the app.
-
-### Content policy presets
-
-| Preset | Description |
-|--------|-------------|
-| `child` | No violence, social, gambling, adult content |
-| `teen` | Allows mild/moderate in most categories |
-| `unrestricted` | Everything allowed (default) |
-
-Content categories follow [OARS](https://hughsie.github.io/oars/) (already used by Flathub, GNOME Software, AppStream): violence, drugs, sex, language, social, money -- each with severity levels `none` < `mild` < `moderate` < `intense`.
-
-### Commercial license tokens
-
-For purchased commercial software, declare the license:
-
-```nix
-nix-license.licenses."vendor-sdk" = {
-  license = "commercial";
-  licenseId = "LIC-2024-XXXXX";
-  expiresAt = "2025-06-15";
-  tokenFile = ./secrets/vendor-sdk.token;
-};
-```
-
-Tokens are cryptographically signed by the vendor. Verification happens at build time with no network access -- tokens are self-contained proof of license.
-
-Organizations can restrict tokens per-user. A restricted token can only remove permissions, never add them:
-
-```nix
-my.users.intern.licenseTokens."vendor-sdk".tokenFile = ./secrets/intern.token;
-```
-
-### Vendor key management
-
-```nix
-nix-license.vendorKeys."vendor.example.com" = [ "ed25519:MCowBQYDK2VwAyEA..." ];
-
-nix-license.tokenVerification = {
-  enable = true;
-  requireTokens = [ "vendor-sdk" ];
-  warnExpiringSoon = 30;
-};
 ```
 
 ## Installation
@@ -136,8 +92,13 @@ nix-license.tokenVerification = {
         {
           nix-license = {
             enable = true;
-            allowClosedSource = true;
-            usage.type = "personal";
+            usage = {
+              type = "personal";
+              commercial-use = false;
+              distribution = false;
+              modifications = true;
+              saas = false;
+            };
           };
         }
       ];
@@ -149,57 +110,47 @@ nix-license.tokenVerification = {
 ### With mynixos
 
 ```nix
-inputs.nix-license.url = "github:i-am-logger/nix-license";
-
-# In module imports
 imports = [
-  nix-license.nixosModules.default    # nix-license.* options
-  nix-license.nixosModules.mynixos    # my.license.* + my.users.<name>.contentPolicy
+  nix-license.nixosModules.default
+  nix-license.nixosModules.mynixos
 ];
-```
 
-```nix
 my.license = {
   enable = true;
-  allowClosedSource = true;
-  usage.type = "personal";
+  usage = {
+    type = "commercial";
+    commercial-use = true;
+    distribution = false;
+    modifications = true;
+    saas = false;
+  };
 };
 
 my.users.logger.contentPolicy = "unrestricted";
-my.users.son.contentPolicy = {
-  preset = "child";
-  violence-cartoon = "moderate";
-};
 ```
 
 ## Standards
 
-nix-license derives its data from upstream standards at build time. Categories, license definitions, and term enums are not hand-maintained — they are parsed from upstream repos included as flake inputs. `nix flake update <input>` picks up upstream changes.
-
-| Standard | Flake input | Upstream repo | What we derive |
-|----------|-------------|---------------|----------------|
-| OARS 1.1 | `oars` | [hughsie/oars](https://github.com/hughsie/oars) | 22 content rating categories + severity values from RNC schema |
-| SPDX License List | `spdx-license-data` | [spdx/license-list-data](https://github.com/spdx/license-list-data) | 600+ license identifiers, names, OSI/FSF approval from JSON |
-| choosealicense.com | `choosealicense` | [github/choosealicense.com](https://github.com/github/choosealicense.com) | 47 licenses with permissions, conditions, limitations from YAML |
-| OpenChain ISO/IEC 5230 | (reference) | [openchainproject.org](https://openchainproject.org/license-compliance) | Build-time enforcement layer for compliance programs |
-| Biscuit / Macaroons | (design influence) | [biscuitsec.org](https://biscuitsec.org/) | Token restriction model |
-
-See [COMPLIANCE.md](docs/COMPLIANCE.md) for detailed mappings and deviations.
+| Standard | What we use |
+|----------|-------------|
+| [SALT](https://github.com/i-am-logger/salt) | 2649 license classifications with restrictions, obligations, grants, disclaimers |
+| [OARS 1.1](https://github.com/hughsie/oars) | Content rating categories derived from upstream RNC schema |
+| [OSADL OSLOC](https://github.com/osadl/OSLOC) | Reference for restriction and obligation vocabulary |
 
 ## Documentation
 
 | Document | Contents |
 |----------|----------|
-| [COMPLIANCE.md](docs/COMPLIANCE.md) | Standards mapping (OARS, SPDX, GitHub API, OpenChain) |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Library API, module structure, domain model guarantees, test coverage |
-| [Usage-Context RFC](docs/rfc-usage-context-license-model.md) | Replace `allowUnfree` with source-availability and usage-context axes |
-| [Cryptographic Tokens RFC](docs/rfc-cryptographic-license-tokens.md) | Offline-verifiable license tokens for Nix builds |
-| [Content Policy RFC](docs/rfc-content-policy-model.md) | Content category entitlements as a third licensing axis |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Library API, module structure, test coverage |
+| [COMPLIANCE.md](docs/COMPLIANCE.md) | Standards mapping (SALT, OARS, OSADL) |
+| [Usage-Context RFC](docs/rfc-usage-context-license-model.md) | Usage declaration and license restriction model |
+| [Cryptographic Tokens RFC](docs/rfc-cryptographic-license-tokens.md) | Token verification for commercial licenses |
+| [Content Policy RFC](docs/rfc-content-policy-model.md) | Content rating entitlements |
 
 ## Development
 
 ```bash
 nix develop       # Dev shell with pre-commit hooks
-nix flake check   # Run all checks (formatting, linting, 7 test suites)
+nix flake check   # Run all checks
 nix fmt           # Format all files
 ```
