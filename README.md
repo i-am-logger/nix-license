@@ -1,151 +1,60 @@
 [![Nix](https://img.shields.io/badge/Nix-flake-5277C3?logo=nixos&logoColor=white)](https://nixos.wiki/wiki/Flakes)
-[![Release](https://img.shields.io/github/v/release/i-am-logger/nix-license)](https://github.com/i-am-logger/nix-license/releases)
 [![CI](https://github.com/i-am-logger/nix-license/actions/workflows/ci-and-release.yml/badge.svg)](https://github.com/i-am-logger/nix-license/actions/workflows/ci-and-release.yml)
+[![Release](https://img.shields.io/github/v/release/i-am-logger/nix-license?include_prereleases)](https://github.com/i-am-logger/nix-license/releases)
 [![SALT](https://img.shields.io/badge/SALT-2649%20licenses-blue)](https://github.com/i-am-logger/salt)
 
 # nix-license
 
 License compliance enforced at build time.
 
-You declare who you are and what you do. nix-license checks every package against [SALT](https://github.com/i-am-logger/salt) (2649 classified licenses). If a package's license conflicts with your declared usage, the build fails.
+Today, using software with restrictive licenses is invisible. A company installs a package with a non-commercial license and nothing happens — no warning, no check, no record. The violation is silent until a lawyer sends a letter.
 
-## The problem
+nix-license makes license violations fail the build. You declare who you are and what you do. Every package in your system is checked against [SALT](https://github.com/i-am-logger/salt)'s classification of 2649 software licenses. If a package's license conflicts with your declared usage, the build does not proceed.
 
-`allowUnfree = true` tells you nothing about what you can actually do with the software. A company that sets it to get NVIDIA drivers has silently allowed CC-BY-NC software that prohibits commercial use. There's no check, no warning, no enforcement.
-
-nix-license replaces this with explicit declarations and build-time enforcement.
+There is no separate audit step. No report to review after the fact. No check to remember. Compliance is the build.
 
 ## How it works
 
-You declare your usage:
+You answer two questions:
 
-```nix
-nix-license = {
-  enable = true;
+**Who are you?** A personal user, a company, a university, a research lab, a government agency, a nonprofit.
 
-  usage = {
-    # Who you are
-    type = "commercial";  # personal | commercial | educational | research | government | nonprofit
+**What do you do with the software?** Use it commercially, distribute it, modify it, provide it as a service.
 
-    # What you do — each matches a SALT restriction key
-    commercial-use = true;
-    distribution = false;
-    modifications = true;
-    saas = false;
-  };
-};
-```
+nix-license checks every package against these answers. A package licensed under CC-BY-NC restricts commercial use — if you declared commercial use, the package is blocked. A package under the Elastic License restricts SaaS — if you provide it as a hosted service, it's blocked.
 
-nix-license then checks every package's license restrictions against your usage. If a package restricts an activity you declared, the build fails:
+The check is automatic, covers every package in the system, and runs at build time. You cannot install a package that violates your declared usage.
 
-```
-error: Package 'some-tool' (CC-BY-NC-4.0) prohibits commercial-use.
-       Your declared usage includes commercial-use.
-```
+## What it checks
 
-All fields are required. You must explicitly answer every question.
+Each license in [SALT](https://github.com/i-am-logger/salt) has:
 
-## Usage examples
+- **Restrictions** — what the license prohibits (`commercial-use`, `distribution`, `modifications`, `saas`)
+- **Allowed-use** — who the license permits (e.g., only educational or research use)
+- **Obligations** — what you must do when distributing (include copyright, disclose source, use same license)
 
-```nix
-# Personal use — no commercial activity
-usage = { type = "personal"; commercial-use = false; distribution = false; modifications = true; saas = false; };
-
-# Company — internal tools
-usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
-
-# SaaS company — hosting software as a service
-usage = { type = "commercial"; commercial-use = true; distribution = true; modifications = true; saas = true; };
-
-# University — educational and research
-usage = { type = "educational"; commercial-use = false; distribution = true; modifications = true; saas = false; };
-
-# Freelancer
-usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
-```
+nix-license evaluates your usage against all three. Restrictions block the build. Allowed-use violations block the build. Obligations produce warnings.
 
 ## Content policy
 
-Per-user content ratings based on [OARS 1.1](https://github.com/hughsie/oars):
+nix-license also provides per-user content policies based on [OARS 1.1](https://github.com/hughsie/oars) content ratings. An administrator sets what content categories each user is entitled to. Packages that exceed a user's policy are excluded from their environment.
 
-```nix
-my.users.son.contentPolicy = {
-  preset = "child";
-  violence-cartoon = "moderate";
-};
-
-my.users.parent.contentPolicy = "unrestricted";
-```
-
-## Installation
-
-### Standalone NixOS module
-
-```nix
-{
-  inputs.nix-license.url = "github:i-am-logger/nix-license";
-
-  outputs = { nix-license, ... }: {
-    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
-      modules = [
-        nix-license.nixosModules.default
-        {
-          nix-license = {
-            enable = true;
-            usage = {
-              type = "personal";
-              commercial-use = false;
-              distribution = false;
-              modifications = true;
-              saas = false;
-            };
-          };
-        }
-      ];
-    };
-  };
-}
-```
-
-### With mynixos
-
-```nix
-imports = [
-  nix-license.nixosModules.default
-  nix-license.nixosModules.mynixos
-];
-
-my.license = {
-  enable = true;
-  usage = {
-    type = "commercial";
-    commercial-use = true;
-    distribution = false;
-    modifications = true;
-    saas = false;
-  };
-};
-
-my.users.logger.contentPolicy = "unrestricted";
-```
-
-## Standards
-
-| Standard | What we use |
-|----------|-------------|
-| [SALT](https://github.com/i-am-logger/salt) | 2649 license classifications with restrictions, obligations, grants, disclaimers |
-| [OARS 1.1](https://github.com/hughsie/oars) | Content rating categories derived from upstream RNC schema |
-| [OSADL OSLOC](https://github.com/osadl/OSLOC) | Reference for restriction and obligation vocabulary |
+No PII stored. No birth dates. The admin decides the policy, not the app.
 
 ## Documentation
 
-| Document | Contents |
-|----------|----------|
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Library API, module structure, test coverage |
-| [COMPLIANCE.md](docs/COMPLIANCE.md) | Standards mapping (SALT, OARS, OSADL) |
-| [Usage-Context RFC](docs/rfc-usage-context-license-model.md) | Usage declaration and license restriction model |
-| [Cryptographic Tokens RFC](docs/rfc-cryptographic-license-tokens.md) | Token verification for commercial licenses |
-| [Content Policy RFC](docs/rfc-content-policy-model.md) | Content rating entitlements |
+| Document | Audience | Contents |
+|----------|----------|----------|
+| [USAGE.md](docs/USAGE.md) | Users | Installation, configuration, examples |
+| [COMPLIANCE.md](docs/COMPLIANCE.md) | Compliance officers | Standards mapping (SALT, OARS, OSADL, OpenChain) |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Developers | Library API, module structure, test coverage |
+| [Usage-Context RFC](docs/rfc-usage-context-license-model.md) | Architects | Usage declaration and license restriction model |
+| [Cryptographic Tokens RFC](docs/rfc-cryptographic-license-tokens.md) | Architects | Token verification for commercial license overrides |
+| [Content Policy RFC](docs/rfc-content-policy-model.md) | Architects | Content rating entitlements |
+
+## Disclaimer
+
+nix-license is a compliance tool, not legal advice. License evaluations represent a reasonable interpretation of license terms based on [SALT](https://github.com/i-am-logger/salt) classifications. Consult a qualified attorney for legal decisions.
 
 ## Development
 
