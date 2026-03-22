@@ -47,9 +47,9 @@ nix-license also supports per-user content policies based on [OARS 1.1](https://
 
 ## Documentation
 
-- [USAGE.md](docs/USAGE.md) — Installation, configuration, examples
 - [COMPLIANCE.md](docs/COMPLIANCE.md) — Standards (SALT, OARS, OSADL, OpenChain)
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Library API, tests, module structure
+- [USAGE.md](docs/USAGE.md) — Installation, configuration, examples
 
 ## Disclaimer
 
