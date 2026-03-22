@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.5.1...nix-license-v0.5.2) (2026-03-22)
+
+
+### Miscellaneous
+
+* update SALT flake.lock + add status to RFCs ([b30024b](https://github.com/i-am-logger/nix-license/commit/b30024b57c0d730db4a358c76c4b7af02afb2634))
+
 ## [0.5.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.5.0...nix-license-v0.5.1) (2026-03-22)
 
 
