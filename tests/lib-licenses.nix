@@ -93,9 +93,6 @@ in
 
   # ── Source availability ─────────────────────────────────────────
 
-  freePassesSourceCheck =
-    let result = lc.evaluateSourceAvailability false licenses.mit;
-    in assertTrue "free passes source check" result.allowed;
 
   # ── Allowed-use (allowlist) ─────────────────────────────────────
 

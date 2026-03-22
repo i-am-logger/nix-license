@@ -1,8 +1,7 @@
 # nix-license standalone NixOS module
 #
 # Provides:
-#   nixpkgs.config.allowClosedSource
-#   nixpkgs.config.usage.*
+#   nix-license.usage.*
 #   nixpkgs.config.contentPolicy.*
 #   nixpkgs.config.licenses.*
 #   nixpkgs.config.licenseEnforcement
@@ -31,14 +30,7 @@ in
   options.nix-license = {
     enable = lib.mkEnableOption "nix-license compliance module";
 
-    # Axis 1: Source availability
-    allowClosedSource = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Accept closed-source packages";
-    };
-
-    # Axis 2: Usage declaration
+    # Usage declaration
     # All fields are required — you must explicitly declare your usage.
     usage = {
       # Who you are — checked against SALT allowed-use lists
@@ -171,9 +163,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    nixpkgs.config = {
-      allowUnfree = cfg.allowClosedSource;
-    };
+    # Bypass nixpkgs free/unfree check — nix-license handles all license compliance
+    nixpkgs.config.allowUnfree = true;
 
     # Usage consistency assertions
     assertions = [

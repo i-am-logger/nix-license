@@ -2,7 +2,6 @@
 #
 # Extends the my.* namespace with:
 #   my.license.enable
-#   my.license.allowClosedSource
 #   my.license.usage.*
 #   my.license.contentPolicy.*
 #   my.license.licenses.*
@@ -53,12 +52,6 @@ in
   # System-level license options under my.license.*
   options.my.license = {
     enable = lib.mkEnableOption "nix-license compliance";
-
-    allowClosedSource = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Accept closed-source packages";
-    };
 
     usage = {
       type = lib.mkOption {
@@ -220,7 +213,7 @@ in
   config = lib.mkIf cfg.enable {
     nix-license = {
       enable = true;
-      inherit (cfg) allowClosedSource enforcement vendorKeys;
+      inherit (cfg) enforcement vendorKeys;
       inherit (cfg) usage;
       inherit (cfg) contentPolicy licenses tokenVerification;
     };

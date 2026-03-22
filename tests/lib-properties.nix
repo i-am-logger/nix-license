@@ -38,6 +38,8 @@ let
 
 in
 {
+  # ── Severity ────────────────────────────────────────────────────
+
   severityReflexive = assertTrue "severity reflexive"
     (builtins.all (a: cr.severityAllowed a a) intensities);
 
@@ -46,6 +48,8 @@ in
 
   severityTotal = assertTrue "severity total"
     (builtins.all ({ a, b }: cr.severityAllowed a b || cr.severityAllowed b a) (pairs intensities));
+
+  # ── Content policy hierarchy ────────────────────────────────────
 
   childMoreRestrictiveThanTeen = assertTrue "child < teen"
     (builtins.all (cat: cr.severityAllowed types.policyPresets.child.${cat} types.policyPresets.teen.${cat}) types.oarsCategories);
@@ -65,6 +69,8 @@ in
   resolvingPolicyIsStable = assertTrue "resolving policy is stable"
     (builtins.all (p: cr.resolveContentPolicy p == cr.resolveContentPolicy (cr.resolveContentPolicy p))
       [ "child" "teen" "unrestricted" ]);
+
+  # ── License restrictions ────────────────────────────────────────
 
   noUsageNoConflicts = assertTrue "empty usage = no conflicts"
     (builtins.all (ln: (lc.evaluateLicenseUsage { } licenses.${ln}).allowed) licenseNames);
@@ -91,21 +97,6 @@ in
         )
         licenseNames);
 
-  complianceIsBothSourceAndLicense = assertTrue "compliance = source AND license"
-    (builtins.all
-      (ln: builtins.all
-        (ctx: builtins.all
-          (acs:
-            let
-              r = lc.evaluateCompliance { allowClosedSource = acs; usage = ctx; license = licenses.${ln}; };
-              sOk = (lc.evaluateSourceAvailability acs licenses.${ln}).allowed;
-              lOk = (lc.evaluateLicenseUsage ctx licenses.${ln}).allowed;
-            in
-            r.allowed == (sOk && lOk)
-          ) [ true false ])
-        allUsageContexts)
-      licenseNames);
-
   noRestrictionsUniversallyAllowed = assertTrue "no restrictions = universally allowed"
     (builtins.all
       (ln:
@@ -114,6 +105,8 @@ in
           builtins.all (ctx: (lc.evaluateLicenseUsage ctx l).allowed) allUsageContexts
         else true)
       licenseNames);
+
+  # ── Coverage ────────────────────────────────────────────────────
 
   usageContextCount = assertEq "16 contexts (2^4)" (builtins.length allUsageContexts) 16;
   oarsFromSpec = assertEq "OARS from spec" types.oarsCategories oarsSpec.categories;

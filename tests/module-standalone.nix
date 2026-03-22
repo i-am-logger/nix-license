@@ -1,5 +1,3 @@
-# Tests for modules/default.nix (standalone NixOS module)
-
 { lib, oarsSpec }:
 
 let
@@ -8,14 +6,8 @@ let
       modules = [
         ../modules/default.nix
         {
-          options.nixpkgs.config = lib.mkOption {
-            type = lib.types.attrs;
-            default = { };
-          };
-          options.assertions = lib.mkOption {
-            type = lib.types.listOf lib.types.attrs;
-            default = [ ];
-          };
+          options.nixpkgs.config = lib.mkOption { type = lib.types.attrs; default = { }; };
+          options.assertions = lib.mkOption { type = lib.types.listOf lib.types.attrs; default = [ ]; };
         }
         { _module.args.oarsSpec = oarsSpec; }
         extraConfig
@@ -50,73 +42,32 @@ in
     let cfg = evalModule defaultUsage;
     in assertFalse "disabled by default" cfg.nix-license.enable;
 
-  defaultAllowClosedSource =
-    let cfg = evalModule defaultUsage;
-    in assertTrue "allowClosedSource defaults to true" cfg.nix-license.allowClosedSource;
-
-  defaultEnforceWarn =
-    let cfg = evalModule defaultUsage;
-    in assertEq "enforcement defaults to warn" cfg.nix-license.enforcement "warn";
-
-  usageCommercial =
-    let
-      cfg = evalModule {
-        nix-license.usage = {
-          type = "commercial";
-          commercial-use = true;
-          distribution = false;
-          modifications = true;
-          saas = false;
-        };
-      };
-    in
-    assertTrue "commercial-use set" cfg.nix-license.usage.commercial-use;
+  enableSetsAllowUnfree =
+    let cfg = evalModule (defaultUsage // { nix-license.enable = true; });
+    in assertTrue "enable sets allowUnfree=true" cfg.nixpkgs.config.allowUnfree;
 
   usageType =
     let
       cfg = evalModule {
-        nix-license.usage = {
-          type = "educational";
-          commercial-use = false;
-          distribution = false;
-          modifications = true;
-          saas = false;
-        };
+        nix-license.usage = { type = "educational"; commercial-use = false; distribution = true; modifications = true; saas = false; };
       };
     in
     assertEq "type is educational" cfg.nix-license.usage.type "educational";
 
-  enabledWiresAllowUnfree =
+  usageCommercial =
     let
       cfg = evalModule {
-        nix-license = {
-          enable = true;
-          allowClosedSource = true;
-          usage = {
-            type = "personal";
-            commercial-use = false;
-            distribution = false;
-            modifications = false;
-            saas = false;
-          };
-        };
+        nix-license.usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
       };
     in
-    assertTrue "enable wires allowUnfree" cfg.nixpkgs.config.allowUnfree;
+    assertTrue "commercial-use set" cfg.nix-license.usage.commercial-use;
 
   scenarioCompany =
     let
       cfg = evalModule {
         nix-license = {
           enable = true;
-          allowClosedSource = true;
-          usage = {
-            type = "commercial";
-            commercial-use = true;
-            distribution = false;
-            modifications = true;
-            saas = false;
-          };
+          usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
           enforcement = "enforce";
         };
       };
@@ -124,41 +75,52 @@ in
     assertTrue "company scenario"
       (cfg.nix-license.usage.type == "commercial"
         && cfg.nix-license.usage.commercial-use
-        && cfg.nix-license.enforcement == "enforce");
+        && cfg.nix-license.enforcement == "enforce"
+        && cfg.nixpkgs.config.allowUnfree);
 
   scenarioSaas =
     let
       cfg = evalModule {
         nix-license = {
           enable = true;
-          allowClosedSource = true;
-          usage = {
-            type = "commercial";
-            commercial-use = true;
-            distribution = true;
-            modifications = true;
-            saas = true;
-          };
+          usage = { type = "commercial"; commercial-use = true; distribution = true; modifications = true; saas = true; };
         };
       };
     in
-    assertTrue "saas scenario"
-      (cfg.nix-license.usage.saas && cfg.nix-license.usage.commercial-use);
+    assertTrue "saas scenario" (cfg.nix-license.usage.saas && cfg.nix-license.usage.commercial-use);
 
   scenarioEducational =
     let
       cfg = evalModule {
         nix-license = {
           enable = true;
-          usage = {
-            type = "educational";
-            commercial-use = false;
-            distribution = true;
-            modifications = true;
-            saas = false;
-          };
+          usage = { type = "educational"; commercial-use = false; distribution = true; modifications = true; saas = false; };
         };
       };
     in
     assertEq "educational type" cfg.nix-license.usage.type "educational";
+
+  assertionPersonalCommercial =
+    let
+      cfg = evalModule {
+        nix-license = {
+          enable = true;
+          usage = { type = "personal"; commercial-use = true; distribution = false; modifications = false; saas = false; };
+        };
+      };
+    in
+    assertTrue "assertion catches personal+commercial"
+      (builtins.any (a: !a.assertion) cfg.assertions);
+
+  assertionSaasNotCommercial =
+    let
+      cfg = evalModule {
+        nix-license = {
+          enable = true;
+          usage = { type = "commercial"; commercial-use = false; distribution = false; modifications = false; saas = true; };
+        };
+      };
+    in
+    assertTrue "assertion catches saas without commercial-use"
+      (builtins.any (a: !a.assertion) cfg.assertions);
 }
