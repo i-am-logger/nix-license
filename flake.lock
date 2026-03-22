@@ -184,11 +184,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1774170276,
-        "narHash": "sha256-vl5kEhvcFqUX20ABhn4LF2l0bujgDO6sbeThcVRK58M=",
+        "lastModified": 1774202646,
+        "narHash": "sha256-IH+7Y9sCYbIxuQEJs6MfRdVEZap4R+rXgX81Ljn3QKY=",
         "owner": "i-am-logger",
         "repo": "salt",
-        "rev": "3ddf59289b021a2ebd6a7567b60f9e8e38ab2f7a",
+        "rev": "4206beac6e049e783bd645f827e66ae049a03154",
         "type": "github"
       },
       "original": {

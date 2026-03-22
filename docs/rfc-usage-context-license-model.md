@@ -1,5 +1,21 @@
 # RFC: Usage-Context-Based License Model
 
+> **Status: Implemented** — the design below was the original proposal. The final
+> implementation differs in several ways:
+>
+> - **No `allowClosedSource`** — nix-license bypasses `allowUnfree` entirely and handles all compliance via SALT
+> - **SALT replaces nixpkgs license changes** — license data comes from [SALT](https://github.com/i-am-logger/salt) (2649 licenses), not modifications to `lib/licenses.nix`
+> - **Usage fields** — `type` + `commercial-use`, `distribution`, `modifications`, `saas` (not redistribution/military/internal/nonprofit booleans)
+> - **Restriction keys** — `commercial-use`, `distribution`, `modifications`, `saas`, `endorsement`, `competing-use` (from SALT, not choosealicense.com)
+> - **Obligation keys** — `include-copyright`, `disclose-source`, `same-license`, `same-license--file`, `same-license--library`, `document-changes`, `network-use-disclose` (from SALT)
+> - **Commitments** (new) — user declares which obligations they can fulfill; unfulfillable obligations block the package
+> - **Assurances** (new) — user requires guarantees (patent-grant, liability-coverage, warranty); license disclaimers that conflict block the package
+> - **Exemptions removed** — legal research found no organization type carries a blanket exemption from any restriction
+> - **nixpkgs mapping** — `lib/nixpkgs-map.nix` maps all 289 nixpkgs licenses to SALT
+> - **125,000+ behavioral assertions** — every license × every usage context verified
+>
+> See [README.md](../README.md) for the domain model and [USAGE.md](USAGE.md) for configuration.
+
 ## Summary
 
 Today, installing packages with restrictive licenses in NixOS requires setting `allowUnfree = true`. This single boolean conflates two unrelated questions:

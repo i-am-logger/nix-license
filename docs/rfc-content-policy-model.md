@@ -1,5 +1,11 @@
 # RFC: Content Policy Model
 
+> **Status: Implemented** — content policy is built using OARS 1.1 categories
+> parsed from the upstream RNC schema at build time (22 categories). Presets
+> (child, teen, unrestricted) and per-category overrides work as described.
+> Per-user policies are available via the mynixos integration (`my.users.<name>.contentPolicy`).
+> See [USAGE.md](USAGE.md) for configuration.
+
 ## Summary
 
 This RFC extends the usage-context license model with a **content policy** system that lets administrators control which software categories users can access — without storing any personally identifiable information like birth dates.

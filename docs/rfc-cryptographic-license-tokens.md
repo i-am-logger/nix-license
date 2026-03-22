@@ -1,5 +1,12 @@
 # RFC: Cryptographic License Tokens for Nix
 
+> **Status: Implemented** — token system uses GPG signatures (Ed25519 via YubiKey),
+> not Ed25519 directly. Two author public keys embedded in `keys/`. Commercial use
+> in enforce mode requires a valid token (`nix-license.license.token` or `.tokenFile`).
+> Eval-time claim validation (package, commercial flag, expiry) + build-time GPG
+> signature verification via derivation. End-to-end tested with a YubiKey-signed
+> test token. See [USAGE.md](USAGE.md) and `lib/self-license.nix`.
+
 ## Summary
 
 The "Usage-Context-Based License Model" RFC lets users declare commercial license overrides like this:
