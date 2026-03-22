@@ -171,20 +171,20 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # Wire nix-license settings into nixpkgs.config
     nixpkgs.config = {
       allowUnfree = cfg.allowClosedSource;
-
-      # TODO: Build-time enforcement
-      # This will be implemented as a package predicate that checks
-      # each package's meta.license against SALT + usage context.
-      # For now, allowUnfree is the only enforcement.
-      #
-      # The full enforcement requires:
-      # 1. Mapping nixpkgs license names to SALT keys
-      # 2. Looking up SALT restrictions for each package
-      # 3. Comparing against cfg.usage
-      # 4. Blocking if any restriction conflicts with usage
     };
+
+    # Usage consistency assertions
+    assertions = [
+      {
+        assertion = !(cfg.usage.type == "personal" && cfg.usage.commercial-use);
+        message = "nix-license: type is 'personal' but commercial-use is true. Personal use is non-commercial.";
+      }
+      {
+        assertion = !(cfg.usage.saas && !cfg.usage.commercial-use);
+        message = "nix-license: saas is true but commercial-use is false. SaaS is commercial use.";
+      }
+    ];
   };
 }

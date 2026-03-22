@@ -103,19 +103,22 @@ in
     let
       academicLicense = { restrictions = { }; allowed-use = [ "educational" "research" ]; };
       result = lc.evaluateLicenseUsage { type = "commercial"; } academicLicense;
-    in assertTrue "academic license blocks commercial type" (!result.allowed);
+    in
+    assertTrue "academic license blocks commercial type" (!result.allowed);
 
   allowedUseAllowsCorrectType =
     let
       academicLicense = { restrictions = { }; allowed-use = [ "educational" "research" ]; };
       result = lc.evaluateLicenseUsage { type = "educational"; } academicLicense;
-    in assertTrue "academic license allows educational type" result.allowed;
+    in
+    assertTrue "academic license allows educational type" result.allowed;
 
   noAllowedUseMeansNoTypeCheck =
     let
       normalLicense = { restrictions = { }; };
       result = lc.evaluateLicenseUsage { type = "commercial"; } normalLicense;
-    in assertTrue "no allowed-use means any type is fine" result.allowed;
+    in
+    assertTrue "no allowed-use means any type is fine" result.allowed;
 
   # ── Cross-product ───────────────────────────────────────────────
 
