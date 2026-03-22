@@ -7,13 +7,32 @@
 
 You define your usage — personal, commercial, nonprofit, educational — and nix-license ensures you are in compliance with every package installed on your system. Enforced at build time.
 
-## How it works
+## License terms
 
-Every software license has terms — what it allows, what it requires, what it prohibits. nix-license uses [SALT](https://github.com/i-am-logger/salt), a classification of 2649 software licenses, to know what each license permits and restricts.
+Every software license carries terms that determine what you can and cannot do. nix-license evaluates four categories of terms from [SALT](https://github.com/i-am-logger/salt) (2649 classified licenses):
 
-You declare two things about your organization:
+**Restrictions** — what the license prohibits. If your declared usage includes a restricted activity, the package is blocked.
 
-**Who you are** — your usage type determines which licenses apply to you. An educational institution can use academic-only software that a commercial company cannot.
+| Restriction | Meaning |
+|-------------|---------|
+| `commercial-use` | Cannot use for commercial purposes |
+| `distribution` | Cannot redistribute to others |
+| `modifications` | Cannot modify the source code |
+| `saas` | Cannot provide as a hosted or managed service |
+
+**Allowed use** — who the license permits. Some licenses only allow specific types of users (e.g., educational or research). If your type is not in the allowed list, the package is blocked.
+
+**Obligations** — what the license requires you to do. When you distribute or modify software, some licenses require source disclosure, attribution, or using the same license. nix-license warns you about triggered obligations.
+
+**Disclaimers** — what the license does not guarantee (liability, warranty, patent rights, trademark rights). Informational only.
+
+See [SALT TERMS.md](https://github.com/i-am-logger/salt/blob/master/TERMS.md) for the complete vocabulary.
+
+## Usage declaration
+
+You declare two things:
+
+**Who you are** — determines which allowed-use lists you qualify for.
 
 | Type | Description |
 |------|-------------|
@@ -24,7 +43,7 @@ You declare two things about your organization:
 | `government` | Government agency |
 | `nonprofit` | Registered nonprofit organization |
 
-**What you do with the software** — each activity is checked against the license's restrictions. If a license prohibits an activity you declared, the package is blocked.
+**What you do** — each activity is checked against license restrictions.
 
 | Activity | What it means |
 |----------|---------------|
@@ -33,17 +52,11 @@ You declare two things about your organization:
 | `modifications` | Changing the source code (patches, forks, overlays) |
 | `saas` | Running software as a hosted service for others |
 
-## What gets checked
-
-For each package on the system, nix-license evaluates:
-
-- **Restrictions** — does the license prohibit any activity you declared? A CC-BY-NC license restricts `commercial-use`. If you declared `commercial-use = true`, the package is blocked.
-- **Allowed use** — does the license limit who can use it? An academic-only license permits `educational` and `research` users. If your type is `commercial`, the package is blocked.
-- **Obligations** — does the license require something when you distribute or modify? GPL requires source disclosure when distributing. nix-license warns you about these obligations.
+All fields are required. You must explicitly answer every question.
 
 ## Content policy
 
-nix-license also supports per-user content policies based on [OARS 1.1](https://github.com/hughsie/oars) content ratings. Administrators set what content categories each user is entitled to — violence, social features, in-app purchases, etc. Packages that exceed a user's policy are excluded from their environment.
+Per-user content policies based on [OARS 1.1](https://github.com/hughsie/oars). Administrators set what content categories each user is entitled to. Packages that exceed a user's policy are excluded from their environment.
 
 ## Documentation
 
