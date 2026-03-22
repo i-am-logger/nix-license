@@ -2,9 +2,11 @@
 #
 # Provides:
 #   nix-license.usage.*
-#   nixpkgs.config.contentPolicy.*
-#   nixpkgs.config.licenses.*
-#   nixpkgs.config.licenseEnforcement
+#   nix-license.commitments.*
+#   nix-license.assurances.*
+#   nix-license.contentPolicy.*
+#   nix-license.licenses.*
+#   nix-license.enforcement
 
 { config, lib, oarsSpec, saltLicenses, saltSpdx, ... }:
 
@@ -25,11 +27,16 @@ let
     if saltLic != null then saltLic
     else throw "nix-license: license '${name}' not found in SALT. Add it to SALT or lib/nixpkgs-map.nix.";
 
+  # Build the full usage context including policy
+  usageContext = cfg.usage // {
+    inherit (cfg) commitments assurances;
+  };
+
   # Check if a package's license conflicts with usage
   checkPackageLicense = pkg:
     let
       licenses = lib.toList (pkg.meta.license or [ ]);
-      results = map (nixLic: licenseCheck.evaluateLicenseUsage cfg.usage (toSaltLicense nixLic)) licenses;
+      results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) licenses;
     in
     builtins.all (r: r.allowed) results;
 
@@ -81,7 +88,75 @@ in
       };
     };
 
-    # Axis 3: Content policy (system-wide default)
+    # Commitments — which license obligations you can fulfill
+    # If an obligation triggers and you set its commitment to false, the package is blocked.
+    commitments = {
+      include-copyright = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Can you include copyright notices when distributing?";
+      };
+
+      disclose-source = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Can you disclose source code when required?";
+      };
+
+      same-license = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Can you distribute under the same license (copyleft)?";
+      };
+
+      same-license--file = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Can you apply the same license per-file (weak copyleft)?";
+      };
+
+      same-license--library = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Can you apply the same license for linked libraries (LGPL)?";
+      };
+
+      document-changes = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Can you document changes to modified source code?";
+      };
+
+      network-use-disclose = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Can you disclose source for network service use (AGPL)?";
+      };
+    };
+
+    # Assurances — what guarantees you require from licenses
+    # If a license disclaims something you require, the package is blocked.
+    assurances = {
+      patent-grant = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Require licenses to grant patent rights?";
+      };
+
+      liability-coverage = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Require licenses to not disclaim liability?";
+      };
+
+      warranty = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Require licenses to not disclaim warranty?";
+      };
+    };
+
+    # Content policy (system-wide default)
     contentPolicy = {
       preset = lib.mkOption {
         type = lib.types.nullOr licenseTypes.contentPolicyPresetType;

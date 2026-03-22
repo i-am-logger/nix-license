@@ -36,10 +36,12 @@ nix-license/
 
 Two independent checks per license:
 
-1. **Restrictions** (blocklist): if the license restricts an activity (`commercial-use`, `distribution`, `modifications`, `saas`) and the user does that activity → conflict
-2. **Allowed-use** (allowlist): if the license specifies who can use it (`educational`, `research`) and the user's type isn't in the list → conflict
+1. **Restrictions** (blocklist): if the license restricts an activity and the user does that activity → conflict (unless exempted)
+2. **Allowed-use** (allowlist): if the license specifies who can use it and the user's type isn't in the list → conflict
+3. **Commitments**: if an obligation triggers and the user can't commit to fulfilling it → conflict
+4. **Assurances**: if the license disclaims something the user requires → conflict
 
-Both must pass.
+All must pass.
 
 ## nixpkgs mapping
 

@@ -123,4 +123,53 @@ in
     in
     assertTrue "assertion catches saas without commercial-use"
       (builtins.any (a: !a.assertion) cfg.assertions);
+
+  # ── Commitments defaults ──────────────────────────────────────
+
+  commitmentsDefaultTrue =
+    let
+      cfg = evalModule defaultUsage;
+    in
+    assertTrue "commitments default to true"
+      (cfg.nix-license.commitments.same-license
+        && cfg.nix-license.commitments.disclose-source
+        && cfg.nix-license.commitments.include-copyright);
+
+  commitmentsCanDisable =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license.commitments.same-license = false;
+      });
+    in
+    assertFalse "can disable same-license commitment"
+      cfg.nix-license.commitments.same-license;
+
+  # ── Assurances defaults ───────────────────────────────────────
+
+  assurancesDefaultFalse =
+    let
+      cfg = evalModule defaultUsage;
+    in
+    assertTrue "assurances default to false"
+      (!cfg.nix-license.assurances.patent-grant
+        && !cfg.nix-license.assurances.liability-coverage
+        && !cfg.nix-license.assurances.warranty);
+
+  # ── Proprietary company scenario ──────────────────────────────
+
+  scenarioProprietaryCompany =
+    let
+      cfg = evalModule {
+        nix-license = {
+          enable = true;
+          usage = { type = "commercial"; commercial-use = true; distribution = true; modifications = true; saas = false; };
+          commitments = { same-license = false; disclose-source = false; };
+          enforcement = "enforce";
+        };
+      };
+    in
+    assertTrue "proprietary company scenario"
+      (!cfg.nix-license.commitments.same-license
+        && !cfg.nix-license.commitments.disclose-source
+        && cfg.nix-license.commitments.include-copyright);
 }

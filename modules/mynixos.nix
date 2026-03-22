@@ -94,6 +94,22 @@ in
       };
     } // mkOarsCategoryOptions;
 
+    commitments = {
+      include-copyright = lib.mkOption { type = lib.types.bool; default = true; description = "Can you include copyright notices when distributing?"; };
+      disclose-source = lib.mkOption { type = lib.types.bool; default = true; description = "Can you disclose source code when required?"; };
+      same-license = lib.mkOption { type = lib.types.bool; default = true; description = "Can you distribute under the same license (copyleft)?"; };
+      same-license--file = lib.mkOption { type = lib.types.bool; default = true; description = "Can you apply the same license per-file (weak copyleft)?"; };
+      same-license--library = lib.mkOption { type = lib.types.bool; default = true; description = "Can you apply the same license for linked libraries (LGPL)?"; };
+      document-changes = lib.mkOption { type = lib.types.bool; default = true; description = "Can you document changes to modified source code?"; };
+      network-use-disclose = lib.mkOption { type = lib.types.bool; default = true; description = "Can you disclose source for network service use (AGPL)?"; };
+    };
+
+    assurances = {
+      patent-grant = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to grant patent rights?"; };
+      liability-coverage = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to not disclaim liability?"; };
+      warranty = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to not disclaim warranty?"; };
+    };
+
     licenses = lib.mkOption {
       type = lib.types.attrsOf (lib.types.submodule {
         options = {
@@ -214,7 +230,7 @@ in
     nix-license = {
       enable = true;
       inherit (cfg) enforcement vendorKeys;
-      inherit (cfg) usage;
+      inherit (cfg) usage commitments assurances;
       inherit (cfg) contentPolicy licenses tokenVerification;
     };
   };

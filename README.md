@@ -16,56 +16,43 @@ You define your usage — personal, commercial, nonprofit, educational — and n
 - [x] **Content policy** — per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oars)
 - [x] **125,000+ behavioral assertions** — every license × every usage context verified on every commit
 - [ ] **OpenChain ISO/IEC 5230** — tooling toward organizational self-certification
-- [ ] **Disclaimer enforcement** — require patent grants, liability coverage
+- [x] **Commitments** — declare which obligations you can fulfill; copyleft blocked if you can't
+- [x] **Assurances** — require patent grants, liability coverage, warranty from licenses
 - [ ] **Cryptographic license tokens** — GPG/YubiKey-signed commercial license verification
 - [ ] **SBOM generation** *(commercial)* — software bill of materials with full license classification
 
-## License terms
+## Domain model
 
-Every software license carries terms that determine what you can and cannot do. nix-license evaluates four categories of terms from [SALT](https://github.com/i-am-logger/salt) (2649 classified licenses):
+Every license carries terms. Every user declares their context. nix-license evaluates one against the other.
 
-**Restrictions** — what the license prohibits. If your declared usage includes a restricted activity, the package is blocked.
+**License side** ([SALT](https://github.com/i-am-logger/salt) — 2649 classified licenses):
 
-| Restriction | Meaning |
-|-------------|---------|
-| `commercial-use` | Cannot use for commercial purposes |
-| `distribution` | Cannot redistribute to others |
-| `modifications` | Cannot modify the source code |
-| `saas` | Cannot provide as a hosted or managed service |
+| Term | What it is | Example |
+|------|-----------|---------|
+| Restrictions | What the license prohibits | `commercial-use`, `distribution`, `modifications`, `saas` |
+| Allowed-use | Who the license permits | `educational`, `research` |
+| Obligations | What the license requires you to do | `disclose-source`, `same-license`, `include-copyright` |
+| Disclaimers | What the license doesn't guarantee | `liability`, `warranty`, `patent-use`, `trademark-use` |
 
-**Allowed use** — who the license permits. Some licenses only allow specific types of users (e.g., educational or research). If your type is not in the allowed list, the package is blocked.
+**User side** (your NixOS config):
 
-**Obligations** — what the license requires you to do. When you distribute or modify software, some licenses require source disclosure, attribution, or using the same license. nix-license warns you about triggered obligations.
+| Term | What it is | Example |
+|------|-----------|---------|
+| Usage (type) | Who you are | `personal`, `commercial`, `nonprofit`, `educational` |
+| Usage (activities) | What you do | `commercial-use`, `distribution`, `modifications`, `saas` |
+| Commitments | Which obligations you can fulfill | `same-license = false` (can't open-source) |
+| Assurances | What guarantees you require | `patent-grant = true` (require patent rights) |
 
-**Disclaimers** — what the license does not guarantee (liability, warranty, patent rights, trademark rights). Informational only.
+**Evaluation** — four checks, all must pass:
+
+| License | User | Blocks when |
+|---------|------|-------------|
+| Restrictions | Usage (activities) | Activity is restricted |
+| Allowed-use | Usage (type) | Type not in allowed list |
+| Obligations | Commitments | Obligation triggers and user can't commit |
+| Disclaimers | Assurances | License disclaims what user requires |
 
 See [SALT TERMS.md](https://github.com/i-am-logger/salt/blob/master/TERMS.md) for the complete vocabulary.
-
-## Usage declaration
-
-You declare two things:
-
-**Who you are** — determines which allowed-use lists you qualify for.
-
-| Type | Description |
-|------|-------------|
-| `personal` | Individual, non-commercial use |
-| `commercial` | For-profit business, freelancer, startup |
-| `educational` | School, university, teaching |
-| `research` | Academic or scientific research |
-| `government` | Government agency |
-| `nonprofit` | Registered nonprofit organization |
-
-**What you do** — each activity is checked against license restrictions.
-
-| Activity | What it means |
-|----------|---------------|
-| `commercial-use` | Using software to generate revenue |
-| `distribution` | Shipping software to others (binaries, containers, ISOs) |
-| `modifications` | Changing the source code (patches, forks, overlays) |
-| `saas` | Running software as a hosted service for others |
-
-All fields are required. You must explicitly answer every question.
 
 ## OpenChain ISO/IEC 5230
 

@@ -170,6 +170,34 @@ usage = {
 };
 ```
 
+## Commitments
+
+Declare which license obligations you can fulfill. If an obligation triggers and you can't commit to it, the package is blocked.
+
+```nix
+commitments = {
+  include-copyright = true;      # default: true
+  disclose-source = false;       # can't share source → blocks copyleft on distribution
+  same-license = false;          # can't open-source → blocks GPL, AGPL
+  same-license--file = true;     # can do per-file (MPL)
+  same-license--library = true;  # can do library linking (LGPL)
+  document-changes = true;       # default: true
+  network-use-disclose = false;  # can't share source for network use → blocks AGPL on SaaS
+};
+```
+
+## Assurances
+
+Require licenses to guarantee specific protections. If a license disclaims something you require, the package is blocked.
+
+```nix
+assurances = {
+  patent-grant = true;        # block licenses that disclaim patent rights
+  liability-coverage = false; # default: false
+  warranty = false;           # default: false
+};
+```
+
 ## Content policy
 
 Content policies control what software is available per user based on [OARS 1.1](https://github.com/hughsie/oars) content ratings.

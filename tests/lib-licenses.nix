@@ -132,6 +132,65 @@ in
     in
     assertTrue "all combinations valid" (builtins.all (x: x) results);
 
+  # ── Commitments ─────────────────────────────────────────────────
+
+  commitmentBlocksCopyleft =
+    let
+      result = lc.evaluateLicenseUsage
+        { distribution = true; commitments = { same-license = false; }; }
+        licenses."gpl-3.0";
+    in
+    assertTrue "commitment blocks GPL when can't do same-license"
+      (!result.allowed);
+
+  commitmentAllowsWhenCanFulfill =
+    let
+      result = lc.evaluateLicenseUsage
+        { distribution = true; commitments = { same-license = true; }; }
+        licenses."gpl-3.0";
+    in
+    assertTrue "commitment allows GPL when can do same-license"
+      result.allowed;
+
+  commitmentOnlyChecksTriggered =
+    let
+      result = lc.evaluateLicenseUsage
+        { type = "personal"; commitments = { same-license = false; }; }
+        licenses."gpl-3.0";
+    in
+    assertTrue "commitment ignored when obligation doesn't trigger"
+      result.allowed;
+
+  # ── Assurances ─────────────────────────────────────────────────
+
+  assuranceBlocksDisclaimer =
+    let
+      license = { restrictions = { }; disclaimers = [ "patent-use" ]; };
+      result = lc.evaluateLicenseUsage
+        { assurances = { patent-grant = true; }; }
+        license;
+    in
+    assertTrue "assurance blocks license disclaiming patent-use"
+      (!result.allowed);
+
+  assuranceAllowsWhenNotDisclaimed =
+    let
+      license = { restrictions = { }; disclaimers = [ ]; };
+      result = lc.evaluateLicenseUsage
+        { assurances = { patent-grant = true; }; }
+        license;
+    in
+    assertTrue "assurance allows when not disclaimed"
+      result.allowed;
+
+  assuranceDefaultNoBlock =
+    let
+      license = { restrictions = { }; disclaimers = [ "patent-use" "liability" "warranty" ]; };
+      result = lc.evaluateLicenseUsage { } license;
+    in
+    assertTrue "no assurances = no blocking on disclaimers"
+      result.allowed;
+
   # ── Structure ───────────────────────────────────────────────────
 
   allHaveRestrictions = assertTrue "all have restrictions"
