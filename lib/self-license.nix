@@ -1,0 +1,72 @@
+# nix-license self-licensing gate
+#
+# When usage.commercial-use = true and enforcement = "enforce",
+# a valid nix-license token is required.
+#
+# Token format: GPG-signed JSON with claims:
+#   { package = "nix-license"; commercial = true; licensee = "..."; expires_at = "..."; }
+#
+# Eval time: validate claims (package, commercial, expiry)
+# Build time: verify GPG signature against embedded YubiKey public keys
+
+{ lib, pkgs }:
+
+let
+  # Embedded author public keys (YubiKey pair, for key rotation)
+  publicKeys = [
+    ../keys/yubikey1.asc
+    ../keys/yubikey2.asc
+  ];
+
+  # Parse a token JSON string into claims
+  parseClaims = tokenJson:
+    builtins.fromJSON tokenJson;
+
+  # Validate token claims at eval time (no crypto, just structure + expiry)
+  validateClaims = { claims, currentDate ? "9999-12-31" }:
+    let
+      isNixLicense = (claims.package or "") == "nix-license";
+      isCommercial = claims.commercial or false;
+      expiresAt = claims.expires_at or null;
+      isExpired = expiresAt != null && currentDate > expiresAt;
+      licensee = claims.licensee or "unknown";
+    in
+    {
+      valid = isNixLicense && isCommercial && !isExpired;
+      inherit isNixLicense isCommercial isExpired licensee expiresAt;
+      errors =
+        (if !isNixLicense then [ "Token is not for nix-license (package = '${claims.package or "missing"}')" ] else [ ])
+        ++ (if !isCommercial then [ "Token does not grant commercial use" ] else [ ])
+        ++ (if isExpired then [ "Token expired on ${expiresAt}" ] else [ ]);
+    };
+
+  # Build-time GPG signature verification derivation
+  # Takes the token file (detached signature) and verifies against embedded public keys
+  mkVerifyDerivation = { tokenFile, signatureFile ? null }:
+    let
+      sigFile =
+        if signatureFile != null then signatureFile
+        else "${tokenFile}.sig";
+    in
+    pkgs.runCommand "nix-license-verify-token"
+      {
+        nativeBuildInputs = [ pkgs.gnupg ];
+      } ''
+      export GNUPGHOME=$(mktemp -d)
+
+      # Import all author public keys
+      ${lib.concatMapStringsSep "\n" (key: "gpg --import ${key}") publicKeys}
+
+      # Verify the signature
+      if gpg --verify ${sigFile} ${tokenFile}; then
+        echo "nix-license: token signature verified" > $out
+      else
+        echo "nix-license: INVALID token signature"
+        exit 1
+      fi
+    '';
+
+in
+{
+  inherit publicKeys parseClaims validateClaims mkVerifyDerivation;
+}

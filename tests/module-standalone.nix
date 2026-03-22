@@ -155,6 +155,61 @@ in
         && !cfg.nix-license.assurances.liability-coverage
         && !cfg.nix-license.assurances.warranty);
 
+  # ── Commercial gate ────────────────────────────────────────────
+
+  commercialEnforceRequiresToken =
+    let
+      cfg = evalModule {
+        nix-license = {
+          enable = true;
+          usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
+          enforcement = "enforce";
+        };
+      };
+    in
+    assertTrue "commercial enforce without token triggers assertion"
+      (builtins.any (a: !a.assertion && builtins.match ".*commercial use requires.*" a.message != null) cfg.assertions);
+
+  commercialEnforceWithTokenPasses =
+    let
+      cfg = evalModule {
+        nix-license = {
+          enable = true;
+          usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
+          enforcement = "enforce";
+          license.token = ''{  "package": "nix-license", "commercial": true, "licensee": "Test Corp" }'';
+        };
+      };
+    in
+    assertTrue "commercial enforce with token passes assertion"
+      (builtins.all (a: a.assertion || builtins.match ".*commercial use requires.*" a.message == null) cfg.assertions);
+
+  commercialWarnNoTokenOk =
+    let
+      cfg = evalModule {
+        nix-license = {
+          enable = true;
+          usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
+          enforcement = "warn";
+        };
+      };
+    in
+    assertTrue "commercial warn mode doesn't require token"
+      (builtins.all (a: a.assertion || builtins.match ".*commercial use requires.*" a.message == null) cfg.assertions);
+
+  personalEnforceNoTokenOk =
+    let
+      cfg = evalModule {
+        nix-license = {
+          enable = true;
+          usage = { type = "personal"; commercial-use = false; distribution = false; modifications = true; saas = false; };
+          enforcement = "enforce";
+        };
+      };
+    in
+    assertTrue "personal enforce doesn't require token"
+      (builtins.all (a: a.assertion || builtins.match ".*commercial use requires.*" a.message == null) cfg.assertions);
+
   # ── Proprietary company scenario ──────────────────────────────
 
   scenarioProprietaryCompany =

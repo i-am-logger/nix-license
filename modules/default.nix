@@ -249,6 +249,28 @@ in
       };
     };
 
+    # nix-license commercial token
+    # Required when usage.commercial-use = true and enforcement = "enforce"
+    license = {
+      token = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = ''
+          Inline nix-license commercial token (GPG-signed JSON).
+          Required for commercial use in enforce mode.
+        '';
+      };
+
+      tokenFile = lib.mkOption {
+        type = lib.types.nullOr lib.types.path;
+        default = null;
+        description = ''
+          Path to nix-license commercial token file.
+          Required for commercial use in enforce mode.
+        '';
+      };
+    };
+
     # Enforcement level
     enforcement = lib.mkOption {
       type = licenseTypes.enforcementType;
@@ -274,6 +296,15 @@ in
       {
         assertion = !(cfg.usage.saas && !cfg.usage.commercial-use);
         message = "nix-license: saas is true but commercial-use is false. SaaS is commercial use.";
+      }
+      {
+        assertion = !(cfg.usage.commercial-use && cfg.enforcement == "enforce"
+          && cfg.license.token == null && cfg.license.tokenFile == null);
+        message = ''
+          nix-license: commercial use requires a valid nix-license token in enforce mode.
+          Set nix-license.license.token or nix-license.license.tokenFile.
+          Visit https://github.com/i-am-logger/nix-license for licensing.
+        '';
       }
     ];
   };
