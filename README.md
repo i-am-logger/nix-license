@@ -18,7 +18,7 @@ You define your usage — personal, commercial, nonprofit, educational — and n
 - [ ] **OpenChain ISO/IEC 5230** — tooling toward organizational self-certification
 - [x] **Commitments** — declare which obligations you can fulfill; copyleft blocked if you can't
 - [x] **Assurances** — require patent grants, liability coverage, warranty from licenses
-- [ ] **Cryptographic license tokens** — GPG/YubiKey-signed commercial license verification
+- [x] **Cryptographic license tokens** — GPG/YubiKey-signed commercial license verification
 - [ ] **SBOM generation** *(commercial)* — software bill of materials with full license classification
 
 ## Domain model
