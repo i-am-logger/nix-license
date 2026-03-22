@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.3.1...nix-license-v0.4.0) (2026-03-22)
+
+
+### Features
+
+* per-package license enforcement with full behavioral verification ([32f9d60](https://github.com/i-am-logger/nix-license/commit/32f9d6039fc572c57db4603e59512c957faf6942))
+
+
+### Documentation
+
+* clarify SALT vocabulary is independent, OSADL is a reference ([e7272b4](https://github.com/i-am-logger/nix-license/commit/e7272b45520a05cf5cc967a326c193d769b0270e))
+
 ## [0.3.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.3.0...nix-license-v0.3.1) (2026-03-22)
 
 
