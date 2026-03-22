@@ -35,14 +35,6 @@ in
     "unrestricted"
   ];
 
-  # Usage context type
-  usageType = types.enum [
-    "personal"
-    "commercial"
-    "educational"
-    "government"
-  ];
-
   # License enforcement level
   enforcementType = types.enum [ "warn" "enforce" ];
 

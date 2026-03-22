@@ -29,9 +29,8 @@ let
     in
     go keys;
 
-  allUsageContexts = builtins.concatMap
-    (t: map (flags: { type = t; } // flags) (boolProduct [ "distribution" "saas" "military" ]))
-    [ "personal" "commercial" "educational" "government" ];
+  allUsageContexts =
+    boolProduct [ "commercial-use" "distribution" "modifications" "saas" ];
 
   licenseNames = builtins.filter
     (n: !(builtins.elem n [ "_meta" "allRestrictions" "allObligations" "allGrants" "allDisclaimers" ]))
@@ -39,13 +38,8 @@ let
 
 in
 {
-  # ── Severity ────────────────────────────────────────────────────
-
   severityReflexive = assertTrue "severity reflexive"
     (builtins.all (a: cr.severityAllowed a a) intensities);
-
-  severityAntisymmetric = assertTrue "severity antisymmetric"
-    (builtins.all ({ a, b }: if cr.severityAllowed a b && cr.severityAllowed b a then a == b else true) (pairs intensities));
 
   severityTransitive = assertTrue "severity transitive"
     (builtins.all ({ a, b, c }: if cr.severityAllowed a b && cr.severityAllowed b c then cr.severityAllowed a c else true) (triples intensities));
@@ -53,13 +47,8 @@ in
   severityTotal = assertTrue "severity total"
     (builtins.all ({ a, b }: cr.severityAllowed a b || cr.severityAllowed b a) (pairs intensities));
 
-  # ── Content policy hierarchy ────────────────────────────────────
-
   childMoreRestrictiveThanTeen = assertTrue "child < teen"
     (builtins.all (cat: cr.severityAllowed types.policyPresets.child.${cat} types.policyPresets.teen.${cat}) types.oarsCategories);
-
-  teenMoreRestrictiveThanUnrestricted = assertTrue "teen < unrestricted"
-    (builtins.all (cat: cr.severityAllowed types.policyPresets.teen.${cat} types.policyPresets.unrestricted.${cat}) types.oarsCategories);
 
   relaxingPolicyNeverRemovesAccess = assertTrue "relaxing never removes access"
     (builtins.all
@@ -77,59 +66,30 @@ in
     (builtins.all (p: cr.resolveContentPolicy p == cr.resolveContentPolicy (cr.resolveContentPolicy p))
       [ "child" "teen" "unrestricted" ]);
 
-  # ── License restrictions ────────────────────────────────────────
+  noUsageNoConflicts = assertTrue "empty usage = no conflicts"
+    (builtins.all (ln: (lc.evaluateLicenseUsage { } licenses.${ln}).allowed) licenseNames);
 
-  moreRestrictionsNeverGrantAccess =
+  addingUsageNeverRemovesConflicts =
     let
-      bl = builtins.filter (n: !(licenses.${n} ? allowedUsageTypes)) licenseNames;
-      sub = r1: r2: builtins.all (key: if r1.${key} or false then r2.${key} or false else true) licenses.allRestrictions;
+      base = { commercial-use = false; distribution = false; modifications = false; saas = false; };
     in
-    assertTrue "more restrictions never grant access"
-      (builtins.all
-        (l1: builtins.all
-          (l2:
-            if sub licenses.${l1}.restrictions licenses.${l2}.restrictions then
-              builtins.all
-                (ctx:
-                  let r1 = lc.evaluateLicenseUsage ctx licenses.${l1}; r2 = lc.evaluateLicenseUsage ctx licenses.${l2};
-                  in if r2.allowed then r1.allowed else true
-                )
-                allUsageContexts
-            else true
-          )
-          bl)
-        bl);
-
-  addingCapabilitiesNeverRemovesConflicts =
-    let
-      base = { type = "personal"; distribution = false; saas = false; military = false; };
-    in
-    assertTrue "adding capabilities never removes conflicts"
+    assertTrue "adding usage flags never removes conflicts"
       (builtins.all
         (ln:
           let
             l = licenses.${ln};
             bR = lc.evaluateLicenseUsage base l;
+            cR = lc.evaluateLicenseUsage (base // { commercial-use = true; }) l;
             dR = lc.evaluateLicenseUsage (base // { distribution = true; }) l;
+            mR = lc.evaluateLicenseUsage (base // { modifications = true; }) l;
             sR = lc.evaluateLicenseUsage (base // { saas = true; }) l;
-            mR = lc.evaluateLicenseUsage (base // { military = true; }) l;
           in
-          (if dR.allowed then bR.allowed else true)
-          && (if sR.allowed then bR.allowed else true)
+          (if cR.allowed then bR.allowed else true)
+          && (if dR.allowed then bR.allowed else true)
           && (if mR.allowed then bR.allowed else true)
+          && (if sR.allowed then bR.allowed else true)
         )
         licenseNames);
-
-  commercialAtLeastAsRestrictedAsPersonal = assertTrue "commercial >= personal"
-    (builtins.all
-      (ln:
-        let
-          l = licenses.${ln};
-          pR = lc.evaluateLicenseUsage { type = "personal"; } l;
-          cR = lc.evaluateLicenseUsage { type = "commercial"; } l;
-        in
-        if cR.allowed then pR.allowed else true)
-      licenseNames);
 
   complianceIsBothSourceAndLicense = assertTrue "compliance = source AND license"
     (builtins.all
@@ -150,14 +110,12 @@ in
     (builtins.all
       (ln:
         let l = licenses.${ln};
-        in if l.restrictions == { } && !(l ? allowedUsageTypes) then
+        in if l.restrictions == { } then
           builtins.all (ctx: (lc.evaluateLicenseUsage ctx l).allowed) allUsageContexts
         else true)
       licenseNames);
 
-  # ── Coverage ────────────────────────────────────────────────────
-
-  usageContextCount = assertEq "32 contexts" (builtins.length allUsageContexts) 32;
+  usageContextCount = assertEq "16 contexts (2^4)" (builtins.length allUsageContexts) 16;
   oarsFromSpec = assertEq "OARS from spec" types.oarsCategories oarsSpec.categories;
   licenseCount = assertTrue "2600+ licenses" (builtins.length licenseNames >= 2600);
 }

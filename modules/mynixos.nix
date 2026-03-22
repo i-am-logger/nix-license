@@ -61,46 +61,24 @@ in
     };
 
     usage = {
-      type = lib.mkOption {
-        type = licenseTypes.usageType;
-        default = "personal";
-        description = "Primary usage context";
+      commercial-use = lib.mkOption {
+        type = lib.types.bool;
+        description = "Are you using software for commercial purposes?";
       };
 
-      redistribution = lib.mkOption {
+      distribution = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = "Distributing builds to others";
+        description = "Are you distributing software to others?";
+      };
+
+      modifications = lib.mkOption {
+        type = lib.types.bool;
+        description = "Are you modifying the software source code?";
       };
 
       saas = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = "Running software as a service";
-      };
-
-      internal = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Usage limited to within your organization";
-      };
-
-      military = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Military or defense use";
-      };
-
-      research = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Academic or scientific research use";
-      };
-
-      nonprofit = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Nonprofit organization use";
+        description = "Are you providing the software as a hosted or managed service?";
       };
     };
 
@@ -238,12 +216,9 @@ in
     nix-license = {
       enable = true;
       inherit (cfg) allowClosedSource enforcement vendorKeys;
-      usage = {
-        inherit (cfg.usage)
-          type redistribution saas internal
-          military research nonprofit;
-      };
+      inherit (cfg) usage;
       inherit (cfg) contentPolicy licenses tokenVerification;
     };
   };
 }
+

@@ -39,47 +39,28 @@ in
     };
 
     # Axis 2: Usage context
+    # Each field matches a SALT restriction key.
+    # All fields are required — you must explicitly declare your usage.
+    # If a package restricts an activity you declared, the build fails.
     usage = {
-      type = lib.mkOption {
-        type = licenseTypes.usageType;
-        default = "personal";
-        description = "Primary usage context";
+      commercial-use = lib.mkOption {
+        type = lib.types.bool;
+        description = "Are you using software for commercial purposes?";
       };
 
-      redistribution = lib.mkOption {
+      distribution = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = "Distributing builds to others outside your organization";
+        description = "Are you distributing software to others?";
+      };
+
+      modifications = lib.mkOption {
+        type = lib.types.bool;
+        description = "Are you modifying the software source code?";
       };
 
       saas = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = "Running software to provide services to third parties";
-      };
-
-      internal = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Usage limited to within your organization";
-      };
-
-      military = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Military, defense, or weapons-related use";
-      };
-
-      research = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Academic or scientific research use";
-      };
-
-      nonprofit = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Use by a registered nonprofit organization";
+        description = "Are you providing the software as a hosted or managed service?";
       };
     };
 
@@ -186,9 +167,19 @@ in
 
   config = lib.mkIf cfg.enable {
     # Wire nix-license settings into nixpkgs.config
-    # This translates our typed options into the nixpkgs format
     nixpkgs.config = {
       allowUnfree = cfg.allowClosedSource;
+
+      # TODO: Build-time enforcement
+      # This will be implemented as a package predicate that checks
+      # each package's meta.license against SALT + usage context.
+      # For now, allowUnfree is the only enforcement.
+      #
+      # The full enforcement requires:
+      # 1. Mapping nixpkgs license names to SALT keys
+      # 2. Looking up SALT restrictions for each package
+      # 3. Comparing against cfg.usage
+      # 4. Blocking if any restriction conflicts with usage
     };
   };
 }

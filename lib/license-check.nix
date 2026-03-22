@@ -3,69 +3,32 @@
 # Evaluates whether a usage context is permitted by a license's
 # restrictions, and identifies triggered obligations.
 #
-# Uses SALT terminology throughout.
+# Usage fields match SALT restriction keys exactly.
 
 _:
 
 let
   # Evaluate a license against a usage context
+  # Usage is a flat attrset of booleans matching SALT restriction keys:
+  #   { commercial-use = true; distribution = false; modifications = true; saas = false; }
   evaluateLicenseUsage = usage: license:
     let
       restrictions = license.restrictions or { };
       obligations = license.obligations or { };
-      allowedTypes = license.allowedUsageTypes or null;
 
-      isCommercial = (usage.type or "personal") == "commercial";
-      isMilitary = usage.military or false;
-      isGovernment = (usage.type or "personal") == "government";
-      isDistributing = usage.distribution or usage.redistribution or false;
-      isSaas = usage.saas or false;
-
-      restrictionChecks = [
-        {
-          check = (restrictions.commercial-use or false) && isCommercial;
-          restriction = "commercial-use";
-          reason = "License prohibits commercial use";
-        }
-        {
-          check = (restrictions.military or false) && isMilitary;
-          restriction = "military";
-          reason = "License prohibits military/defense use";
-        }
-        {
-          check = (restrictions.government or false) && isGovernment;
-          restriction = "government";
-          reason = "License prohibits government use";
-        }
-        {
-          check = (restrictions.distribution or false) && isDistributing;
-          restriction = "distribution";
-          reason = "License prohibits redistribution";
-        }
-        {
-          check = (restrictions.saas or false) && isSaas;
-          restriction = "saas";
-          reason = "License prohibits running as a service";
-        }
-      ];
-
-      typeRestricted =
-        if allowedTypes != null then
-          !(builtins.elem (usage.type or "personal") allowedTypes)
-        else
-          false;
-
-      conflicts = builtins.filter (c: c.check) restrictionChecks;
-      conflictResults = map (c: { inherit (c) restriction reason; }) conflicts;
-
-      allConflicts =
-        if typeRestricted then
-          conflictResults ++ [{
-            restriction = "usageType";
-            reason = "License only permits: ${builtins.concatStringsSep ", " allowedTypes}";
-          }]
-        else
-          conflictResults;
+      # For each SALT restriction key, check if usage conflicts
+      restrictionKeys = builtins.attrNames restrictions;
+      conflicts = builtins.filter (c: c != null) (map
+        (key:
+          let
+            isRestricted = restrictions.${key} or false;
+            isUsed = usage.${key} or false;
+          in
+          if isRestricted && isUsed then
+            { restriction = key; reason = "License prohibits ${key}"; }
+          else null
+        )
+        restrictionKeys);
 
       # Check which obligations are triggered
       obligationChecks = builtins.concatMap
@@ -75,9 +38,7 @@ let
             matchedTriggers = builtins.filter
               (trigger:
                 trigger == "any"
-                || (trigger == "distribution" && isDistributing)
-                || (trigger == "saas" && isSaas)
-                || (trigger == "commercial" && isCommercial)
+                || (usage.${trigger} or false)
               )
               triggers;
           in
@@ -90,8 +51,8 @@ let
 
     in
     {
-      allowed = allConflicts == [ ];
-      conflicts = allConflicts;
+      allowed = conflicts == [ ];
+      inherit conflicts;
       obligations = obligationChecks;
     };
 
@@ -111,7 +72,7 @@ let
   # Full compliance evaluation
   evaluateCompliance =
     { allowClosedSource ? true
-    , usage ? { type = "personal"; }
+    , usage ? { }
     , license
     }:
     let
