@@ -5,9 +5,45 @@
 
 # nix-license
 
-You define your usage — personal, commercial, nonprofit, educational, etc. — and nix-license ensures you are in compliance with every package installed on your system.
+You define your usage — personal, commercial, nonprofit, educational — and nix-license ensures you are in compliance with every package installed on your system. Enforced at build time.
 
-License data from [SALT](https://github.com/i-am-logger/salt) (2649 classified licenses). Content policies from [OARS 1.1](https://github.com/hughsie/oars). Enforced at build time.
+## How it works
+
+Every software license has terms — what it allows, what it requires, what it prohibits. nix-license uses [SALT](https://github.com/i-am-logger/salt), a classification of 2649 software licenses, to know what each license permits and restricts.
+
+You declare two things about your organization:
+
+**Who you are** — your usage type determines which licenses apply to you. An educational institution can use academic-only software that a commercial company cannot.
+
+| Type | Description |
+|------|-------------|
+| `personal` | Individual, non-commercial use |
+| `commercial` | For-profit business, freelancer, startup |
+| `educational` | School, university, teaching |
+| `research` | Academic or scientific research |
+| `government` | Government agency |
+| `nonprofit` | Registered nonprofit organization |
+
+**What you do with the software** — each activity is checked against the license's restrictions. If a license prohibits an activity you declared, the package is blocked.
+
+| Activity | What it means |
+|----------|---------------|
+| `commercial-use` | Using software to generate revenue |
+| `distribution` | Shipping software to others (binaries, containers, ISOs) |
+| `modifications` | Changing the source code (patches, forks, overlays) |
+| `saas` | Running software as a hosted service for others |
+
+## What gets checked
+
+For each package on the system, nix-license evaluates:
+
+- **Restrictions** — does the license prohibit any activity you declared? A CC-BY-NC license restricts `commercial-use`. If you declared `commercial-use = true`, the package is blocked.
+- **Allowed use** — does the license limit who can use it? An academic-only license permits `educational` and `research` users. If your type is `commercial`, the package is blocked.
+- **Obligations** — does the license require something when you distribute or modify? GPL requires source disclosure when distributing. nix-license warns you about these obligations.
+
+## Content policy
+
+nix-license also supports per-user content policies based on [OARS 1.1](https://github.com/hughsie/oars) content ratings. Administrators set what content categories each user is entitled to — violence, social features, in-app purchases, etc. Packages that exceed a user's policy are excluded from their environment.
 
 ## Documentation
 
@@ -19,7 +55,7 @@ License data from [SALT](https://github.com/i-am-logger/salt) (2649 classified l
 
 ## Disclaimer
 
-Not legal advice. Consult an attorney for legal decisions.
+nix-license is a compliance tool, not legal advice. License classifications are based on [SALT](https://github.com/i-am-logger/salt). Consult a qualified attorney for legal decisions.
 
 ## Development
 
