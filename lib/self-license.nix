@@ -66,7 +66,26 @@ let
       fi
     '';
 
+  # Build-time vendor token verification (algorithm-agnostic via openssl)
+  # Vendors provide PEM public keys — any algorithm openssl supports
+  # (Ed25519, RSA, ECDSA, etc.)
+  mkVendorVerifyDerivation = { tokenFile, signatureFile, publicKeyFile }:
+    pkgs.runCommand "nix-license-verify-vendor-token"
+      {
+        nativeBuildInputs = [ pkgs.openssl ];
+      } ''
+      if openssl pkeyutl -verify \
+        -pubin -inkey ${publicKeyFile} \
+        -sigfile ${signatureFile} \
+        -rawin -in ${tokenFile}; then
+        echo "nix-license: vendor token signature verified" > $out
+      else
+        echo "nix-license: INVALID vendor token signature"
+        exit 1
+      fi
+    '';
+
 in
 {
-  inherit publicKeys parseClaims validateClaims mkVerifyDerivation;
+  inherit publicKeys parseClaims validateClaims mkVerifyDerivation mkVendorVerifyDerivation;
 }

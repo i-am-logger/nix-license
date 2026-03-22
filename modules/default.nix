@@ -32,13 +32,22 @@ let
     inherit (cfg) commitments assurances;
   };
 
-  # Check if a package's license conflicts with usage
+  # Check if a package's license conflicts with usage + token requirements
   checkPackageLicense = pkg:
     let
+      pname = pkg.pname or pkg.name or "unknown";
       licenses = lib.toList (pkg.meta.license or [ ]);
       results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) licenses;
+      licenseAllowed = builtins.all (r: r.allowed) results;
+
+      # Token requirement check
+      requiresToken = cfg.tokenVerification.enable
+        && builtins.elem pname cfg.tokenVerification.requireTokens;
+      hasToken = cfg.licenses ? ${pname}
+        && (cfg.licenses.${pname}.token != null || cfg.licenses.${pname}.tokenFile != null);
+      tokenSatisfied = !requiresToken || hasToken;
     in
-    builtins.all (r: r.allowed) results;
+    licenseAllowed && tokenSatisfied;
 
   severityOption = cat: lib.mkOption {
     type = licenseTypes.policySeverityType;

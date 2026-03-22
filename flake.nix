@@ -178,6 +178,17 @@
               tokenFile = ./tests/fixtures/test-token.json;
               signatureFile = ./tests/fixtures/test-token.json.sig;
             };
+
+          # Vendor token verification (algorithm-agnostic via openssl)
+          vendor-token-verify =
+            let
+              selfLicense = import ./lib/self-license.nix { inherit lib pkgs; };
+            in
+            selfLicense.mkVendorVerifyDerivation {
+              tokenFile = ./tests/fixtures/vendor-token.json;
+              signatureFile = ./tests/fixtures/vendor-token.json.sig;
+              publicKeyFile = ./tests/fixtures/vendor-pubkey.pem;
+            };
         });
 
       # Dev shell with pre-commit hooks installed

@@ -227,4 +227,39 @@ in
       (!cfg.nix-license.commitments.same-license
         && !cfg.nix-license.commitments.disclose-source
         && cfg.nix-license.commitments.include-copyright);
+
+  # ── Token verification config ─────────────────────────────────
+
+  tokenVerificationDefaults =
+    let
+      cfg = evalModule defaultUsage;
+    in
+    assertTrue "token verification disabled by default"
+      (!cfg.nix-license.tokenVerification.enable
+        && cfg.nix-license.tokenVerification.requireTokens == [ ]);
+
+  tokenRequirePackage =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license.tokenVerification = {
+          enable = true;
+          requireTokens = [ "vendor-sdk" ];
+        };
+      });
+    in
+    assertTrue "can require tokens for specific packages"
+      (cfg.nix-license.tokenVerification.enable
+        && builtins.elem "vendor-sdk" cfg.nix-license.tokenVerification.requireTokens);
+
+  vendorTokenConfig =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license.licenses."vendor-sdk" = {
+          license = "commercial";
+          token = ''{ "package": "vendor-sdk", "commercial": true }'';
+        };
+      });
+    in
+    assertTrue "can set vendor token for package"
+      (cfg.nix-license.licenses."vendor-sdk".token != null);
 }
