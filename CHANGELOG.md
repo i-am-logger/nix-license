@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.3.0...nix-license-v0.3.1) (2026-03-22)
+
+
+### Code Refactoring
+
+* remove allowClosedSource, set allowUnfree=true ([da7375d](https://github.com/i-am-logger/nix-license/commit/da7375d83fa2c01f54980e6ed878db7b28384add))
+
+
+### Documentation
+
+* lead with license terms (restrictions, allowed-use, obligations, disclaimers) ([74ebc62](https://github.com/i-am-logger/nix-license/commit/74ebc6262aea93e6249839d8660ed46e693e6746))
+* README explains terminology for compliance audience ([4581562](https://github.com/i-am-logger/nix-license/commit/458156204b9bdd117982932a40202672652440c8))
+* reorder docs — compliance first ([260a731](https://github.com/i-am-logger/nix-license/commit/260a731c19ecc70cffaa56142ff65a7047dd6bc3))
+* rewrite README for compliance audience ([79d36ea](https://github.com/i-am-logger/nix-license/commit/79d36eabb9fe43039038df574adc2fd1f1a27dba))
+* rewrite README for compliance audience, add USAGE.md ([4016d08](https://github.com/i-am-logger/nix-license/commit/4016d08e0f0cdaad05b445099910ab9351cc1e9f))
+* simplify documentation links ([dc42dbb](https://github.com/i-am-logger/nix-license/commit/dc42dbb7bba381fb44abc170d8894cad6fa413a2))
+* simplify README — no marketing ([85db4c6](https://github.com/i-am-logger/nix-license/commit/85db4c65ac872881a81f94c2ebc5878b80851f6f))
+* trim README — state what it does, nothing more ([4cf8079](https://github.com/i-am-logger/nix-license/commit/4cf807959541300658b29d68d4d1b7851047e698))
+* update README, ARCHITECTURE, COMPLIANCE for current state ([29e7ac7](https://github.com/i-am-logger/nix-license/commit/29e7ac716742e738fb9ba1a86c23839eb92c5d50))
+
 ## [0.3.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.2.2...nix-license-v0.3.0) (2026-03-22)
 
 
