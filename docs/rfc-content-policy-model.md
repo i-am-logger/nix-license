@@ -35,7 +35,7 @@ Instead of "you are X years old, figure it out," we propose "you are entitled to
 
 ### Prior art: OARS
 
-The [Open Age Ratings Service](https://hughsie.github.io/oars/) defines a standardized content rating schema already used across the Linux desktop:
+The [Open Age Ratings Service](https://hughsie.github.io/oars/) defines a standardized content rating schema already used across the Linux desktop. The 22 categories below are derived from the upstream [OARS 1.1 RNC schema](https://github.com/hughsie/oars/blob/main/specification/oars-1.1.rnc), not hand-maintained:
 
 | OARS Category | Description |
 |---------------|-------------|
@@ -51,8 +51,6 @@ The [Open Age Ratings Service](https://hughsie.github.io/oars/) defines a standa
 | `drugs-tobacco` | Tobacco use |
 | `sex-nudity` | Nudity |
 | `sex-themes` | Sexual themes |
-| `sex-content` | Sexual content |
-| `sex-appearance` | Provocative appearance |
 | `language-profanity` | Profanity |
 | `language-humor` | Crude humor |
 | `language-discrimination` | Discriminatory language |
@@ -64,7 +62,7 @@ The [Open Age Ratings Service](https://hughsie.github.io/oars/) defines a standa
 | `money-purchasing` | In-app purchases |
 | `money-gambling` | Gambling with real currency |
 
-Each category has intensity levels: `none`, `mild`, `moderate`, `intense`.
+Each category has severity levels: `unknown`, `none`, `mild`, `moderate`, `intense`. The `unknown` level means no information is available for that category (distinct from `none`, which means the content has been verified as absent). In practice, `unknown` is valid on the package side (a rating may omit categories it hasn't assessed) but not valid in policy maximums (a policy must state a concrete maximum, not "we don't know").
 
 Flathub already requires OARS metadata for all submitted apps. AppStream includes it. The metadata exists — we just need to consume it.
 
@@ -126,7 +124,7 @@ The system-wide default content policy is declared in `nixpkgs.config`:
 ```nix
 {
   nixpkgs.config.contentPolicy = {
-    # Maximum allowed intensity per category
+    # Maximum allowed severity per category
     violence-cartoon = "moderate";
     violence-realistic = "none";
     violence-fantasy = "mild";
@@ -156,54 +154,38 @@ Like package ratings, policies have presets:
 
 #### Preset definitions
 
+Presets are generated from the full set of OARS categories. Each preset provides an explicit severity for every category — categories not listed in the override default to `"none"`.
+
 ```nix
 presets = {
-  child = {
+  # Child: only allows mild cartoon violence and crude humor;
+  # everything else defaults to "none"
+  child = mkPreset {
     violence-cartoon = "mild";
-    violence-fantasy = "none";
-    violence-realistic = "none";
-    violence-bloodshed = "none";
-    violence-sexual = "none";
-    drugs-alcohol = "none";
-    drugs-narcotics = "none";
-    sex-nudity = "none";
-    sex-themes = "none";
-    sex-content = "none";
-    language-profanity = "none";
     language-humor = "mild";
-    social-chat = "none";
-    social-info = "none";
-    social-audio = "none";
-    social-location = "none";
-    money-purchasing = "none";
-    money-gambling = "none";
-    allowUnrated = false;
-  };
+  } false;  # allowUnrated = false
 
-  teen = {
+  # Teen: moderate allowances across many categories
+  teen = mkPreset {
     violence-cartoon = "intense";
     violence-fantasy = "moderate";
     violence-realistic = "mild";
-    violence-bloodshed = "none";
-    violence-sexual = "none";
+    violence-slavery = "mild";
     drugs-alcohol = "mild";
-    drugs-narcotics = "none";
+    drugs-tobacco = "mild";
     sex-nudity = "mild";
     sex-themes = "mild";
-    sex-content = "none";
     language-profanity = "moderate";
     language-humor = "moderate";
     social-chat = "moderate";
     social-info = "mild";
     social-audio = "moderate";
-    social-location = "none";
+    social-contacts = "mild";
     money-purchasing = "mild";
-    money-gambling = "none";
-    allowUnrated = false;
-  };
+  } false;  # allowUnrated = false
 
   unrestricted = {
-    # All categories set to "intense" (maximum)
+    # All 22 categories set to "intense" (maximum)
     # allowUnrated = true
     # This is the default — no filtering
   };
@@ -227,7 +209,7 @@ Filter 3: Content policy (NEW)
   contentPolicy → excludes packages whose content ratings exceed the user's entitlements
 
   For each OARS category in the package's rating:
-    Is the package's intensity ≤ the policy's maximum?
+    Is the package's severity ≤ the policy's maximum?
     → Yes: package remains available
     → No: package is excluded from the user's environment
 
@@ -279,7 +261,7 @@ signature = <base64-encoded signature>
 -----END NIX LICENSE TOKEN-----
 ```
 
-The token is cryptographically signed by the parent/admin. The child user cannot modify it. Attenuation rules apply — a child can only make their own policy *more* restrictive (e.g., voluntarily blocking social features), never less.
+The token is cryptographically signed by the parent/admin. The child user cannot modify it. Restriction rules apply — a child can only make their own policy *more* restrictive (e.g., voluntarily blocking social features), never less.
 
 ### Per-user content policies (consumer module concern)
 
@@ -428,7 +410,7 @@ The app doesn't learn the user's age, name, or any PII. It learns only whether i
 |---------|---------------------|----------------------|
 | PII storage | Yes (birth date) | No |
 | Who decides access | Each app independently | Admin, once |
-| Granularity | Binary (old enough / not) | Per-category, per-intensity |
+| Granularity | Binary (old enough / not) | Per-category, per-severity |
 | Enforcement | Advisory (app must check) | System-level (build/install/runtime) |
 | Bypass resistance | User runs app from CLI | Cryptographic tokens, system enforcement |
 | Metadata source | None (age is not content info) | OARS (already in Flathub/AppStream) |
@@ -475,7 +457,7 @@ The app doesn't learn the user's age, name, or any PII. It learns only whether i
 - **Automatic OARS import:** Tool to extract OARS data from AppStream/Flatpak metadata and generate `meta.contentRating`
 - **Content policy portal:** XDG desktop portal backend that serves content policy decisions to applications, replacing the birth date approach
 - **Parental controls UI:** Desktop application for managing per-user content policies without editing Nix configuration
-- **Content policy inheritance:** Organizational hierarchies where department policies inherit from and attenuate company-wide policies
+- **Content policy inheritance:** Organizational hierarchies where department policies inherit from and restrict company-wide policies
 
 ---
 
@@ -486,19 +468,20 @@ The app doesn't learn the user's age, name, or any PII. It learns only whether i
 ```nix
 {
   meta.contentRating = {
-    # OARS categories with intensity levels: "none" | "mild" | "moderate" | "intense"
+    # OARS 1.1 categories (22 total, derived from upstream RNC schema)
+    # Severity levels: "unknown" | "none" | "mild" | "moderate" | "intense"
     violence-cartoon = "mild";
     violence-fantasy = "moderate";
     violence-realistic = "none";
     violence-bloodshed = "none";
     violence-sexual = "none";
+    violence-desecration = "none";
+    violence-slavery = "none";
     drugs-alcohol = "none";
     drugs-narcotics = "none";
     drugs-tobacco = "none";
     sex-nudity = "none";
     sex-themes = "none";
-    sex-content = "none";
-    sex-appearance = "none";
     language-profanity = "mild";
     language-humor = "moderate";
     language-discrimination = "none";
@@ -521,7 +504,7 @@ The app doesn't learn the user's age, name, or any PII. It learns only whether i
 ```nix
 {
   nixpkgs.config.contentPolicy = {
-    # Per-category maximums
+    # Per-category severity maximums
     violence-cartoon = "moderate";
     # ... other categories ...
 
@@ -549,18 +532,20 @@ The app doesn't learn the user's age, name, or any PII. It learns only whether i
 }
 ```
 
-### Intensity ordering
+### Severity ordering
 
 ```
 none < mild < moderate < intense
 ```
+
+(`unknown` is not ordered — it is only valid on the package side, indicating no assessment has been made for that category.)
 
 A policy of `violence-cartoon = "moderate"` allows packages rated `none`, `mild`, or `moderate` for that category, but blocks `intense`.
 
 ### Content token authorizations
 
 ```
-content-<oars-category> = none | mild | moderate | intense
+content-<oars-category> = unknown | none | mild | moderate | intense
 content-allow-unrated = true | false
 ```
 
@@ -572,7 +557,7 @@ User adds package to their environment
   ▼
 Package has meta.contentRating?
   ├── Yes: For each category:
-  │     Package intensity ≤ User's policy maximum?
+  │     Package severity ≤ User's policy maximum?
   │       ├── Yes: Package is available in user's environment
   │       └── No: Package is excluded from user's environment
   │              (same as allowUnfree = false excluding unfree packages)

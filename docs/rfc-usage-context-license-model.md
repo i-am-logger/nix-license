@@ -154,7 +154,7 @@ The only code change is adding two new fields to the ~200 license definitions in
 
 #### Complete list of restrictions
 
-Restrictions describe what a license prohibits. If your declared usage conflicts with a restriction, Nix blocks the build (or warns, during transition).
+Restrictions describe what a license prohibits. If your declared usage conflicts with a restriction, Nix blocks the build (or warns, during transition). In the implementation, restrictions are derived by inverting [choosealicense.com](https://choosealicense.com/) permissions — if a permission (e.g., `commercial-use`) is absent from a license's permissions list, the corresponding restriction (e.g., `commercial`) is set.
 
 | Restriction | Meaning | Example licenses |
 |-------------|---------|------------------|
@@ -171,7 +171,7 @@ Restrictions describe what a license prohibits. If your declared usage conflicts
 
 #### Complete list of obligations
 
-Obligations describe what a license requires you to do under certain circumstances. Nix can't enforce these—it can only warn you. You're responsible for actual compliance.
+Obligations describe what a license requires you to do under certain circumstances. Nix can't enforce these—it can only warn you. You're responsible for actual compliance. In the implementation, obligations are mapped from [choosealicense.com](https://choosealicense.com/) conditions (e.g., `disclose-source` maps to `sourceDisclosure`, `same-license` maps to `copyleft`, `include-copyright` maps to `licenseInclusion`).
 
 | Obligation | Meaning | Triggered by | Example licenses |
 |------------|---------|--------------|------------------|
@@ -668,7 +668,7 @@ This preserves current behavior while nudging users toward the more precise mode
 
 **More configuration to understand.** Two settings instead of one boolean. We mitigate this with sensible defaults, clear error messages that explain what to set, and presets for common scenarios.
 
-**License metadata work.** Someone needs to add `restrictions` and `obligations` to ~200 licenses in `lib/licenses.nix`. This is mechanical work—the information comes directly from the license text and SPDX definitions—but it's still effort.
+**License metadata work.** Someone needs to add `restrictions` and `obligations` to ~200 licenses in `lib/licenses.nix`. In the current implementation, license definitions are derived from upstream data: identifiers and metadata come from the [SPDX License List](https://spdx.org/licenses/), while restrictions and obligations are mapped from [choosealicense.com](https://choosealicense.com/) permissions, conditions, and limitations. This makes the work largely automated, but licenses not covered by choosealicense.com still need manual definitions.
 
 **Some licenses are ambiguous.** Not every license has crystal-clear terms. We encode best-effort interpretations based on common understanding and legal consensus. Edge cases default to permissive (allow rather than block) since Nix shouldn't be making legal determinations.
 

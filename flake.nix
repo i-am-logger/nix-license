@@ -4,6 +4,17 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    # OARS 1.1 specification (source of truth for content rating categories)
+    oars = {
+      url = "github:hughsie/oars";
+      flake = false;
+    };
+
+    # SALT (source of truth for license classifications)
+    salt = {
+      url = "github:i-am-logger/salt";
+    };
+
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,12 +29,57 @@
   outputs =
     { self
     , nixpkgs
+    , oars
+    , salt
     , treefmt-nix
     , git-hooks
     , ...
     }:
     let
       inherit (nixpkgs) lib;
+
+      # Parse OARS 1.1 RNC schema to extract category IDs and severity values
+      oarsSpec =
+        let
+          rnc = builtins.readFile "${oars}/specification/oars-1.1.rnc";
+
+          # Extract the ids block: everything between 'ids = "' and the last '"'
+          # The RNC format is: ids = "id1" | \n      "id2" | ...
+          idsBlock =
+            let
+              parts = lib.splitString "ids = " rnc;
+              raw = builtins.elemAt parts 1;
+            in
+            raw;
+
+          # Extract quoted strings from the ids block
+          extractQuoted = s:
+            let
+              parts = lib.splitString "\"" s;
+              indexed = lib.imap0 (i: v: { inherit i v; }) parts;
+              oddParts = builtins.filter (x: lib.mod x.i 2 == 1) indexed;
+            in
+            map (x: x.v) oddParts;
+
+          # Extract severity values from the values line
+          valuesBlock =
+            let
+              parts = lib.splitString "values = " rnc;
+              raw = builtins.elemAt parts 1;
+              line = builtins.head (lib.splitString "\n" raw);
+            in
+            extractQuoted line;
+
+          categories = extractQuoted idsBlock;
+        in
+        {
+          version = "oars-1.1";
+          inherit categories;
+          severityValues = valuesBlock;
+        };
+
+      # SALT license taxonomy
+      saltLicenses = salt.licenses;
 
       supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = lib.genAttrs supportedSystems;
@@ -33,25 +89,77 @@
       );
     in
     {
+      # Library functions
+      lib = import ./lib { inherit lib oarsSpec saltLicenses; };
+
+      # NixOS modules (oarsSpec is closed over from the flake)
+      nixosModules = {
+        # Standalone module: provides nix-license.* options
+        default = args:
+          import ./modules/default.nix (args // { inherit oarsSpec; });
+
+        # mynixos integration: provides my.license.* and my.users.<name>.contentPolicy
+        mynixos = args:
+          import ./modules/mynixos.nix (args // { inherit oarsSpec; });
+      };
+
       # Formatter (treefmt: nix + shell + yaml)
       formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
 
       # Checks (run via `nix flake check`)
-      checks = forAllSystems (system: {
-        formatting = treefmtEval.${system}.config.build.check self;
+      checks = forAllSystems (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
 
-        pre-commit = git-hooks.lib.${system}.run {
-          src = self;
-          hooks = {
-            treefmt = {
-              enable = true;
-              package = treefmtEval.${system}.config.build.wrapper;
+          # Evaluate a test file at Nix eval time, build a derivation that
+          # succeeds only if all assertions pass (any throw = eval failure)
+          mkNixTest = name: results:
+            let
+              allValues = builtins.attrValues results;
+              allPass = builtins.all (x: x) allValues;
+              count = builtins.length allValues;
+            in
+            assert allPass;
+            pkgs.runCommand "nix-license-test-${name}" { } ''
+              echo "${name}: ${toString count} tests passed"
+              echo "${name}: ${toString count} tests passed" > $out
+            '';
+        in
+        {
+          formatting = treefmtEval.${system}.config.build.check self;
+
+          pre-commit = git-hooks.lib.${system}.run {
+            src = self;
+            hooks = {
+              treefmt = {
+                enable = true;
+                package = treefmtEval.${system}.config.build.wrapper;
+              };
+              statix.enable = true;
+              deadnix.enable = true;
             };
-            statix.enable = true;
-            deadnix.enable = true;
           };
-        };
-      });
+
+          # Library tests
+          lib-types = mkNixTest "lib-types"
+            (import ./tests/lib-types.nix { inherit lib oarsSpec; });
+
+          lib-content-rating = mkNixTest "lib-content-rating"
+            (import ./tests/lib-content-rating.nix { inherit lib oarsSpec; });
+
+          lib-token = mkNixTest "lib-token"
+            (import ./tests/lib-token.nix { inherit lib; });
+
+          lib-licenses = mkNixTest "lib-licenses"
+            (import ./tests/lib-licenses.nix { inherit lib saltLicenses; });
+
+          lib-properties = mkNixTest "lib-properties"
+            (import ./tests/lib-properties.nix { inherit lib oarsSpec saltLicenses; });
+
+          # Module tests
+          module-standalone = mkNixTest "module-standalone"
+            (import ./tests/module-standalone.nix { inherit lib oarsSpec; });
+        });
 
       # Dev shell with pre-commit hooks installed
       devShells = forAllSystems (system:

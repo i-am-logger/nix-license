@@ -266,11 +266,11 @@ error: Package 'vendor-sdk' requires a commercial license token.
           };
 ```
 
-### Organizational token attenuation
+### Organizational token restriction
 
 Large organizations often have a master license (say, 500 seats) that IT manages. They want to give teams restricted sub-licenses without sharing the master token.
 
-Token attenuation lets you derive a restricted token from a more permissive one:
+Token restriction lets you derive a restricted token from a more permissive one:
 
 ```nix
 let
@@ -281,39 +281,23 @@ let
   #   seats = 500, machines = *
   #   redistribution = false, saas = true
   masterToken = builtins.readFile /run/secrets/master-license.token;
-  
+
   # Derive a restricted token for the civilian projects team
-  civilianTeamToken = nixLicenseLib.attenuateToken {
-    token = masterToken;
-    
-    # Can only ADD restrictions, never remove them
-    # If master says military = true, you can set military = false
-    # If master says military = false, you cannot set military = true
-    attenuations = {
-      seats = 50;                           # 50 of the 500
-      military = false;                     # This team does civilian work only
-      machine_pattern = "civilian-*";       # Only machines with this prefix
-      expires_at = "2024-12-31T00:00:00Z";  # Shorter validity than master
-    };
-    
-    # IT's key signs the attenuation (creates audit trail)
-    signingKey = /run/secrets/it-signing-key;
+  civilianTeamToken = nixLicenseLib.restrictToken masterToken {
+    seats = 50;                           # 50 of the 500
+    military = false;                     # This team does civilian work only
+    machine_pattern = "civilian-*";       # Only machines with this prefix
+    expires_at = "2024-12-31T00:00:00Z";  # Shorter validity than master
   };
-  
+
   # Derive another restricted token for a research partnership
-  researchPartnerToken = nixLicenseLib.attenuateToken {
-    token = masterToken;
-    
-    attenuations = {
-      seats = 10;
-      commercial = false;                   # Research only, not for production
-      educational = true;
-      redistribution = false;
-      saas = false;
-      expires_at = "2024-06-30T00:00:00Z";  # Short-term partnership
-    };
-    
-    signingKey = /run/secrets/it-signing-key;
+  researchPartnerToken = nixLicenseLib.restrictToken masterToken {
+    seats = 10;
+    commercial = false;                   # Research only, not for production
+    educational = true;
+    redistribution = false;
+    saas = false;
+    expires_at = "2024-06-30T00:00:00Z";  # Short-term partnership
   };
 in
   # These derived tokens can be distributed to teams
@@ -323,9 +307,9 @@ in
 
 The derived token is cryptographically linked to the master. You can only make it *more* restrictive, never less. This lets organizations delegate license management without losing control.
 
-**Attenuation rules:**
-- Boolean `true` in master → can attenuate to `false`
-- Boolean `false` in master → cannot attenuate to `true`
+**Restriction rules:**
+- Boolean `true` in master → can restrict to `false`
+- Boolean `false` in master → cannot escalate to `true`
 - Numeric value → can only decrease (seats: 500 → 50, not 500 → 600)
 - Date → can only make earlier (expire sooner)
 - New restrictions can be added (machine_pattern) but not removed
@@ -595,7 +579,7 @@ Build succeeds because token authorizes SaaS use. Without `saas = true` in the t
 
 IT manages the tokens centrally. Individual machines inherit the configuration.
 
-### Team-specific attenuated tokens
+### Team-specific restricted tokens
 
 ```nix
 # /etc/nixos/dev-team-licenses.nix
@@ -610,7 +594,7 @@ IT manages the tokens centrally. Individual machines inherit the configuration.
     licenses = {
       "vendor-sdk" = {
         license = "commercial";
-        # This token was attenuated from the master:
+        # This token was restricted from the master:
         # - seats: 500 → 50
         # - military: true → false
         # - expires_at: 2025-12-31 → 2024-12-31
@@ -660,7 +644,7 @@ Since verification is entirely offline, air-gapped environments work identically
 
 ## Prior art
 
-- **Biscuit:** Cryptographic authorization tokens with attenuation support. Well-specified with implementations in Rust, Go, and JavaScript. ([biscuitsec.org](https://biscuitsec.org/))
+- **Biscuit:** Cryptographic authorization tokens with restriction (attenuation) support. Well-specified with implementations in Rust, Go, and JavaScript. ([biscuitsec.org](https://biscuitsec.org/))
 - **Macaroons:** Google's decentralized authorization credentials with contextual caveats. Academic foundation for Biscuit.
 - **JetBrains licensing:** Uses signed offline license files, conceptually similar to what we're proposing.
 - **FlexLM/RLM:** Traditional floating license servers. Network-dependent, not compatible with Nix's build model.
@@ -715,7 +699,7 @@ machines = <number> | *
 issued_at = <ISO 8601 datetime>
 expires_at = <ISO 8601 datetime>
 
-[attenuations]
+[restrictions]
 # Optional: further restrictions added by organization
 <key> = <value>
 
@@ -768,9 +752,9 @@ nix-license issue \
     --output <file>
 ```
 
-### Attenuation rules
+### Restriction rules
 
-| Master value | Can attenuate to |
+| Master value | Can restrict to |
 |--------------|------------------|
 | `true` | `true` or `false` |
 | `false` | `false` only |
