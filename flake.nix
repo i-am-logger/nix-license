@@ -164,6 +164,20 @@
           # Module tests
           module-standalone = mkNixTest "module-standalone"
             (import ./tests/module-standalone.nix { inherit lib oarsSpec saltLicenses saltSpdx; });
+
+          # Self-license tests (eval-time claim validation)
+          self-license-claims = mkNixTest "self-license-claims"
+            (import ./tests/self-license.nix { inherit lib; });
+
+          # Self-license GPG verification (build-time signature check)
+          self-license-verify =
+            let
+              selfLicense = import ./lib/self-license.nix { inherit lib pkgs; };
+            in
+            selfLicense.mkVerifyDerivation {
+              tokenFile = ./tests/fixtures/test-token.json;
+              signatureFile = ./tests/fixtures/test-token.json.sig;
+            };
         });
 
       # Dev shell with pre-commit hooks installed

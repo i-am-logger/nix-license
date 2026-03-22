@@ -1,0 +1,8 @@
+{
+  "package": "nix-license",
+  "commercial": true,
+  "licensee": "Test Corp",
+  "licensee_id": "test-001",
+  "issued_at": "2026-03-22",
+  "expires_at": "2027-03-22"
+}
