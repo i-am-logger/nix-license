@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.2.2...nix-license-v0.3.0) (2026-03-22)
+
+
+### Features
+
+* add usage consistency assertions ([bb65836](https://github.com/i-am-logger/nix-license/commit/bb6583688d5a53b6d8a33f44290ab12841943da1))
+* add usage.type for allowed-use checks ([6b49a6c](https://github.com/i-am-logger/nix-license/commit/6b49a6c99fb0d0d06cf643d9c64e7592ef54925b))
+
 ## [0.2.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.2.1...nix-license-v0.2.2) (2026-03-22)
 
 
