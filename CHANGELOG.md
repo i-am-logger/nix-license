@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.4.0...nix-license-v0.5.0) (2026-03-22)
+
+
+### Features
+
+* commercial gate with YubiKey public keys ([91c4721](https://github.com/i-am-logger/nix-license/commit/91c472133f6c95c28ca46f84dc892a66653147ba))
+* end-to-end token verification with YubiKey-signed test token ([c8440d6](https://github.com/i-am-logger/nix-license/commit/c8440d6ed18caee983834afee5035ce385d629b2))
+
 ## [0.4.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.3.1...nix-license-v0.4.0) (2026-03-22)
 
 
