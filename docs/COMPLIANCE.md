@@ -16,16 +16,9 @@ nix-license's usage flags match SALT restriction keys exactly. If a license rest
 
 Content policies use the [Open Age Ratings Service 1.1](https://github.com/hughsie/oars) specification (22 categories, derived from upstream RNC schema at build time).
 
-## Restriction vocabulary: OSADL
+## Restriction vocabulary
 
-SALT's restriction vocabulary is derived from [OSADL OSLOC](https://github.com/osadl/OSLOC) (Open Source License Obligation Checklists), the most rigorous atomic-level taxonomy for license terms.
-
-| SALT restriction | OSADL source |
-|---|---|
-| `commercial-use` | Implied by license category |
-| `distribution` | USE CASE Source code/Binary delivery |
-| `modifications` | Implied by license terms |
-| `saas` | USE CASE Network service |
+SALT defines its own vocabulary for restrictions (`commercial-use`, `distribution`, `modifications`, `saas`), obligations, and disclaimers. These terms were validated against [OSADL OSLOC](https://github.com/osadl/OSLOC) (Open Source License Obligation Checklists) to ensure alignment with established legal concepts, but SALT is an independent taxonomy — not a mapping of OSADL.
 
 ## Build-time enforcement
 

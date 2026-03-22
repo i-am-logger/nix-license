@@ -10,7 +10,7 @@ You define your usage — personal, commercial, nonprofit, educational — and n
 ## Features
 
 - [x] **License enforcement** — restrictions, allowed-use, and obligations evaluated per-package at build time
-- [x] **2649 classified licenses** — powered by [SALT](https://github.com/i-am-logger/salt), mapped from [OSADL OSLOC](https://github.com/osadl/OSLOC) vocabulary
+- [x] **2649 classified licenses** — powered by [SALT](https://github.com/i-am-logger/salt) (restrictions, obligations, grants, disclaimers)
 - [x] **Full nixpkgs coverage** — all 289 nixpkgs licenses mapped to SALT
 - [x] **Usage declaration** — explicit type (who) + activity flags (what), no implicit defaults
 - [x] **Content policy** — per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oars)
