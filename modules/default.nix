@@ -38,11 +38,16 @@ in
       description = "Accept closed-source packages";
     };
 
-    # Axis 2: Usage context
-    # Each field matches a SALT restriction key.
+    # Axis 2: Usage declaration
     # All fields are required — you must explicitly declare your usage.
-    # If a package restricts an activity you declared, the build fails.
     usage = {
+      # Who you are — checked against SALT allowed-use lists
+      type = lib.mkOption {
+        type = lib.types.enum [ "personal" "commercial" "educational" "research" "government" "nonprofit" ];
+        description = "What type of organization or individual are you?";
+      };
+
+      # What you do — each matches a SALT restriction key
       commercial-use = lib.mkOption {
         type = lib.types.bool;
         description = "Are you using software for commercial purposes?";

@@ -61,6 +61,11 @@ in
     };
 
     usage = {
+      type = lib.mkOption {
+        type = lib.types.enum [ "personal" "commercial" "educational" "research" "government" "nonprofit" ];
+        description = "What type of organization or individual are you?";
+      };
+
       commercial-use = lib.mkOption {
         type = lib.types.bool;
         description = "Are you using software for commercial purposes?";

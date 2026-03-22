@@ -16,12 +16,12 @@ let
     else throw "FAIL: ${name}";
 
   # Usage contexts — flat booleans matching SALT restriction keys
-  personal = { };
-  commercial = { commercial-use = true; };
-  distributing = { distribution = true; };
-  commercialDistrib = { commercial-use = true; distribution = true; };
-  commercialSaas = { commercial-use = true; saas = true; };
-  modifying = { modifications = true; };
+  personal = { type = "personal"; };
+  commercial = { type = "commercial"; commercial-use = true; };
+  distributing = { type = "personal"; distribution = true; };
+  commercialDistrib = { type = "commercial"; commercial-use = true; distribution = true; };
+  commercialSaas = { type = "commercial"; commercial-use = true; saas = true; };
+  modifying = { type = "personal"; modifications = true; };
 
   allUsageContexts = [
     { name = "personal"; ctx = personal; }
@@ -96,6 +96,26 @@ in
   freePassesSourceCheck =
     let result = lc.evaluateSourceAvailability false licenses.mit;
     in assertTrue "free passes source check" result.allowed;
+
+  # ── Allowed-use (allowlist) ─────────────────────────────────────
+
+  allowedUseBlocksWrongType =
+    let
+      academicLicense = { restrictions = { }; allowed-use = [ "educational" "research" ]; };
+      result = lc.evaluateLicenseUsage { type = "commercial"; } academicLicense;
+    in assertTrue "academic license blocks commercial type" (!result.allowed);
+
+  allowedUseAllowsCorrectType =
+    let
+      academicLicense = { restrictions = { }; allowed-use = [ "educational" "research" ]; };
+      result = lc.evaluateLicenseUsage { type = "educational"; } academicLicense;
+    in assertTrue "academic license allows educational type" result.allowed;
+
+  noAllowedUseMeansNoTypeCheck =
+    let
+      normalLicense = { restrictions = { }; };
+      result = lc.evaluateLicenseUsage { type = "commercial"; } normalLicense;
+    in assertTrue "no allowed-use means any type is fine" result.allowed;
 
   # ── Cross-product ───────────────────────────────────────────────
 

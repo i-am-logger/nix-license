@@ -1,24 +1,37 @@
 # License compliance evaluation
 #
-# Evaluates whether a usage context is permitted by a license's
-# restrictions, and identifies triggered obligations.
-#
-# Usage fields match SALT restriction keys exactly.
+# Two independent checks:
+# 1. allowed-use: if the license specifies who can use it,
+#    the user's type must be in the list
+# 2. restrictions: if the license restricts an activity,
+#    and the user does that activity, it's a conflict
 
 _:
 
 let
-  # Evaluate a license against a usage context
-  # Usage is a flat attrset of booleans matching SALT restriction keys:
-  #   { commercial-use = true; distribution = false; modifications = true; saas = false; }
   evaluateLicenseUsage = usage: license:
     let
       restrictions = license.restrictions or { };
       obligations = license.obligations or { };
+      allowedUse = license.allowed-use or license.allowedUsageTypes or null;
+      userType = usage.type or null;
 
-      # For each SALT restriction key, check if usage conflicts
+      # Check 1: allowed-use (allowlist)
+      typeConflict =
+        if allowedUse != null && userType != null then
+          !(builtins.elem userType allowedUse)
+        else
+          false;
+
+      typeConflicts =
+        if typeConflict then
+          [{ restriction = "allowed-use"; reason = "License only allows: ${builtins.concatStringsSep ", " allowedUse}"; }]
+        else
+          [ ];
+
+      # Check 2: restrictions (blocklist)
       restrictionKeys = builtins.attrNames restrictions;
-      conflicts = builtins.filter (c: c != null) (map
+      restrictionConflicts = builtins.filter (c: c != null) (map
         (key:
           let
             isRestricted = restrictions.${key} or false;
@@ -30,7 +43,9 @@ let
         )
         restrictionKeys);
 
-      # Check which obligations are triggered
+      allConflicts = typeConflicts ++ restrictionConflicts;
+
+      # Check obligations
       obligationChecks = builtins.concatMap
         (name:
           let
@@ -43,7 +58,7 @@ let
               triggers;
           in
           if matchedTriggers != [ ] then
-            [{ obligation = name; triggers = matchedTriggers; }]
+            [{ obligation = name; inherit triggers; }]
           else
             [ ]
         )
@@ -51,12 +66,11 @@ let
 
     in
     {
-      allowed = conflicts == [ ];
-      inherit conflicts;
+      allowed = allConflicts == [ ];
+      conflicts = allConflicts;
       obligations = obligationChecks;
     };
 
-  # Evaluate source availability
   evaluateSourceAvailability = allowClosedSource: license:
     let
       isFree = license.free or true;
@@ -69,7 +83,6 @@ let
         else "Package is closed-source but allowClosedSource is false";
     };
 
-  # Full compliance evaluation
   evaluateCompliance =
     { allowClosedSource ? true
     , usage ? { }
