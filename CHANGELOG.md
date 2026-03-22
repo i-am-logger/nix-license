@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.2.1...nix-license-v0.2.2) (2026-03-22)
+
+
+### Code Refactoring
+
+* simplify usage to match SALT restriction keys ([d0ceabf](https://github.com/i-am-logger/nix-license/commit/d0ceabfdbb93fd238072dba97ece0989a59151c0))
+
 ## [0.2.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.2.0...nix-license-v0.2.1) (2026-03-22)
 
 
