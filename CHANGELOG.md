@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.3](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.2...nix-license-v0.11.3) (2026-03-23)
+
+
+### Miscellaneous
+
+* bump SALT to 0.5.0 (proprietary-redistributable) ([632e988](https://github.com/i-am-logger/nix-license/commit/632e9881e9b978b924ebf03a9bc2475c5ee62b8a))
+
 ## [0.11.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.1...nix-license-v0.11.2) (2026-03-23)
 
 
