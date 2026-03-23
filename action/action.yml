@@ -70,9 +70,9 @@ runs:
         OVERRIDDEN=${{ steps.summary.outputs.overridden }}
 
         if [ "$BLOCKED" -gt 0 ]; then
-          echo "## :x: FAIL — ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "## ✗ FAIL — ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
         else
-          echo "## :white_check_mark: PASS — ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "## ✓ PASS — ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
         fi
         echo "" >> "$GITHUB_STEP_SUMMARY"
 
@@ -82,7 +82,7 @@ runs:
         echo "" >> "$GITHUB_STEP_SUMMARY"
 
         # Summary line
-        echo ":white_check_mark: **$ALLOWED** allowed · :x: **$BLOCKED** blocked · :warning: **$OVERRIDDEN** overridden · **$TOTAL** total" >> "$GITHUB_STEP_SUMMARY"
+        echo "✓ **$ALLOWED** allowed · ✗ **$BLOCKED** blocked · ⚑ **$OVERRIDDEN** overridden · **$TOTAL** total" >> "$GITHUB_STEP_SUMMARY"
         echo "" >> "$GITHUB_STEP_SUMMARY"
 
         # Blocked packages (if any)
@@ -99,7 +99,7 @@ runs:
         echo "" >> "$GITHUB_STEP_SUMMARY"
         echo "| | Package | Version | License | Details |" >> "$GITHUB_STEP_SUMMARY"
         echo "|---|---------|---------|---------|---------|" >> "$GITHUB_STEP_SUMMARY"
-        nix run nixpkgs#jq -- -r '.packages | sort_by(.status == "allowed") | .[] | "| \(if .status == "allowed" then ":white_check_mark:" elif .status == "blocked" then ":x:" elif .status == "overridden" then ":warning:" else ":grey_question:" end) | \(.pname) | \(.version) | \(.licenses | map(.name) | join(", ")) | \(if (.conflicts | length) > 0 then (.conflicts | map(.reason) | join("; ")) elif (.obligations | length) > 0 then (.obligations | map(.obligation) | join(", ")) else "-" end) |"' result/report.json >> "$GITHUB_STEP_SUMMARY"
+        nix run nixpkgs#jq -- -r '.packages | sort_by(.status == "allowed") | .[] | "| \(if .status == "allowed" then "✓" elif .status == "blocked" then "✗" elif .status == "overridden" then "⚑" else "?" end) | \(.pname) | \(.version) | \(.licenses | map(.name) | join(", ")) | \(if (.conflicts | length) > 0 then (.conflicts | map(.reason) | join("; ")) elif (.obligations | length) > 0 then (.obligations | map(.obligation) | join(", ")) else "-" end) |"' result/report.json >> "$GITHUB_STEP_SUMMARY"
         echo "" >> "$GITHUB_STEP_SUMMARY"
         echo "</details>" >> "$GITHUB_STEP_SUMMARY"
     - name: Upload report artifact
