@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.8.1...nix-license-v0.9.0) (2026-03-23)
+
+
+### Features
+
+* license install option + vendor key verification ([4a92e05](https://github.com/i-am-logger/nix-license/commit/4a92e056aadb3746d928330fb1d88e01de68e99b))
+
+
+### Code Refactoring
+
+* assurances as { required; exceptions; } submodules ([97d3ee2](https://github.com/i-am-logger/nix-license/commit/97d3ee263909c4e3427898d6327a11fbe97d5757))
+
 ## [0.8.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.8.0...nix-license-v0.8.1) (2026-03-23)
 
 
