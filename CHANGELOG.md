@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.7.0...nix-license-v0.8.0) (2026-03-23)
+
+
+### Features
+
+* add source-available assurance — replaces allowUnfree for FOSS users ([c73f4a9](https://github.com/i-am-logger/nix-license/commit/c73f4a9cc8d5436d2f3077a770661b9efd8b9617))
+
+
+### Code Refactoring
+
+* assurances as { required; exceptions; } submodules ([d9e0d8b](https://github.com/i-am-logger/nix-license/commit/d9e0d8b61f474bcad96edaea0de9cbe31440c5c0))
+
 ## [0.7.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.5...nix-license-v0.7.0) (2026-03-23)
 
 
