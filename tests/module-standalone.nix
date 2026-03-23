@@ -280,6 +280,6 @@ in
       cfg = evalModule (defaultUsage // { nix-license.enable = true; });
       etc = cfg.environment.etc."nix-license/content-policy/system.json";
     in
-    assertTrue "system policy: root:wheel, 0640"
-      (etc.mode == "0640" && etc.user == "root" && etc.group == "wheel");
+    assertTrue "system policy: root:root, 0644"
+      (etc.mode == "0644" && etc.user == "root" && etc.group == "root");
 }

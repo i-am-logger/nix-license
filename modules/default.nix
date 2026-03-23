@@ -320,9 +320,9 @@ in
       source = pkgs.writeText "nix-license-content-policy-system.json"
         (builtins.toJSON (contentRating.resolveContentPolicy
           (if cfg.contentPolicy.preset != null then cfg.contentPolicy.preset else "unrestricted")));
-      mode = "0640";
+      mode = "0644";
       user = "root";
-      group = "wheel";
+      group = "root";
     };
 
     # Usage consistency assertions
