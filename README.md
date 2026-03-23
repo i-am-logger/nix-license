@@ -12,21 +12,23 @@ A NixOS module that checks every package's license against your declared usage a
 
 ## Features
 
-- [x] License enforcement — restrictions, allowed-use, obligations evaluated per-package
-- [x] 2649 classified licenses — powered by [SALT](https://github.com/i-am-logger/salt)
-- [x] Full nixpkgs coverage — all 289 nixpkgs licenses mapped
-- [x] Commitments — declare which obligations you can fulfill
-- [x] Assurances — require patent grants, source availability, warranty
-- [x] Content policy — per-user entitlements based on [OARS 1.1](https://github.com/hughsie/oars)
-- [x] Cryptographic license tokens — GPG/YubiKey + algorithm-agnostic via openssl
-- [x] Compliance reports — JSON + HTML dashboard ([demo reports](https://i-am-logger.github.io/nix-license/))
-- [x] GitHub Action — CI/CD integration with full report in Step Summary
-- [x] 200,000+ checks — every license, every context, every combination
-- [ ] *(commercial)* [SBOM generation](https://github.com/i-am-logger/nix-license/issues/7)
-- [ ] *(commercial)* [OpenChain ISO/IEC 5230](https://github.com/i-am-logger/nix-license/issues/6)
-- [ ] *(commercial)* [Audit trail](https://github.com/i-am-logger/nix-license/issues/36)
-- [ ] *(commercial)* [License change detection](https://github.com/i-am-logger/nix-license/issues/37)
-- [ ] *(commercial)* [Token expiry alerts](https://github.com/i-am-logger/nix-license/issues/39)
+| Feature | Free | Commercial |
+|---------|:----:|:----------:|
+| License enforcement (restrictions, allowed-use, obligations) | ✔ | ✔ |
+| 2649 classified licenses ([SALT](https://github.com/i-am-logger/salt)) | ✔ | ✔ |
+| Full nixpkgs coverage (289 licenses mapped) | ✔ | ✔ |
+| Commitments (declare which obligations you can fulfill) | ✔ | ✔ |
+| Assurances (require patent grants, source availability, warranty) | ✔ | ✔ |
+| Content policy ([OARS 1.1](https://github.com/hughsie/oars) per-user entitlements) | ✔ | ✔ |
+| 200,000+ checks (every license, every context, every combination) | ✔ | ✔ |
+| Cryptographic license tokens (GPG/YubiKey + openssl) | | ✔ |
+| Compliance reports (JSON + HTML — [demo](https://i-am-logger.github.io/nix-license/)) | | ✔ |
+| GitHub Action (CI/CD with full report in Step Summary) | | ✔ |
+| [SBOM generation](https://github.com/i-am-logger/nix-license/issues/7) | | planned |
+| [OpenChain ISO/IEC 5230](https://github.com/i-am-logger/nix-license/issues/6) | | planned |
+| [Audit trail](https://github.com/i-am-logger/nix-license/issues/36) | | planned |
+| [License change detection](https://github.com/i-am-logger/nix-license/issues/37) | | planned |
+| [Token expiry alerts](https://github.com/i-am-logger/nix-license/issues/39) | | planned |
 
 ### Personal user — FOSS-only with NVIDIA exception
 
