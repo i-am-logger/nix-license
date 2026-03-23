@@ -63,9 +63,10 @@
     const verdict = document.getElementById('verdict');
     const isCompliant = report.summary.blocked === 0;
     verdict.className = 'verdict ' + (isCompliant ? 'verdict-pass' : 'verdict-fail');
-    verdict.textContent = isCompliant ? 'PASS' : 'FAIL';
+    verdict.textContent = isCompliant ? '\u2705 PASS' : '\u274C FAIL';
+    const statusIcon = { allowed: '\u2705', blocked: '\u274C', overridden: '\u26A0\uFE0F', 'no-license': '\u2753' };
     const usageBadge = (v) => typeof v === 'boolean'
-      ? `<span class="badge badge-${v}">${v}</span>`
+      ? `<span class="badge badge-${v}">${v ? '\u2705' : '\u274C'}</span>`
       : `<span class="badge badge-true">${v}</span>`;
     app.innerHTML = `
       <div class="summary">
@@ -94,7 +95,7 @@
       tbody.innerHTML = filtered.map(p =>
         `<tr><td>${p.pname}</td><td>${p.version}</td>
         <td>${p.licenses.map(l => l.name).join(', ')}</td>
-        <td><span class="status status-${p.status}">${p.status}</span></td>
+        <td><span class="status status-${p.status}">${statusIcon[p.status] || p.status} ${p.status}</span></td>
         <td>${p.conflicts.length ? p.conflicts.map(c => c.reason).join('; ') : p.obligations.length ? p.obligations.map(o => o.obligation).join(', ') : '-'}</td></tr>`
       ).join('');
     }
