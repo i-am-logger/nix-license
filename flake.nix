@@ -109,6 +109,12 @@
         };
       };
 
+      # Demo reports — build with: nix build .#demo-reports.<system>.personal
+      demo-reports = forAllSystems (system:
+        let pkgs = nixpkgs.legacyPackages.${system};
+        in import ./demos { inherit lib pkgs oarsSpec saltLicenses saltSpdx; }
+      );
+
       # Formatter (treefmt: nix + shell + yaml)
       formatter = forAllSystems (system: treefmtEval.${system}.config.build.wrapper);
 
