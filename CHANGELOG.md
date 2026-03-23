@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.1...nix-license-v0.6.2) (2026-03-23)
+
+
+### Documentation
+
+* restructure README, move domain model and OpenChain to docs ([d8f3443](https://github.com/i-am-logger/nix-license/commit/d8f3443095e96da30743a88b0f2013026509eac1))
+* rewrite README — show code first, drop marketing ([703d556](https://github.com/i-am-logger/nix-license/commit/703d556495d89dc237a5295967067f05b302b17d))
+
 ## [0.6.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.0...nix-license-v0.6.1) (2026-03-23)
 
 
