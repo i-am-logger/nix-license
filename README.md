@@ -102,10 +102,11 @@ Commercial use in enforce mode requires a GPG-signed token. Vendor packages can 
 - [USAGE.md](docs/USAGE.md) — Installation, configuration, examples
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Domain model, library API, module structure
 - [COMPLIANCE.md](docs/COMPLIANCE.md) — Standards (SALT, OARS, OpenChain)
+- [DEVELOPMENT.md](docs/DEVELOPMENT.md) — Testing, domain invariants, pre-commit hooks
 
 ## Testing
 
-Every license (2649) is evaluated and tested against every usage context (16 activity combinations × 6 user types × 7 commitment keys × 3 assurance keys), producing over 200,000 individual pass/fail checks per `nix flake check`.
+Every license (2649) is evaluated and tested against every usage context (16 activity combinations × 6 user types × 7 commitment keys × 3 assurance keys), producing over 200,000 individual pass/fail checks per `nix flake check`. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for domain invariants and the full test suite.
 
 ```bash
 nix flake check   # Run all checks
