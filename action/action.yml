@@ -1,0 +1,72 @@
+name: 'nix-license report'
+description: 'Generate a license compliance report for a NixOS system'
+inputs:
+  system:
+    description: 'NixOS system configuration name (e.g., myhost)'
+    required: true
+  flake:
+    description: 'Path to flake (default: current directory)'
+    required: false
+    default: '.'
+  upload-artifact:
+    description: 'Upload report as a GitHub artifact'
+    required: false
+    default: 'true'
+outputs:
+  report-path:
+    description: 'Path to the generated JSON report'
+    value: ${{ steps.report.outputs.path }}
+  total:
+    description: 'Total number of packages evaluated'
+    value: ${{ steps.summary.outputs.total }}
+  allowed:
+    description: 'Number of allowed packages'
+    value: ${{ steps.summary.outputs.allowed }}
+  blocked:
+    description: 'Number of blocked packages'
+    value: ${{ steps.summary.outputs.blocked }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Build license report
+      id: report
+      shell: bash
+      run: |
+        nix build "${{ inputs.flake }}#nixosConfigurations.${{ inputs.system }}.config.nix-license.report" --print-build-logs
+        REPORT_PATH=$(readlink -f result)
+        echo "path=$REPORT_PATH" >> "$GITHUB_OUTPUT"
+    - name: Parse summary
+      id: summary
+      shell: bash
+      run: |
+        REPORT=$(cat result)
+        echo "total=$(echo "$REPORT" | nix run nixpkgs#jq -- -r '.summary.total')" >> "$GITHUB_OUTPUT"
+        echo "allowed=$(echo "$REPORT" | nix run nixpkgs#jq -- -r '.summary.allowed')" >> "$GITHUB_OUTPUT"
+        echo "blocked=$(echo "$REPORT" | nix run nixpkgs#jq -- -r '.summary.blocked')" >> "$GITHUB_OUTPUT"
+        echo "overridden=$(echo "$REPORT" | nix run nixpkgs#jq -- -r '.summary.overridden')" >> "$GITHUB_OUTPUT"
+    - name: Print summary
+      shell: bash
+      run: |
+        echo "## License Compliance Report" >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+        echo "| Metric | Count |" >> "$GITHUB_STEP_SUMMARY"
+        echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
+        echo "| Total | ${{ steps.summary.outputs.total }} |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| Allowed | ${{ steps.summary.outputs.allowed }} |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| Blocked | ${{ steps.summary.outputs.blocked }} |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| Overridden | ${{ steps.summary.outputs.overridden }} |" >> "$GITHUB_STEP_SUMMARY"
+    - name: Upload report artifact
+      if: inputs.upload-artifact == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: nix-license-report
+        path: result
+    - name: Check for blocked packages
+      shell: bash
+      run: |
+        BLOCKED=${{ steps.summary.outputs.blocked }}
+        if [ "$BLOCKED" -gt 0 ]; then
+          echo "::error::$BLOCKED packages blocked by license compliance"
+          nix run nixpkgs#jq -- '.packages[] | select(.status == "blocked") | "\(.pname): \(.conflicts[0].reason // "unknown")"' result
+          exit 1
+        fi

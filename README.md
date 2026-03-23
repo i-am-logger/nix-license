@@ -158,6 +158,25 @@ Commercial use in enforce mode requires `licenses."nix-license".licenseFile`. Ve
 - [COMPLIANCE.md](docs/COMPLIANCE.md) — Standards (SALT, OARS, OpenChain)
 - [DEVELOPMENT.md](docs/DEVELOPMENT.md) — Testing, domain invariants, pre-commit hooks
 
+## CI/CD
+
+Generate a license compliance report in your GitHub Actions workflow:
+
+```yaml
+- uses: i-am-logger/nix-license/action@master
+  with:
+    system: myhost
+```
+
+Produces a JSON report, prints a summary table, uploads as an artifact, and fails the build if any packages are blocked. See [action/action.yml](action/action.yml).
+
+Build the report locally:
+
+```bash
+nix build .#nixosConfigurations.myhost.config.nix-license.report
+cat result  # JSON
+```
+
 ## Testing
 
 Over 200,000 checks per `nix flake check` — every license (2649), every usage context, every combination. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for domain invariants and the full test suite.
