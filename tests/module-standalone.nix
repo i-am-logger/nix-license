@@ -278,6 +278,29 @@ in
     assertTrue "nix-license token via licenses override"
       (cfg.nix-license.licenses."nix-license".licenseFile == "/fake/nix-license.token");
 
+  # ── Vendor keys ────────────────────────────────────────────────
+
+  vendorKeysDefault =
+    let
+      cfg = evalModule defaultUsage;
+    in
+    assertTrue "vendorKeys default empty"
+      (cfg.nix-license.vendorKeys == { });
+
+  vendorKeysCanSet =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license.vendorKeys."some-tool" = "/fake/some-vendor.pem";
+      });
+    in
+    assertTrue "can set vendor key for package"
+      (cfg.nix-license.vendorKeys."some-tool" == "/fake/some-vendor.pem");
+
+  embeddedNixLicenseKey =
+    assertTrue "nix-license vendor key exists (symlink to yubikey1)"
+      (builtins.pathExists ../keys/vendors/nix-license.asc
+        && builtins.pathExists ../keys/yubikey1.asc);
+
   # ── Content policy files ──────────────────────────────────────
 
   contentPolicyFileCreated =
