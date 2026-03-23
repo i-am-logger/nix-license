@@ -119,6 +119,8 @@ let
 
   # Commercial examples — inline without sops references
   saasCfg = {
+    name = "Example - SaaS Company";
+    description = "Docker Containers, hosting services";
     usage = { type = "commercial"; commercial-use = true; distribution = true; modifications = true; saas = true; };
     commitments = {
       same-license.fulfilled = false;
@@ -127,6 +129,8 @@ let
     };
   };
   proprietaryCfg = {
+    name = "Example - Commercial Company";
+    description = "Proprietary product, no distribution";
     usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
     commitments = {
       same-license = { fulfilled = false; exceptions = [ "libfoo" ]; };
@@ -137,10 +141,10 @@ let
 
 in
 {
-  personal = mkDemoReport "Personal — FOSS-only with NVIDIA exception" personalCfg;
-  oss-developer = mkDemoReport "Open-source Developer" ossCfg;
-  saas = mkDemoReport "SaaS Company — Docker Containers" saasCfg;
-  proprietary = mkDemoReport "Commercial Company — Proprietary Product" proprietaryCfg;
-  educational = mkDemoReport "Educational — University Lab" educationalCfg;
-  nonprofit = mkDemoReport "Nonprofit Organization" nonprofitCfg;
+  personal = mkDemoReport "personal" personalCfg;
+  oss-developer = mkDemoReport "oss-developer" ossCfg;
+  saas = mkDemoReport "saas" saasCfg;
+  proprietary = mkDemoReport "proprietary" proprietaryCfg;
+  educational = mkDemoReport "educational" educationalCfg;
+  nonprofit = mkDemoReport "nonprofit" nonprofitCfg;
 }
