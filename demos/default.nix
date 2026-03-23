@@ -29,7 +29,7 @@ let
   ];
 
   # Build a report for a given nix-license config
-  mkDemoReport = _: nlCfg:
+  mkDemoReport = name: nlCfg:
     let
       cfg = {
         inherit (nlCfg) usage;
@@ -96,8 +96,9 @@ let
       };
 
       reportLib = import ../lib/report.nix {
-        inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext;
+        inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext name;
         cfg = fullCfg;
+        title = name;
       };
     in
     reportLib.mkReportBundle demoPackages;
@@ -129,10 +130,10 @@ let
 
 in
 {
-  personal = mkDemoReport "personal" personalCfg;
-  oss-developer = mkDemoReport "oss-developer" ossCfg;
-  saas = mkDemoReport "saas" saasCfg;
-  proprietary = mkDemoReport "proprietary" proprietaryCfg;
-  educational = mkDemoReport "educational" educationalCfg;
-  nonprofit = mkDemoReport "nonprofit" nonprofitCfg;
+  personal = mkDemoReport "Personal — FOSS-only with NVIDIA exception" personalCfg;
+  oss-developer = mkDemoReport "Open-source Developer" ossCfg;
+  saas = mkDemoReport "SaaS Company — Docker Containers" saasCfg;
+  proprietary = mkDemoReport "Commercial Company — Proprietary Product" proprietaryCfg;
+  educational = mkDemoReport "Educational — University Lab" educationalCfg;
+  nonprofit = mkDemoReport "Nonprofit Organization" nonprofitCfg;
 }

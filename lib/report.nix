@@ -3,7 +3,7 @@
 # Produces a JSON report and HTML dashboard of all packages
 # and their compliance status against the declared usage context.
 
-{ lib, pkgs, licenseCheck, nixpkgsMap, mkUsageContext, cfg, ... }:
+{ lib, pkgs, licenseCheck, nixpkgsMap, mkUsageContext, cfg, title ? "License Compliance Report", ... }:
 
 let
   evaluatePackage = pkg:
@@ -72,6 +72,7 @@ let
     {
       meta = {
         generator = "nix-license";
+        inherit title;
         version = lib.strings.trim (builtins.readFile ../version.txt);
         generatedAt = builtins.currentTime or 0;
         compliant = builtins.length blocked == 0;
