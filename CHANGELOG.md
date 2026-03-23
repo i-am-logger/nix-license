@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.3](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.2...nix-license-v0.9.3) (2026-03-23)
+
+
+### Bug Fixes
+
+* mynixos module includes default module (closes [#31](https://github.com/i-am-logger/nix-license/issues/31)) ([868160c](https://github.com/i-am-logger/nix-license/commit/868160c6d09be1327494500c98edda9b6661c602))
+
 ## [0.9.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.1...nix-license-v0.9.2) (2026-03-23)
 
 
