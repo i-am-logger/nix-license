@@ -25,10 +25,10 @@
     .verdict-fail { background: #3d1f1f; color: var(--red); border: 2px solid var(--red); }
     .usage { background: #161b22; border: 1px solid var(--border); border-radius: 6px; padding: 1.5rem; margin-bottom: 2rem; }
     .usage h2 { margin-bottom: 0.75rem; }
-    .usage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; }
-    .usage-item { display: flex; justify-content: space-between; padding: 0.25rem 0; }
-    .usage-key { color: #8b949e; }
-    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+    .usage-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .usage-item { display: flex; align-items: center; gap: 0.5rem; }
+    .usage-key { color: #8b949e; font-size: 0.9rem; }
+    .badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
     .badge-true { background: #1f3d2a; color: var(--green); }
     .badge-false { background: #3d1f1f; color: var(--red); }
     table { width: 100%; border-collapse: collapse; }
@@ -66,7 +66,7 @@
     verdict.innerHTML = isCompliant ? '<span style="color:var(--green)">\u2714</span> PASS' : '<span style="color:var(--red)">\u2718</span> FAIL';
     const statusIcon = { allowed: '\u2714', blocked: '\u2718', overridden: '\u2691', 'no-license': '?' };
     const usageBadge = (v) => typeof v === 'boolean'
-      ? `<span class="badge badge-${v}">${v ? '\u2714' : '\u2718'}</span>`
+      ? (v ? '<span class="badge badge-true">\u2714 yes</span>' : '<span class="badge badge-false">\u2718 no</span>')
       : `<span class="badge badge-true">${v}</span>`;
     app.innerHTML = `
       <div class="summary">
@@ -76,7 +76,8 @@
         <div class="card overridden"><div class="number">${report.summary.overridden}</div><div class="label">Overridden</div></div>
       </div>
       <div class="usage"><h2>Usage Declaration</h2><div class="usage-grid">
-        ${Object.entries(report.usage).map(([k,v]) => `<div class="usage-item"><span class="usage-key">${k}</span>${usageBadge(v)}</div>`).join('')}
+        <div class="usage-item"><span class="usage-key">type</span><span class="badge badge-true" style="font-size:0.9rem">${report.usage.type}</span></div>
+        ${Object.entries(report.usage).filter(([k]) => k !== 'type').map(([k,v]) => `<div class="usage-item"><span class="usage-key">${k}</span>${usageBadge(v)}</div>`).join('')}
       </div></div>
       <div class="filter-bar">
         <input type="search" id="search" placeholder="Search packages...">
