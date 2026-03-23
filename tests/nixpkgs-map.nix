@@ -314,4 +314,66 @@ in
       assertTrue "MIT + warranty assurance → blocked" (!result.allowed)
     else
       assertTrue "MIT no warranty disclaimer → allowed" result.allowed;
+
+  # ── Source-available with real nixpkgs licenses ────────────────
+
+  unfreeIsClosedSource =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.unfree;
+    in
+    assertTrue "unfree maps to Commercial or Proprietary Free category"
+      (builtins.elem (salt.category or "") [ "Commercial" "Proprietary Free" ]);
+
+  unfreeRedistributableIsClosedSource =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.unfreeRedistributable;
+    in
+    assertTrue "unfreeRedistributable maps to Proprietary Free category"
+      (salt.category == "Proprietary Free");
+
+  mitIsNotClosedSource =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.mit;
+    in
+    assertTrue "MIT is not closed source"
+      (!builtins.elem (salt.category or "") [ "Commercial" "Proprietary Free" ]);
+
+  ccByNcIsNotClosedSource =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.cc-by-nc-40;
+    in
+    assertTrue "CC-BY-NC has source (not closed)"
+      (!builtins.elem (salt.category or "") [ "Commercial" "Proprietary Free" ]);
+
+  elasticIsNotClosedSource =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.elastic20;
+    in
+    assertTrue "Elastic has source (source-available, not closed)"
+      (!builtins.elem (salt.category or "") [ "Commercial" "Proprietary Free" ]);
+
+  # ── Commitment exceptions with real licenses ──────────────────
+
+  commitmentExceptionAllowsSpecificPackage =
+    let
+      # GPL with distribution + same-license=false but exception for gpl3Only
+      ctx = {
+        distribution = true;
+        commitments = { same-license = true; }; # exception resolved: true for this pkg
+      };
+      salt = nixpkgsMap.lookup lib.licenses.gpl3Only;
+      result = lc.evaluateLicenseUsage ctx salt;
+    in
+    assertTrue "commitment exception allows specific package" result.allowed;
+
+  commitmentNoExceptionBlocks =
+    let
+      ctx = {
+        distribution = true;
+        commitments = { same-license = false; }; # no exception: false
+      };
+      salt = nixpkgsMap.lookup lib.licenses.gpl3Only;
+      result = lc.evaluateLicenseUsage ctx salt;
+    in
+    assertTrue "no commitment exception blocks" (!result.allowed);
 }
