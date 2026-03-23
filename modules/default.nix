@@ -245,6 +245,12 @@ in
             type = lib.types.path;
             description = "Path to signed license token file (GPG or openssl)";
           };
+
+          install = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Install license file to /etc/nix-license/licenses/ for runtime use";
+          };
         };
       });
       default = { };
@@ -279,15 +285,27 @@ in
       allowUnfreePredicate = checkPackageLicense;
     };
 
-    # Content policy files — immutable, proper ownership
-    environment.etc."nix-license/content-policy/system.json" = {
-      source = pkgs.writeText "nix-license-content-policy-system.json"
-        (builtins.toJSON (contentRating.resolveContentPolicy
-          (if cfg.contentPolicy.preset != null then cfg.contentPolicy.preset else "unrestricted")));
-      mode = "0644";
-      user = "root";
-      group = "root";
-    };
+    # Content policy + installed license files
+    environment.etc =
+      {
+        "nix-license/content-policy/system.json" = {
+          source = pkgs.writeText "nix-license-content-policy-system.json"
+            (builtins.toJSON (contentRating.resolveContentPolicy
+              (if cfg.contentPolicy.preset != null then cfg.contentPolicy.preset else "unrestricted")));
+          mode = "0644";
+          user = "root";
+          group = "root";
+        };
+      }
+      // lib.mapAttrs'
+        (pname: licCfg:
+          lib.nameValuePair "nix-license/licenses/${pname}.token" {
+            source = licCfg.licenseFile;
+            mode = "0400";
+            user = "root";
+            group = "root";
+          })
+        (lib.filterAttrs (_: licCfg: licCfg.install) cfg.licenses);
 
     # Usage consistency assertions
     assertions = [

@@ -354,4 +354,58 @@ in
     assertTrue "can set patent-grant with exceptions"
       (cfg.nix-license.assurances.patent-grant.required
         && builtins.elem "some-legacy-lib" cfg.nix-license.assurances.patent-grant.exceptions);
+
+  # ── License install ──────────────────────────────────────────
+
+  licenseInstallDefault =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license.licenses."some-pkg".licenseFile = "/fake/token";
+      });
+    in
+    assertFalse "install defaults to false"
+      cfg.nix-license.licenses."some-pkg".install;
+
+  licenseInstallCreatesEtc =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license = {
+          enable = true;
+          licenses."matlab" = {
+            licenseFile = "/fake/matlab.token";
+            install = true;
+          };
+        };
+      });
+    in
+    assertTrue "install=true creates etc file"
+      (cfg.environment.etc ? "nix-license/licenses/matlab.token");
+
+  licenseNoInstallNoEtc =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license = {
+          enable = true;
+          licenses."nix-license".licenseFile = "/fake/nix-license.token";
+        };
+      });
+    in
+    assertTrue "install=false does not create etc file"
+      (!(cfg.environment.etc ? "nix-license/licenses/nix-license.token"));
+
+  licenseInstallPermissions =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license = {
+          enable = true;
+          licenses."matlab" = {
+            licenseFile = "/fake/matlab.token";
+            install = true;
+          };
+        };
+      });
+      etc = cfg.environment.etc."nix-license/licenses/matlab.token";
+    in
+    assertTrue "installed license: root:root, 0400"
+      (etc.mode == "0400" && etc.user == "root" && etc.group == "root");
 }

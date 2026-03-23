@@ -138,6 +138,12 @@ in
             type = lib.types.path;
             description = "Path to signed license token file (GPG or openssl)";
           };
+
+          install = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Install license file to /etc/nix-license/licenses/ for runtime use";
+          };
         };
       });
       default = { };
