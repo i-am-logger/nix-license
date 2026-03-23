@@ -204,7 +204,7 @@ in
         Add: nix-license.licenses."nix-license".licenseFile = ./path/to/token;
         Visit https://github.com/i-am-logger/nix-license for licensing.
       '';
-      reportLib.mkReportFile (config.environment.systemPackages or [ ]);
+      reportLib.mkReportBundle (config.environment.systemPackages or [ ]);
 
     # Usage consistency assertions
     assertions = [

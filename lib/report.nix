@@ -1,7 +1,7 @@
 # License compliance report generator
 #
-# Produces a JSON report of all packages and their compliance status
-# against the declared usage context.
+# Produces a JSON report and HTML dashboard of all packages
+# and their compliance status against the declared usage context.
 
 { lib, pkgs, licenseCheck, nixpkgsMap, mkUsageContext, cfg, ... }:
 
@@ -37,7 +37,7 @@ let
     in
     {
       inherit pname version hasLicense allowed hasOverride;
-      licenses = map (s: { inherit (s) key; inherit (s) name; }) saltLicenses;
+      licenses = map (s: { inherit (s) key name; }) saltLicenses;
       conflicts = map (c: { inherit (c) restriction reason; }) conflicts;
       obligations = map (o: { inherit (o) obligation triggers; }) obligations;
       status =
@@ -73,7 +73,22 @@ let
     pkgs.writeText "nix-license-report.json"
       (builtins.toJSON (mkReport packages));
 
+  mkReportHtml = packages:
+    let
+      reportJson = builtins.toJSON (mkReport packages);
+      template = builtins.readFile ./report-template.html;
+      html = builtins.replaceStrings [ "__REPORT_JSON__" ] [ reportJson ] template;
+    in
+    pkgs.writeText "nix-license-report.html" html;
+
+  mkReportBundle = packages:
+    pkgs.runCommand "nix-license-report" { } ''
+      mkdir -p $out
+      cp ${mkReportFile packages} $out/report.json
+      cp ${mkReportHtml packages} $out/index.html
+    '';
+
 in
 {
-  inherit mkReport mkReportFile;
+  inherit mkReport mkReportFile mkReportHtml mkReportBundle;
 }

@@ -39,11 +39,10 @@ runs:
       id: summary
       shell: bash
       run: |
-        REPORT=$(cat result)
-        echo "total=$(echo "$REPORT" | nix run nixpkgs#jq -- -r '.summary.total')" >> "$GITHUB_OUTPUT"
-        echo "allowed=$(echo "$REPORT" | nix run nixpkgs#jq -- -r '.summary.allowed')" >> "$GITHUB_OUTPUT"
-        echo "blocked=$(echo "$REPORT" | nix run nixpkgs#jq -- -r '.summary.blocked')" >> "$GITHUB_OUTPUT"
-        echo "overridden=$(echo "$REPORT" | nix run nixpkgs#jq -- -r '.summary.overridden')" >> "$GITHUB_OUTPUT"
+        echo "total=$(nix run nixpkgs#jq -- -r '.summary.total' result/report.json)" >> "$GITHUB_OUTPUT"
+        echo "allowed=$(nix run nixpkgs#jq -- -r '.summary.allowed' result/report.json)" >> "$GITHUB_OUTPUT"
+        echo "blocked=$(nix run nixpkgs#jq -- -r '.summary.blocked' result/report.json)" >> "$GITHUB_OUTPUT"
+        echo "overridden=$(nix run nixpkgs#jq -- -r '.summary.overridden' result/report.json)" >> "$GITHUB_OUTPUT"
     - name: Print summary
       shell: bash
       run: |
@@ -67,6 +66,6 @@ runs:
         BLOCKED=${{ steps.summary.outputs.blocked }}
         if [ "$BLOCKED" -gt 0 ]; then
           echo "::error::$BLOCKED packages blocked by license compliance"
-          nix run nixpkgs#jq -- '.packages[] | select(.status == "blocked") | "\(.pname): \(.conflicts[0].reason // "unknown")"' result
+          nix run nixpkgs#jq -- '.packages[] | select(.status == "blocked") | "\(.pname): \(.conflicts[0].reason // "unknown")"' result/report.json
           exit 1
         fi
