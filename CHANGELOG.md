@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.0...nix-license-v0.6.1) (2026-03-23)
+
+
+### Bug Fixes
+
+* address all 13 review findings ([e5826d7](https://github.com/i-am-logger/nix-license/commit/e5826d737c9a2e87fe34431107d538cdf8c7556c))
+
 ## [0.6.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.5.2...nix-license-v0.6.0) (2026-03-22)
 
 
