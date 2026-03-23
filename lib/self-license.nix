@@ -58,7 +58,7 @@ let
       ${lib.concatMapStringsSep "\n" (key: "gpg --import ${key}") publicKeys}
 
       # Verify the signature
-      if gpg --verify ${sigFile} ${tokenFile}; then
+      if gpg --trust-model always --verify ${sigFile} ${tokenFile}; then
         echo "nix-license: token signature verified" > $out
       else
         echo "nix-license: INVALID token signature"

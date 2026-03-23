@@ -34,14 +34,14 @@ nix-license/
 
 ## License evaluation
 
-Two independent checks per license:
+Four compliance checks per license (all must pass):
 
-1. **Restrictions** (blocklist): if the license restricts an activity and the user does that activity → conflict (unless exempted)
+1. **Restrictions** (blocklist): if the license restricts an activity and the user does that activity → conflict
 2. **Allowed-use** (allowlist): if the license specifies who can use it and the user's type isn't in the list → conflict
 3. **Commitments**: if an obligation triggers and the user can't commit to fulfilling it → conflict
 4. **Assurances**: if the license disclaims something the user requires → conflict
 
-All must pass.
+Triggered obligations are also returned for reporting but do not block on their own — they are blocked via commitments (check 3).
 
 ## nixpkgs mapping
 

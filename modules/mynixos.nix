@@ -184,12 +184,6 @@ in
         default = [ ];
         description = "Packages that require a valid cryptographic token";
       };
-
-      warnExpiringSoon = lib.mkOption {
-        type = lib.types.int;
-        default = 30;
-        description = "Warn when a token expires within this many days";
-      };
     };
   };
 

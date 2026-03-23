@@ -47,8 +47,8 @@ let
 
     # Unfree (nixpkgs concepts → closest SALT equivalents)
     "unfree" = "proprietary-license";
-    "unfreeRedistributable" = "proprietary-license";
-    "unfreeRedistributableFirmware" = "proprietary-license";
+    "unfreeRedistributable" = "proprietary-redistributable";
+    "unfreeRedistributableFirmware" = "proprietary-redistributable";
     "free" = "public-domain";
     "publicDomain" = "public-domain";
 

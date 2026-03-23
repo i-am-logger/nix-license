@@ -12,8 +12,10 @@
 
 let
   licenseTypes = import ../lib/types.nix { inherit lib oarsSpec; };
-  licenseCheck = import ../lib/license-check.nix { inherit lib; };
+  licenseCheck = import ../lib/license-check.nix { };
   nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
+
+  isEnforce = cfg.enforcement == "enforce";
 
   cfg = config.nix-license;
 
@@ -33,6 +35,8 @@ let
   };
 
   # Check if a package's license conflicts with usage + token requirements
+  # In enforce mode: returns false to block non-compliant packages
+  # In warn mode: traces warnings and returns true (allows all packages)
   checkPackageLicense = pkg:
     let
       pname = pkg.pname or pkg.name or "unknown";
@@ -40,14 +44,21 @@ let
       results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) licenses;
       licenseAllowed = builtins.all (r: r.allowed) results;
 
+      conflicts = builtins.concatMap (r: r.conflicts) results;
+      conflictMsg = lib.concatMapStringsSep ", " (c: c.reason) conflicts;
+
       # Token requirement check
       requiresToken = cfg.tokenVerification.enable
         && builtins.elem pname cfg.tokenVerification.requireTokens;
       hasToken = cfg.licenses ? ${pname}
         && (cfg.licenses.${pname}.token != null || cfg.licenses.${pname}.tokenFile != null);
       tokenSatisfied = !requiresToken || hasToken;
+
+      compliant = licenseAllowed && tokenSatisfied;
     in
-    licenseAllowed && tokenSatisfied;
+    if compliant then true
+    else if isEnforce then false
+    else builtins.trace "nix-license: WARNING: ${pname} conflicts with declared usage: ${conflictMsg}" true;
 
   severityOption = cat: lib.mkOption {
     type = licenseTypes.policySeverityType;
@@ -250,12 +261,6 @@ in
           Packages in this list will fail to build without a verified token.
         '';
       };
-
-      warnExpiringSoon = lib.mkOption {
-        type = lib.types.int;
-        default = 30;
-        description = "Warn when a token expires within this many days";
-      };
     };
 
     # nix-license commercial token
@@ -290,9 +295,9 @@ in
 
   config = lib.mkIf cfg.enable {
     nixpkgs.config = {
-      # In enforce mode, nixpkgs checks each unfree package against our predicate.
-      # In warn mode, bypass nixpkgs check entirely — nix-license handles compliance.
-      allowUnfree = cfg.enforcement != "enforce";
+      # Always use the predicate so both warn and enforce modes work.
+      # Warn mode: predicate traces warnings and returns true (allows all).
+      # Enforce mode: predicate returns false for non-compliant packages.
       allowUnfreePredicate = checkPackageLicense;
     };
 

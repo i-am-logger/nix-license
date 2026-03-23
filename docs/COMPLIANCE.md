@@ -30,10 +30,14 @@ When `nix-license.enable = true`:
 
 Two enforcement modes:
 
-| Mode | `allowUnfree` | Behavior |
-|------|---------------|----------|
-| `warn` (default) | `true` | Bypass nixpkgs check, nix-license handles compliance |
-| `enforce` | `false` | `allowUnfreePredicate` checks each unfree package against SALT restrictions — non-compliant packages fail at eval time |
+| Mode | Behavior |
+|------|----------|
+| `warn` (default) | Non-compliant packages produce `builtins.trace` warnings but are allowed |
+| `enforce` | Non-compliant packages fail at eval time |
+
+Both modes use `allowUnfreePredicate` to check every unfree package against SALT restrictions.
+
+**Scope limitation:** nixpkgs only calls `allowUnfreePredicate` for packages where `meta.license.free = false`. Packages that nixpkgs considers "free" (e.g., MIT, GPL, Apache) are not checked. In practice, this covers the most important cases — non-commercial, proprietary, and source-available licenses are all `free = false` in nixpkgs.
 
 ## License compliance process: OpenChain ISO/IEC 5230
 

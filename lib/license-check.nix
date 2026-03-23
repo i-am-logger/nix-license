@@ -1,11 +1,13 @@
 # License compliance evaluation
 #
-# Five checks:
+# Four compliance checks (all must pass):
 # 1. allowed-use: if license has an allowlist, user's type must be in it
 # 2. restrictions: if license restricts an activity the user does, it's a conflict
 # 3. commitments: if an obligation triggers and the user can't commit, it's a conflict
 # 4. assurances: if the license disclaims something the user requires, it's a conflict
-# 5. obligations: triggered obligations (informational)
+#
+# Informational output:
+# - obligations: triggered obligations (does not block, returned for reporting)
 
 _:
 
@@ -15,7 +17,7 @@ let
       restrictions = license.restrictions or { };
       obligations = license.obligations or { };
       disclaimers = license.disclaimers or [ ];
-      allowedUse = license.allowed-use or license.allowedUsageTypes or null;
+      allowedUse = license.allowed-use or null;
       userType = usage.type or null;
 
       # User policy
@@ -23,6 +25,9 @@ let
       assurances = usage.assurances or { };
 
       # Check 1: allowed-use (allowlist)
+      # When userType is null (no type declared), the check is skipped.
+      # The NixOS module requires usage.type with no default, so this
+      # is only reachable through the lib API directly.
       typeConflicts =
         if allowedUse != null && userType != null then
           if !(builtins.elem userType allowedUse) then

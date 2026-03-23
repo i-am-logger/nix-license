@@ -229,11 +229,11 @@ A policy of `violence-cartoon = "moderate"` allows packages rated `none`, `mild`
 
 | Level | Behavior |
 |-------|----------|
-| `warn` (default) | Bypass nixpkgs free/unfree check — nix-license handles compliance |
-| `enforce` | Non-compliant unfree packages fail at eval time via `allowUnfreePredicate` |
+| `warn` (default) | Non-compliant packages produce trace warnings but are allowed |
+| `enforce` | Non-compliant packages fail at eval time |
 
 ```nix
 nix-license.enforcement = "enforce";
 ```
 
-In `enforce` mode, nixpkgs checks each unfree package against your declared usage. If a package's SALT license restricts an activity you declared (e.g., `commercial-use`), the build fails with a clear error.
+Both modes evaluate every unfree package against your declared usage via `allowUnfreePredicate`. In warn mode, conflicts are logged with `builtins.trace` and the package is allowed. In enforce mode, the build fails.

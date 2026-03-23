@@ -42,9 +42,9 @@ in
     let cfg = evalModule defaultUsage;
     in assertFalse "disabled by default" cfg.nix-license.enable;
 
-  warnModeAllowsUnfree =
+  enableSetsPredicate =
     let cfg = evalModule (defaultUsage // { nix-license.enable = true; });
-    in assertTrue "warn mode sets allowUnfree=true" cfg.nixpkgs.config.allowUnfree;
+    in assertTrue "enable sets allowUnfreePredicate" (cfg.nixpkgs.config ? allowUnfreePredicate);
 
   usageType =
     let
@@ -76,7 +76,7 @@ in
       (cfg.nix-license.usage.type == "commercial"
         && cfg.nix-license.usage.commercial-use
         && cfg.nix-license.enforcement == "enforce"
-        && !cfg.nixpkgs.config.allowUnfree);
+        && cfg.nixpkgs.config ? allowUnfreePredicate);
 
   scenarioSaas =
     let
