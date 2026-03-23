@@ -36,6 +36,13 @@ A NixOS module that checks every package's license against your declared usage a
 
             # Commercial token (required in enforce mode)
             license.tokenFile = ./secrets/nix-license-token.json;
+
+            # Per-package vendor licenses
+            tokenVerification.requireTokens = [ "vendor-package" ];
+            licenses."vendor-package" = {
+              license = "commercial";
+              tokenFile = ./secrets/vendor-package.token;
+            };
           };
         }
       ];

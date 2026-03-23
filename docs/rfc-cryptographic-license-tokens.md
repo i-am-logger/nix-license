@@ -12,7 +12,7 @@
 The "Usage-Context-Based License Model" RFC lets users declare commercial license overrides like this:
 
 ```nix
-nixpkgs.config.licenses."vendor-sdk".license = "commercial";
+nixpkgs.config.licenses."vendor-package".license = "commercial";
 ```
 
 But this is just a declaration—Nix trusts you. This companion RFC proposes a cryptographic token format that lets Nix actually *verify* that you have a valid license from the vendor, without requiring network access during builds.
@@ -66,7 +66,7 @@ NixLicense/1
 Issuer: vendor.example.com
 LicenseeId: org-12345
 LicenseeName: Acme Corp
-Package: vendor-sdk
+Package: vendor-package
 Version: >= 2.0, < 3.0
 
 [authorizations]
@@ -102,7 +102,7 @@ The signature covers all the claims above it. If anyone modifies the licensee na
 
 **Issuer and licensee:** Who issued the license and who it's for. Useful for audit trails.
 
-**Package and version:** What software this license covers. A token for `vendor-sdk >= 2.0` won't work for version 1.x or a different package.
+**Package and version:** What software this license covers. A token for `vendor-package >= 2.0` won't work for version 1.x or a different package.
 
 **Authorizations:** What this license permits. The authorizations match the `usage` settings from the base RFC:
 
@@ -133,8 +133,8 @@ Here's what happens when you build a package that requires a license token:
 │  1. Purchase license from vendor                                │
 │  2. Download token file from vendor portal                      │
 │  3. Store token somewhere Nix can read it:                      │
-│     - In your repo: ./secrets/vendor-sdk.token                  │
-│     - Via secrets manager: /run/secrets/vendor-sdk              │
+│     - In your repo: ./secrets/vendor-package.token                  │
+│     - Via secrets manager: /run/secrets/vendor-package              │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -189,11 +189,11 @@ To use a license token, reference it in your NixOS configuration:
   nixpkgs.config = {
     usage.type = "commercial";
     
-    licenses."vendor-sdk" = {
+    licenses."vendor-package" = {
       license = "commercial";
       
       # Path to the token file
-      tokenFile = ./secrets/vendor-sdk.token;
+      tokenFile = ./secrets/vendor-package.token;
     };
   };
 }
@@ -203,7 +203,7 @@ Or if your token is small, you can inline it:
 
 ```nix
 {
-  nixpkgs.config.licenses."vendor-sdk" = {
+  nixpkgs.config.licenses."vendor-package" = {
     license = "commercial";
     
     token = ''
@@ -237,13 +237,13 @@ let
     token = commercialLicense;
     publicKeys = vendorPublicKeys;
     requiredClaims = {
-      package = "vendor-sdk";
+      package = "vendor-package";
       versionMatch = version;
     };
   };
 
 in stdenv.mkDerivation {
-  pname = "vendor-sdk";
+  pname = "vendor-package";
   version = "2.5.0";
   
   # If commercialLicense is null or invalid, this fails at eval time
@@ -261,13 +261,13 @@ in stdenv.mkDerivation {
 If you try to build this package without a valid token, you get a clear error:
 
 ```
-error: Package 'vendor-sdk' requires a commercial license token.
+error: Package 'vendor-package' requires a commercial license token.
 
        1. Obtain a license from https://vendor.example.com/licensing
        2. Download your license token
        3. Add to your configuration:
        
-          nixpkgs.config.licenses."vendor-sdk" = {
+          nixpkgs.config.licenses."vendor-package" = {
             license = "commercial";
             tokenFile = /path/to/your/token;
           };
@@ -327,7 +327,7 @@ Nix warns you before licenses expire:
 
 ```
 $ nixos-rebuild switch
-warning: License for 'vendor-sdk' expires in 23 days (2025-06-15)
+warning: License for 'vendor-package' expires in 23 days (2025-06-15)
          Renew at: https://vendor.example.com/licenses
 ```
 
@@ -345,7 +345,7 @@ License tokens are often sensitive. Here's how to integrate with common NixOS se
   };
   
   # Reference the decrypted path
-  nixpkgs.config.licenses."vendor-sdk" = {
+  nixpkgs.config.licenses."vendor-package" = {
     license = "commercial";
     tokenFile = config.sops.secrets.vendor-license.path;
   };
@@ -357,7 +357,7 @@ License tokens are often sensitive. Here's how to integrate with common NixOS se
 {
   age.secrets.vendor-license.file = ./secrets/vendor-license.age;
   
-  nixpkgs.config.licenses."vendor-sdk" = {
+  nixpkgs.config.licenses."vendor-package" = {
     license = "commercial";
     tokenFile = config.age.secrets.vendor-license.path;
   };
@@ -379,8 +379,8 @@ jobs:
       - name: Fetch license token from secrets manager
         run: |
           # However your org manages secrets
-          vault read -field=token secret/licenses/vendor-sdk \
-            > ./secrets/vendor-sdk.token
+          vault read -field=token secret/licenses/vendor-package \
+            > ./secrets/vendor-package.token
       
       - name: Build
         run: nix build
@@ -403,7 +403,7 @@ $ nix-license issue \
     --signing-key vendor-keys/private.pem \
     --licensee "Acme Corp" \
     --licensee-id "org-12345" \
-    --package "vendor-sdk" \
+    --package "vendor-package" \
     --version ">= 2.0" \
     \
     # Usage type authorizations
@@ -431,7 +431,7 @@ $ nix-license issue \
     --signing-key vendor-keys/private.pem \
     --licensee "State University" \
     --licensee-id "edu-67890" \
-    --package "vendor-sdk" \
+    --package "vendor-package" \
     --version ">= 2.0" \
     --commercial false \
     --educational true \
@@ -482,9 +482,9 @@ Vendors and package maintainers choose the appropriate level. Most open-source p
   nixpkgs.config = {
     usage.type = "commercial";
     
-    licenses."vendor-sdk" = {
+    licenses."vendor-package" = {
       license = "commercial";
-      tokenFile = ./secrets/vendor-sdk.token;
+      tokenFile = ./secrets/vendor-package.token;
     };
   };
 }
@@ -568,9 +568,9 @@ Build succeeds because token authorizes SaaS use. Without `saas = true` in the t
       tokenFile = "/run/secrets/jetbrains.token";
     };
     
-    "vendor-sdk" = {
+    "vendor-package" = {
       license = "commercial";
-      tokenFile = "/run/secrets/vendor-sdk.token";
+      tokenFile = "/run/secrets/vendor-package.token";
     };
     
     "simulation-software" = {
@@ -599,13 +599,13 @@ IT manages the tokens centrally. Individual machines inherit the configuration.
     };
     
     licenses = {
-      "vendor-sdk" = {
+      "vendor-package" = {
         license = "commercial";
         # This token was restricted from the master:
         # - seats: 500 → 50
         # - military: true → false
         # - expires_at: 2025-12-31 → 2024-12-31
-        tokenFile = "/run/secrets/vendor-sdk-dev-team.token";
+        tokenFile = "/run/secrets/vendor-package-dev-team.token";
       };
     };
   };
@@ -616,7 +616,7 @@ IT manages the tokens centrally. Individual machines inherit the configuration.
 
 ```nix
 {
-  nixpkgs.config.licenses."vendor-sdk" = {
+  nixpkgs.config.licenses."vendor-package" = {
     license = "commercial";
     tokenFile = ./license.token;
     

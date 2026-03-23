@@ -243,23 +243,23 @@ in
   tokenRequirePackage =
     let
       cfg = evalModule (defaultUsage // {
-        nix-license.tokenVerification.requireTokens = [ "vendor-sdk" ];
+        nix-license.tokenVerification.requireTokens = [ "vendor-package" ];
       });
     in
     assertTrue "can require tokens for specific packages"
-      (builtins.elem "vendor-sdk" cfg.nix-license.tokenVerification.requireTokens);
+      (builtins.elem "vendor-package" cfg.nix-license.tokenVerification.requireTokens);
 
   vendorTokenConfig =
     let
       cfg = evalModule (defaultUsage // {
-        nix-license.licenses."vendor-sdk" = {
+        nix-license.licenses."vendor-package" = {
           license = "commercial";
-          token = ''{ "package": "vendor-sdk", "commercial": true }'';
+          token = ''{ "package": "vendor-package", "commercial": true }'';
         };
       });
     in
     assertTrue "can set vendor token for package"
-      (cfg.nix-license.licenses."vendor-sdk".token != null);
+      (cfg.nix-license.licenses."vendor-package".token != null);
 
   # ── Content policy files ──────────────────────────────────────
 

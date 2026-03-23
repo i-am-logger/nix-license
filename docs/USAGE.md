@@ -254,13 +254,13 @@ Some packages require a commercial license from their vendor. You declare the to
 
 ```nix
 nix-license = {
-  tokenVerification.requireTokens = [ "vendor-sdk" "another-tool" ];
+  tokenVerification.requireTokens = [ "vendor-package" "another-tool" ];
 
   # Vendor provides a signed token proving your license
-  licenses."vendor-sdk" = {
+  licenses."vendor-package" = {
     license = "commercial";
     licenseId = "LIC-2026-XXXXX";           # for your records
-    tokenFile = ./secrets/vendor-sdk.json;   # signed token from vendor
+    tokenFile = ./secrets/vendor-package.json;   # signed token from vendor
   };
 
   licenses."another-tool" = {
