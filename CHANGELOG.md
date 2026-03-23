@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.0...nix-license-v0.11.1) (2026-03-23)
+
+
+### Bug Fixes
+
+* deploy pages on every push where demo-reports succeeded ([0ae1c21](https://github.com/i-am-logger/nix-license/commit/0ae1c212c13bbbafb8f40836e9479be7a5367869))
+
 ## [0.11.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.10.0...nix-license-v0.11.0) (2026-03-23)
 
 
