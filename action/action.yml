@@ -62,18 +62,34 @@ runs:
       shell: bash
       run: |
         BLOCKED=${{ steps.summary.outputs.blocked }}
+        TOTAL=${{ steps.summary.outputs.total }}
+        ALLOWED=${{ steps.summary.outputs.allowed }}
+        OVERRIDDEN=${{ steps.summary.outputs.overridden }}
+
         if [ "$BLOCKED" -gt 0 ]; then
-          echo "## :x: License Compliance Report: ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "## :x: FAIL — ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
         else
-          echo "## :white_check_mark: License Compliance Report: ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "## :white_check_mark: PASS — ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
         fi
         echo "" >> "$GITHUB_STEP_SUMMARY"
-        echo "| Metric | Count |" >> "$GITHUB_STEP_SUMMARY"
-        echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
-        echo "| Total | ${{ steps.summary.outputs.total }} |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| Allowed | ${{ steps.summary.outputs.allowed }} |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| Blocked | ${{ steps.summary.outputs.blocked }} |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| Overridden | ${{ steps.summary.outputs.overridden }} |" >> "$GITHUB_STEP_SUMMARY"
+
+        # Usage declaration
+        echo "**Usage:**" >> "$GITHUB_STEP_SUMMARY"
+        nix run nixpkgs#jq -- -r '.usage | to_entries | map("- **\(.key):** \(.value)") | .[]' result/report.json >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+
+        # Summary
+        echo "**Summary:** $TOTAL packages — :white_check_mark: $ALLOWED allowed, :x: $BLOCKED blocked, :warning: $OVERRIDDEN overridden" >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+
+        # Package table
+        echo "<details><summary>All packages ($TOTAL)</summary>" >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+        echo "| Status | Package | Version | License | Details |" >> "$GITHUB_STEP_SUMMARY"
+        echo "|--------|---------|---------|---------|---------|" >> "$GITHUB_STEP_SUMMARY"
+        nix run nixpkgs#jq -- -r '.packages | sort_by(.status) | reverse | .[] | "| \(if .status == "allowed" then ":white_check_mark:" elif .status == "blocked" then ":x:" elif .status == "overridden" then ":warning:" else ":grey_question:" end) | \(.pname) | \(.version) | \(.licenses | map(.name) | join(", ")) | \(if (.conflicts | length) > 0 then (.conflicts | map(.reason) | join("; ")) elif (.obligations | length) > 0 then (.obligations | map(.obligation) | join(", ")) else "-" end) |"' result/report.json >> "$GITHUB_STEP_SUMMARY"
+        echo "" >> "$GITHUB_STEP_SUMMARY"
+        echo "</details>" >> "$GITHUB_STEP_SUMMARY"
         echo "" >> "$GITHUB_STEP_SUMMARY"
     - name: Upload report artifact
       if: inputs.upload-artifact == 'true'
