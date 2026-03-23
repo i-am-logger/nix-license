@@ -10,6 +10,7 @@ let
     let
       pname = pkg.pname or pkg.name or "unknown";
       version = pkg.version or "unknown";
+      outputHash = builtins.unsafeDiscardStringContext (builtins.substring 11 32 (toString (pkg.outPath or "")));
       rawLicenses = lib.toList (pkg.meta.license or [ ]);
       hasLicense = rawLicenses != [ ];
 
@@ -36,7 +37,7 @@ let
       hasOverride = cfg.licenses ? ${pname};
     in
     {
-      inherit pname version hasLicense allowed hasOverride;
+      inherit pname version outputHash hasLicense allowed hasOverride;
       licenses = map (s: { inherit (s) key name; }) saltLicenses;
       conflicts = map (c: { inherit (c) restriction reason; }) conflicts;
       obligations = map (o: { inherit (o) obligation triggers; }) obligations;
@@ -54,14 +55,6 @@ let
       blocked = builtins.filter (p: p.status == "blocked") evaluated;
       overridden = builtins.filter (p: p.status == "overridden") evaluated;
       noLicense = builtins.filter (p: p.status == "no-license") evaluated;
-    in
-    {
-      meta = {
-        generator = "nix-license";
-        version = lib.strings.trim (builtins.readFile ../version.txt);
-        generatedAt = builtins.currentTime;
-        compliant = builtins.length blocked == 0;
-      };
       usage = {
         inherit (cfg.usage) type commercial-use distribution modifications saas;
       };
@@ -72,6 +65,19 @@ let
         overridden = builtins.length overridden;
         noLicense = builtins.length noLicense;
       };
+      # Hash the content for integrity
+      contentHash = builtins.hashString "sha256"
+        (builtins.toJSON { inherit usage summary; packages = map (p: p.pname) evaluated; });
+    in
+    {
+      meta = {
+        generator = "nix-license";
+        version = lib.strings.trim (builtins.readFile ../version.txt);
+        generatedAt = builtins.currentTime or 0;
+        compliant = builtins.length blocked == 0;
+        integrity = contentHash;
+      };
+      inherit usage summary;
       packages = evaluated;
     };
 
