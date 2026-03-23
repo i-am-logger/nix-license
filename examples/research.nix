@@ -20,10 +20,10 @@
 
     # Research licenses
     licenses."mathematica" = {
-      licenseFile = sops.secrets.mathematica-token.path;
+      licenseFile = ./licenses/token.json;
     };
     licenses."matlab" = {
-      licenseFile = sops.secrets.matlab-token.path;
+      licenseFile = ./licenses/token.json;
     };
   };
 }

@@ -29,10 +29,10 @@
 
     # Commercial licenses
     licenses."nix-license" = {
-      licenseFile = sops.secrets.nix-license-token.path;
+      licenseFile = ./licenses/token.json;
     };
     licenses."vendor-package" = {
-      licenseFile = sops.secrets.vendor-package-token.path;
+      licenseFile = ./licenses/token.json;
     };
   };
 }

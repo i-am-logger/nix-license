@@ -14,7 +14,7 @@
 
     # Nonprofit licenses
     licenses."slack" = {
-      licenseFile = sops.secrets.slack-token.path;
+      licenseFile = ./licenses/token.json;
     };
   };
 }

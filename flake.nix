@@ -109,10 +109,10 @@
         };
       };
 
-      # Demo reports — build with: nix build .#example-reports.<system>.personal
+      # Example reports — build with: nix build .#example-reports.<system>.personal
       example-reports = forAllSystems (system:
         let pkgs = nixpkgs.legacyPackages.${system};
-        in import ./demos { inherit lib pkgs oarsSpec saltLicenses saltSpdx; }
+        in import ./examples/reports.nix { inherit lib pkgs saltLicenses saltSpdx; }
       );
 
       # Formatter (treefmt: nix + shell + yaml)
@@ -198,7 +198,15 @@
               signatureFile = ./tests/fixtures/vendor-token.json.sig;
               publicKeyFile = ./tests/fixtures/vendor-pubkey.pem;
             };
-        });
+
+          # Example reports (verifies examples evaluate correctly)
+        } // (
+          let
+            examples = import ./examples/reports.nix { inherit lib pkgs saltLicenses saltSpdx; };
+          in
+          lib.mapAttrs' (name: drv: lib.nameValuePair "example-${name}" drv) examples
+        ));
+
 
       # Dev shell with pre-commit hooks installed
       devShells = forAllSystems (system:

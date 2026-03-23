@@ -23,10 +23,10 @@
 
     # Commercial licenses
     licenses."nix-license" = {
-      licenseFile = sops.secrets.nix-license-token.path;
+      licenseFile = ./licenses/token.json;
     };
     licenses."datadog" = {
-      licenseFile = sops.secrets.datadog-token.path;
+      licenseFile = ./licenses/token.json;
     };
   };
 }

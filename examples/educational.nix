@@ -14,10 +14,10 @@
 
     # Academic licenses
     licenses."matlab" = {
-      licenseFile = sops.secrets.matlab-token.path;
+      licenseFile = ./licenses/token.json;
     };
     licenses."jetbrains-idea" = {
-      licenseFile = sops.secrets.jetbrains-token.path;
+      licenseFile = ./licenses/token.json;
     };
   };
 }
