@@ -24,12 +24,9 @@ nix-license = {
   };
 
   # FOSS only — block closed-source packages
-  assurances.source-available = true;
-
-  # Exception: accept NVIDIA's proprietary driver
-  licenses."nvidia-x11" = {
-    license = "proprietary";
-    token = "accepted";
+  assurances.source-available = {
+    required = true;
+    exceptions = [ "nvidia-x11" ];  # accept NVIDIA's proprietary driver
   };
 };
 ```
@@ -52,8 +49,17 @@ nix-license = {
   };
 
   # Can't open-source our product → blocks GPL, AGPL
-  commitments.same-license = false;
-  commitments.disclose-source = false;
+  commitments.same-license = {
+    fulfilled = false;
+    exceptions = [ "libfoo" ];  # except this one we already open-sourced
+  };
+  commitments.disclose-source.fulfilled = false;
+
+  # Require patent grants, except for legacy code
+  assurances.patent-grant = {
+    required = true;
+    exceptions = [ "legacy-lib" ];
+  };
 
   # Commercial licenses
   licenses."nix-license" = {
@@ -67,11 +73,9 @@ nix-license = {
 };
 ```
 
-Any package with a non-commercial license (CC-BY-NC), a SaaS restriction (Elastic, SSPL), or a copyleft obligation you can't fulfill (GPL) fails at eval time. Permissive licenses (MIT, Apache, BSD) pass.
+GPL is blocked — except `libfoo` which you've already open-sourced. Patent grants are required — except `legacy-lib`. Non-commercial licenses (CC-BY-NC) and SaaS restrictions (Elastic, SSPL) fail at eval time. Permissive licenses (MIT, Apache, BSD) pass.
 
 **No more `allowUnfree`.** nixpkgs conflates "closed source" with "has restrictions" in a single boolean. nix-license replaces it with the actual questions: what's your usage, what can you commit to, what guarantees do you need.
-
-**No more `allowUnfree`.** nixpkgs conflates "closed source" with "has restrictions" in a single boolean. nix-license replaces it with the actual questions: what's your usage, what can you commit to, what guarantees do you need. If you want FOSS-only, set `assurances.source-available = true`. If you're fine with proprietary, don't. Either way, license restrictions are checked properly.
 
 ## How it works
 
@@ -99,24 +103,28 @@ Every nixpkgs license is mapped to [SALT](https://github.com/i-am-logger/salt) (
 | `modifications` | Patching, forking, applying overlays |
 | `saas` | Running software as a hosted service |
 
-**Commitments** — which obligations you can fulfill (default: all true):
+**Commitments** — which obligations you can fulfill (default: all `fulfilled = true`):
 
-| Key | What it means | Set false to block |
-|-----|--------------|-------------------|
+| Key | What it means | Set `fulfilled = false` to block |
+|-----|--------------|--------------------------------|
 | `same-license` | Distribute under same license | GPL, AGPL, copyleft |
 | `disclose-source` | Make source available | GPL on distribution |
 | `network-use-disclose` | Share source for network use | AGPL on SaaS |
 | `include-copyright` | Include copyright notices | Most licenses on distribution |
 | `document-changes` | Document modifications | GPL, Apache on distribution |
 
-**Assurances** — require guarantees from licenses (default: all false):
+Each commitment supports `exceptions` — package names exempt from that commitment.
 
-| Key | Set true to block licenses that disclaim |
-|-----|----------------------------------------|
+**Assurances** — require guarantees from licenses (default: all `required = false`):
+
+| Key | Set `required = true` to block licenses that disclaim |
+|-----|------------------------------------------------------|
 | `source-available` | Source code (blocks closed-source binaries) |
 | `patent-grant` | Patent rights |
 | `liability-coverage` | Liability |
 | `warranty` | Warranty |
+
+Each assurance supports `exceptions` — a list of package names exempt from that requirement.
 
 All usage fields are required. No defaults — you must explicitly declare your context.
 

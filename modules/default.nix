@@ -31,8 +31,18 @@ let
     else throw "nix-license: license '${name}' not found in SALT. Add it to SALT or lib/nixpkgs-map.nix.";
 
   # Build the full usage context including policy
-  usageContext = cfg.usage // {
-    inherit (cfg) commitments assurances;
+  # Commitments and assurances are resolved per-package (exceptions applied)
+  mkUsageContext = pname: cfg.usage // {
+    commitments = lib.mapAttrs
+      (_: c:
+        let isExcepted = builtins.elem pname c.exceptions;
+        in if c.fulfilled then !isExcepted   # can fulfill, except these
+        else isExcepted                       # can't fulfill, except these CAN
+      )
+      cfg.commitments;
+    assurances = lib.mapAttrs
+      (_: a: a.required && !builtins.elem pname a.exceptions)
+      cfg.assurances;
   };
 
   # Check if a package's license conflicts with usage + token requirements
@@ -51,14 +61,16 @@ let
       # Source availability check — uses SALT category, not nixpkgs free flag
       # (nixpkgs free=false includes CC-BY-NC which HAS source)
       closedCategories = [ "Commercial" "Proprietary Free" ];
-      sourceConflict = cfg.assurances.source-available
-        && builtins.any
+      isClosed = builtins.any
         (nixLic:
           let salt = nixpkgsMap.lookup nixLic;
           in salt != null && builtins.elem (salt.category or "") closedCategories
         )
         rawLicenses;
+      isExcepted = builtins.elem pname cfg.assurances.source-available.exceptions;
+      sourceConflict = cfg.assurances.source-available.required && isClosed && !isExcepted;
 
+      usageContext = mkUsageContext pname;
       results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) rawLicenses;
       licenseConflict = !(builtins.all (r: r.allowed) results) || noLicenseConflict || sourceConflict;
 
@@ -134,78 +146,58 @@ in
     };
 
     # Commitments — which license obligations you can fulfill
-    # If an obligation triggers and you set its commitment to false, the package is blocked.
-    commitments = {
-      include-copyright = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Can you include copyright notices when distributing?";
+    # If an obligation triggers and you can't fulfill it, the package is blocked.
+    # fulfilled=true (default): can fulfill. exceptions = packages you CAN'T fulfill for.
+    # fulfilled=false: can't fulfill. exceptions = packages you CAN fulfill for.
+    commitments =
+      let
+        mkCommitment = description: {
+          fulfilled = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            inherit description;
+          };
+          exceptions = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Package names exempt from this commitment.";
+          };
+        };
+      in
+      {
+        include-copyright = mkCommitment "Can you include copyright notices when distributing?";
+        disclose-source = mkCommitment "Can you disclose source code when required?";
+        same-license = mkCommitment "Can you distribute under the same license (copyleft)?";
+        same-license--file = mkCommitment "Can you apply the same license per-file (weak copyleft)?";
+        same-license--library = mkCommitment "Can you apply the same license for linked libraries (LGPL)?";
+        document-changes = mkCommitment "Can you document changes to modified source code?";
+        network-use-disclose = mkCommitment "Can you disclose source for network service use (AGPL)?";
       };
-
-      disclose-source = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Can you disclose source code when required?";
-      };
-
-      same-license = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Can you distribute under the same license (copyleft)?";
-      };
-
-      same-license--file = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Can you apply the same license per-file (weak copyleft)?";
-      };
-
-      same-license--library = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Can you apply the same license for linked libraries (LGPL)?";
-      };
-
-      document-changes = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Can you document changes to modified source code?";
-      };
-
-      network-use-disclose = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Can you disclose source for network service use (AGPL)?";
-      };
-    };
 
     # Assurances — what guarantees you require from licenses
     # If a license disclaims something you require, the package is blocked.
-    assurances = {
-      patent-grant = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Require licenses to grant patent rights?";
+    # Each assurance has { required; exceptions; } — exceptions are package names.
+    assurances =
+      let
+        mkAssurance = description: {
+          required = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            inherit description;
+          };
+          exceptions = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Package names exempt from this assurance.";
+          };
+        };
+      in
+      {
+        source-available = mkAssurance "Require source code to be available? Blocks closed-source packages.";
+        patent-grant = mkAssurance "Require licenses to grant patent rights?";
+        liability-coverage = mkAssurance "Require licenses to not disclaim liability?";
+        warranty = mkAssurance "Require licenses to not disclaim warranty?";
       };
-
-      liability-coverage = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Require licenses to not disclaim liability?";
-      };
-
-      warranty = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Require licenses to not disclaim warranty?";
-      };
-
-      source-available = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Require source code to be available? Blocks closed-source packages.";
-      };
-    };
 
     # Content policy (system-wide default)
     contentPolicy = {

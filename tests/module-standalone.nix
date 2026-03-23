@@ -129,23 +129,36 @@ in
 
   # ── Commitments defaults ──────────────────────────────────────
 
-  commitmentsDefaultTrue =
+  commitmentsDefaultFulfilled =
     let
       cfg = evalModule defaultUsage;
     in
-    assertTrue "commitments default to true"
-      (cfg.nix-license.commitments.same-license
-        && cfg.nix-license.commitments.disclose-source
-        && cfg.nix-license.commitments.include-copyright);
+    assertTrue "commitments default to fulfilled"
+      (cfg.nix-license.commitments.same-license.fulfilled
+        && cfg.nix-license.commitments.disclose-source.fulfilled
+        && cfg.nix-license.commitments.include-copyright.fulfilled);
 
   commitmentsCanDisable =
     let
       cfg = evalModule (defaultUsage // {
-        nix-license.commitments.same-license = false;
+        nix-license.commitments.same-license.fulfilled = false;
       });
     in
     assertFalse "can disable same-license commitment"
-      cfg.nix-license.commitments.same-license;
+      cfg.nix-license.commitments.same-license.fulfilled;
+
+  commitmentsExceptions =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license.commitments.same-license = {
+          fulfilled = false;
+          exceptions = [ "libfoo" "libbar" ];
+        };
+      });
+    in
+    assertTrue "commitments support exceptions"
+      (!cfg.nix-license.commitments.same-license.fulfilled
+        && builtins.elem "libfoo" cfg.nix-license.commitments.same-license.exceptions);
 
   # ── Assurances defaults ───────────────────────────────────────
 
@@ -153,10 +166,11 @@ in
     let
       cfg = evalModule defaultUsage;
     in
-    assertTrue "assurances default to false"
-      (!cfg.nix-license.assurances.patent-grant
-        && !cfg.nix-license.assurances.liability-coverage
-        && !cfg.nix-license.assurances.warranty);
+    assertTrue "assurances default to not required"
+      (!cfg.nix-license.assurances.patent-grant.required
+        && !cfg.nix-license.assurances.liability-coverage.required
+        && !cfg.nix-license.assurances.warranty.required
+        && !cfg.nix-license.assurances.source-available.required);
 
   # ── Commercial gate ────────────────────────────────────────────
 
@@ -224,16 +238,17 @@ in
         nix-license = {
           enable = true;
           usage = { type = "commercial"; commercial-use = true; distribution = true; modifications = true; saas = false; };
-          commitments = { same-license = false; disclose-source = false; };
+          commitments.same-license.fulfilled = false;
+          commitments.disclose-source.fulfilled = false;
           enforcement = "enforce";
           licenses."nix-license" = { license = "commercial"; tokenFile = "/fake/token"; };
         };
       };
     in
     assertTrue "proprietary company scenario"
-      (!cfg.nix-license.commitments.same-license
-        && !cfg.nix-license.commitments.disclose-source
-        && cfg.nix-license.commitments.include-copyright);
+      (!cfg.nix-license.commitments.same-license.fulfilled
+        && !cfg.nix-license.commitments.disclose-source.fulfilled
+        && cfg.nix-license.commitments.include-copyright.fulfilled);
 
   # ── License overrides ──────────────────────────────────────────
 
@@ -282,4 +297,41 @@ in
     in
     assertTrue "system policy: root:root, 0644"
       (etc.mode == "0644" && etc.user == "root" && etc.group == "root");
+
+  # ── Assurance submodule ───────────────────────────────────────
+
+  assuranceExceptionsDefault =
+    let
+      cfg = evalModule defaultUsage;
+    in
+    assertTrue "assurance exceptions default empty"
+      (cfg.nix-license.assurances.source-available.exceptions == [ ]
+        && cfg.nix-license.assurances.patent-grant.exceptions == [ ]);
+
+  assuranceCanSetExceptions =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license.assurances.source-available = {
+          required = true;
+          exceptions = [ "nvidia-x11" "firmware-linux-nonfree" ];
+        };
+      });
+    in
+    assertTrue "can set source-available with exceptions"
+      (cfg.nix-license.assurances.source-available.required
+        && builtins.elem "nvidia-x11" cfg.nix-license.assurances.source-available.exceptions
+        && builtins.length cfg.nix-license.assurances.source-available.exceptions == 2);
+
+  assurancePatentWithExceptions =
+    let
+      cfg = evalModule (defaultUsage // {
+        nix-license.assurances.patent-grant = {
+          required = true;
+          exceptions = [ "some-legacy-lib" ];
+        };
+      });
+    in
+    assertTrue "can set patent-grant with exceptions"
+      (cfg.nix-license.assurances.patent-grant.required
+        && builtins.elem "some-legacy-lib" cfg.nix-license.assurances.patent-grant.exceptions);
 }

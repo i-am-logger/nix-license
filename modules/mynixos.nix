@@ -95,21 +95,40 @@ in
       };
     } // mkOarsCategoryOptions;
 
-    commitments = {
-      include-copyright = lib.mkOption { type = lib.types.bool; default = true; description = "Can you include copyright notices when distributing?"; };
-      disclose-source = lib.mkOption { type = lib.types.bool; default = true; description = "Can you disclose source code when required?"; };
-      same-license = lib.mkOption { type = lib.types.bool; default = true; description = "Can you distribute under the same license (copyleft)?"; };
-      same-license--file = lib.mkOption { type = lib.types.bool; default = true; description = "Can you apply the same license per-file (weak copyleft)?"; };
-      same-license--library = lib.mkOption { type = lib.types.bool; default = true; description = "Can you apply the same license for linked libraries (LGPL)?"; };
-      document-changes = lib.mkOption { type = lib.types.bool; default = true; description = "Can you document changes to modified source code?"; };
-      network-use-disclose = lib.mkOption { type = lib.types.bool; default = true; description = "Can you disclose source for network service use (AGPL)?"; };
-    };
+    commitments =
+      let
+        mkC = description: {
+          fulfilled = lib.mkOption { type = lib.types.bool; default = true; inherit description; };
+          exceptions = lib.mkOption { type = lib.types.listOf lib.types.str; default = [ ]; description = "Package names exempt from this commitment."; };
+        };
+      in
+      {
+        include-copyright = mkC "Can you include copyright notices when distributing?";
+        disclose-source = mkC "Can you disclose source code when required?";
+        same-license = mkC "Can you distribute under the same license (copyleft)?";
+        same-license--file = mkC "Can you apply the same license per-file (weak copyleft)?";
+        same-license--library = mkC "Can you apply the same license for linked libraries (LGPL)?";
+        document-changes = mkC "Can you document changes to modified source code?";
+        network-use-disclose = mkC "Can you disclose source for network service use (AGPL)?";
+      };
 
     assurances = {
-      patent-grant = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to grant patent rights?"; };
-      liability-coverage = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to not disclaim liability?"; };
-      warranty = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to not disclaim warranty?"; };
-      source-available = lib.mkOption { type = lib.types.bool; default = false; description = "Require source code to be available?"; };
+      source-available = {
+        required = lib.mkOption { type = lib.types.bool; default = false; description = "Require source code to be available?"; };
+        exceptions = lib.mkOption { type = lib.types.listOf lib.types.str; default = [ ]; description = "Package names exempt from this assurance."; };
+      };
+      patent-grant = {
+        required = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to grant patent rights?"; };
+        exceptions = lib.mkOption { type = lib.types.listOf lib.types.str; default = [ ]; description = "Package names exempt from this assurance."; };
+      };
+      liability-coverage = {
+        required = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to not disclaim liability?"; };
+        exceptions = lib.mkOption { type = lib.types.listOf lib.types.str; default = [ ]; description = "Package names exempt from this assurance."; };
+      };
+      warranty = {
+        required = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to not disclaim warranty?"; };
+        exceptions = lib.mkOption { type = lib.types.listOf lib.types.str; default = [ ]; description = "Package names exempt from this assurance."; };
+      };
     };
 
     licenses = lib.mkOption {
