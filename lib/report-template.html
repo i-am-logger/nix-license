@@ -25,9 +25,9 @@
     .verdict-fail { background: #3d1f1f; color: var(--red); border: 2px solid var(--red); }
     .usage { background: #161b22; border: 1px solid var(--border); border-radius: 6px; padding: 1.5rem; margin-bottom: 2rem; }
     .usage h2 { margin-bottom: 0.75rem; }
-    .usage-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
-    .usage-item { display: flex; align-items: center; gap: 0.5rem; }
-    .usage-key { color: #8b949e; font-size: 0.9rem; }
+    .usage-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+    .usage-item { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+    .usage-key { color: #8b949e; font-size: 0.8rem; }
     .badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
     .badge-true { background: #1f3d2a; color: var(--green); }
     .badge-false { background: #3d1f1f; color: var(--red); }
@@ -75,10 +75,12 @@
         <div class="card blocked"><div class="number">${report.summary.blocked}</div><div class="label">Blocked</div></div>
         <div class="card overridden"><div class="number">${report.summary.overridden}</div><div class="label">Overridden</div></div>
       </div>
-      <div class="usage"><h2>Usage Declaration</h2><div class="usage-grid">
-        <div class="usage-item"><span class="usage-key">type</span><span class="badge badge-true" style="font-size:0.9rem">${report.usage.type}</span></div>
-        ${Object.entries(report.usage).filter(([k]) => k !== 'type').map(([k,v]) => `<div class="usage-item"><span class="usage-key">${k}</span>${usageBadge(v)}</div>`).join('')}
-      </div></div>
+      <div class="usage">
+        <h2>Usage: <span style="color:var(--blue);text-transform:capitalize">${report.usage.type}</span></h2>
+        <div class="usage-grid">
+          ${Object.entries(report.usage).filter(([k]) => k !== 'type').map(([k,v]) => `<div class="usage-item"><span class="usage-key">${k}</span>${usageBadge(v)}</div>`).join('')}
+        </div>
+      </div>
       <div class="filter-bar">
         <input type="search" id="search" placeholder="Search packages...">
         <button class="filter-btn active" data-filter="all">All</button>
@@ -96,7 +98,7 @@
       tbody.innerHTML = filtered.map(p =>
         `<tr><td>${p.pname}</td><td>${p.version}</td>
         <td>${p.licenses.map(l => l.name).join(', ')}</td>
-        <td><span class="status status-${p.status}">${statusIcon[p.status] || p.status} ${p.status}</span></td>
+        <td><span class="status status-${p.status}">${statusIcon[p.status] || p.status}</span></td>
         <td>${p.conflicts.length ? p.conflicts.map(c => c.reason).join('; ') : p.obligations.length ? p.obligations.map(o => o.obligation).join(', ') : '-'}</td></tr>`
       ).join('');
     }
