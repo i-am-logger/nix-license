@@ -1,6 +1,8 @@
 # Open-source developer — distributes packages, copyleft OK
 {
   nix-license = {
+    name = "Open-source Developer";
+    description = "Distributes packages, copyleft OK";
     enable = true;
     usage = {
       type = "personal";

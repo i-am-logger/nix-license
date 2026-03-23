@@ -1,6 +1,8 @@
 # Nonprofit organization — runs services for its mission
 {
   nix-license = {
+    name = "Nonprofit";
+    description = "Runs services for its mission";
     enable = true;
     usage = {
       type = "nonprofit";

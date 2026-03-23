@@ -95,10 +95,17 @@ let
           fullCfg.assurances;
       };
 
+      cfgName = nlCfg.name or "";
+      cfgDesc = nlCfg.description or "";
+      title =
+        if cfgName != "" && cfgDesc != "" then "${cfgName} — ${cfgDesc}"
+        else if cfgName != "" then cfgName
+        else if cfgDesc != "" then cfgDesc
+        else name;
+
       reportLib = import ../lib/report.nix {
-        inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext name;
+        inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext title;
         cfg = fullCfg;
-        title = name;
       };
     in
     reportLib.mkReportBundle demoPackages;

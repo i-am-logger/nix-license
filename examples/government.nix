@@ -1,6 +1,8 @@
 # Government agency — civilian, internal use
 {
   nix-license = {
+    name = "Government Agency";
+    description = "Civilian, internal use";
     enable = true;
     enforcement = "enforce";
 

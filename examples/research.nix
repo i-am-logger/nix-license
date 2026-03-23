@@ -1,6 +1,8 @@
 # Research lab — academic research, publishes results
 {
   nix-license = {
+    name = "Research Lab";
+    description = "Academic research, publishes results";
     enable = true;
     usage = {
       type = "research";
