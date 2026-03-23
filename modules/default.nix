@@ -191,14 +191,19 @@ in
           })
         (lib.filterAttrs (_: licCfg: licCfg.install) cfg.licenses);
 
-    # License compliance report
+    # License compliance report (commercial feature — requires nix-license token)
     nix-license.report =
       let
+        hasToken = cfg.licenses ? "nix-license";
         reportLib = import ../lib/report.nix {
           inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext cfg;
-          usageContext = mkUsageContext "";
         };
       in
+      assert hasToken || throw ''
+        nix-license: report generation requires a nix-license commercial license.
+        Add: nix-license.licenses."nix-license".licenseFile = ./path/to/token;
+        Visit https://github.com/i-am-logger/nix-license for licensing.
+      '';
       reportLib.mkReportFile (config.environment.systemPackages or [ ]);
 
     # Usage consistency assertions
