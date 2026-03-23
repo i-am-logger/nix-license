@@ -106,7 +106,7 @@ Commercial use in enforce mode requires a GPG-signed token. Vendor packages can 
 
 ## Testing
 
-Every license (2649) is evaluated and tested against every usage context (16 activity combinations × 6 user types × 7 commitment keys × 3 assurance keys), producing over 200,000 individual pass/fail checks per `nix flake check`. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for domain invariants and the full test suite.
+Over 200,000 checks per `nix flake check` — every license (2649), every usage context, every combination. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for domain invariants and the full test suite.
 
 ```bash
 nix flake check   # Run all checks
