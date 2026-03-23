@@ -151,20 +151,20 @@
           };
 
           # Library tests
-          lib-types = mkNixTest "lib-types"
-            (import ./tests/lib-types.nix { inherit lib oarsSpec; });
+          content-rating-types = mkNixTest "content-rating-types"
+            (import ./tests/content-rating/types.nix { inherit lib oarsSpec; });
 
-          lib-content-rating = mkNixTest "lib-content-rating"
-            (import ./tests/lib-content-rating.nix { inherit lib oarsSpec; });
+          content-rating = mkNixTest "content-rating"
+            (import ./tests/content-rating/rating.nix { inherit lib oarsSpec; });
 
-          lib-license = mkNixTest "lib-license"
-            (import ./tests/lib-license.nix { });
+          licensing-license = mkNixTest "licensing-license"
+            (import ./tests/licensing/license.nix { });
 
-          lib-licenses = mkNixTest "lib-licenses"
-            (import ./tests/lib-licenses.nix { inherit lib saltLicenses; });
+          licensing-check = mkNixTest "licensing-check"
+            (import ./tests/licensing/check.nix { inherit lib saltLicenses; });
 
-          lib-properties = mkNixTest "lib-properties"
-            (import ./tests/lib-properties.nix { inherit lib oarsSpec saltLicenses; });
+          content-rating-properties = mkNixTest "content-rating-properties"
+            (import ./tests/content-rating/properties.nix { inherit lib oarsSpec saltLicenses; });
 
           # Mapping tests
           nixpkgs-map = mkNixTest "nixpkgs-map"
@@ -175,8 +175,8 @@
             (import ./tests/module-standalone.nix { inherit lib oarsSpec saltLicenses saltSpdx; });
 
           # Self-license tests (eval-time claim validation)
-          self-license-claims = mkNixTest "self-license-claims"
-            (import ./tests/self-license.nix { inherit lib; });
+          licensing-verify = mkNixTest "licensing-verify"
+            (import ./tests/licensing/verify.nix { inherit lib; });
 
           # Self-license GPG verification (build-time signature check)
           self-license-verify =

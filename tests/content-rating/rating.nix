@@ -4,8 +4,8 @@
 { lib, oarsSpec }:
 
 let
-  cr = import ../lib/content-rating/rating.nix { inherit lib oarsSpec; };
-  types = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
+  cr = import ../../lib/content-rating/rating.nix { inherit lib oarsSpec; };
+  types = import ../../lib/content-rating/types.nix { inherit lib oarsSpec; };
 
   # Test helpers
   assertEq = name: actual: expected:

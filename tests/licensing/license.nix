@@ -4,7 +4,7 @@
 _:
 
 let
-  lc = import ../lib/licensing/license.nix { };
+  lc = import ../../lib/licensing/license.nix { };
 
   assertTrue = name: value:
     if value then true
