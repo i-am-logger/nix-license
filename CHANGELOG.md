@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.4](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.3...nix-license-v0.6.4) (2026-03-23)
+
+
+### Documentation
+
+* add CC BY-NC-SA 4.0 license ([a01cb12](https://github.com/i-am-logger/nix-license/commit/a01cb128c5719878c590b54d9c9e96535b2c1497))
+* match mynixos badge style ([bdba51d](https://github.com/i-am-logger/nix-license/commit/bdba51d1f314ef63cfa0c3d06f5edcd503810c40))
+
 ## [0.6.3](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.2...nix-license-v0.6.3) (2026-03-23)
 
 
