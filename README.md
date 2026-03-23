@@ -34,11 +34,11 @@ A NixOS module that checks every package's license against your declared usage a
             commitments.same-license = false;
             commitments.disclose-source = false;
 
-            # Commercial token (required in enforce mode)
-            license.tokenFile = ./secrets/nix-license-token.json;
-
-            # Per-package vendor licenses
-            tokenVerification.requireTokens = [ "vendor-package" ];
+            # Commercial licenses (nix-license token required for commercial use)
+            licenses."nix-license" = {
+              license = "commercial";
+              tokenFile = ./secrets/nix-license.token;
+            };
             licenses."vendor-package" = {
               license = "commercial";
               tokenFile = ./secrets/vendor-package.token;
@@ -105,7 +105,7 @@ Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oar
 
 ## Commercial licensing
 
-Commercial use in enforce mode requires a GPG-signed nix-license token (`license.tokenFile`). Vendor packages can require their own tokens via `tokenVerification.requireTokens` — vendors sign with any algorithm (Ed25519, RSA, ECDSA), verified via openssl. See [USAGE.md](docs/USAGE.md#per-package-vendor-licenses).
+Commercial use in enforce mode requires `licenses."nix-license"` with a valid token. Vendor packages use the same pattern — `licenses."package-name"` with a signed token overrides a license conflict. nix-license tokens are GPG/YubiKey-signed; vendor tokens use any algorithm (Ed25519, RSA, ECDSA) via openssl. See [USAGE.md](docs/USAGE.md#per-package-vendor-licenses).
 
 ## Documentation
 

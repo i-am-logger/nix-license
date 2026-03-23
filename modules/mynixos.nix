@@ -148,19 +148,6 @@ in
       description = "Per-package license overrides";
     };
 
-    license = {
-      token = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = "Inline nix-license commercial token (GPG-signed JSON)";
-      };
-      tokenFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = "Path to nix-license commercial token file";
-      };
-    };
-
     enforcement = lib.mkOption {
       type = licenseTypes.enforcementType;
       default = "warn";
@@ -171,14 +158,6 @@ in
       type = lib.types.attrsOf (lib.types.listOf lib.types.str);
       default = { };
       description = "Vendor public keys for token verification";
-    };
-
-    tokenVerification = {
-      requireTokens = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = "Packages that require a valid cryptographic token";
-      };
     };
   };
 
@@ -231,9 +210,9 @@ in
   config = lib.mkIf cfg.enable {
     nix-license = {
       enable = true;
-      inherit (cfg) enforcement vendorKeys license;
+      inherit (cfg) enforcement vendorKeys;
       inherit (cfg) usage commitments assurances;
-      inherit (cfg) contentPolicy licenses tokenVerification;
+      inherit (cfg) contentPolicy licenses;
     };
 
     # Per-user content policy files — immutable, user-owned

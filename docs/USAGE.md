@@ -250,27 +250,24 @@ Both modes evaluate every unfree package against your declared usage via `allowU
 
 ## Per-package vendor licenses
 
-Some packages require a commercial license from their vendor. You declare the token and tell nix-license to require it:
+When a package's license conflicts with your usage, you can override it with a commercial license token. nix-license checks for an override automatically — if the conflict exists and `licenses."package-name"` has a token, the package is allowed.
 
 ```nix
 nix-license = {
-  tokenVerification.requireTokens = [ "vendor-package" "another-tool" ];
-
-  # Vendor provides a signed token proving your license
-  licenses."vendor-package" = {
+  # nix-license itself requires a token for commercial use
+  licenses."nix-license" = {
     license = "commercial";
-    licenseId = "LIC-2026-XXXXX";           # for your records
-    tokenFile = ./secrets/vendor-package.json;   # signed token from vendor
+    tokenFile = ./secrets/nix-license.token;
   };
 
-  licenses."another-tool" = {
+  # Vendor package with a commercial license
+  licenses."vendor-package" = {
     license = "commercial";
-    token = ''{"package":"another-tool","commercial":true,"licensee":"Acme Corp"}'';
+    licenseId = "LIC-2026-XXXXX";                # for your records
+    tokenFile = ./secrets/vendor-package.token;   # signed token from vendor
   };
 };
 ```
-
-Packages in `requireTokens` without a matching entry in `licenses` are blocked in enforce mode.
 
 Vendors sign tokens with their own keys (any algorithm — Ed25519, RSA, ECDSA). Vendor public keys are configured via:
 

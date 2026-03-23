@@ -180,7 +180,10 @@ in
           enable = true;
           usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
           enforcement = "enforce";
-          license.token = ''{  "package": "nix-license", "commercial": true, "licensee": "Test Corp" }'';
+          licenses."nix-license" = {
+            license = "commercial";
+            token = ''{ "package": "nix-license", "commercial": true, "licensee": "Test Corp" }'';
+          };
         };
       };
     in
@@ -223,6 +226,7 @@ in
           usage = { type = "commercial"; commercial-use = true; distribution = true; modifications = true; saas = false; };
           commitments = { same-license = false; disclose-source = false; };
           enforcement = "enforce";
+          licenses."nix-license" = { license = "commercial"; tokenFile = "/fake/token"; };
         };
       };
     in
@@ -231,25 +235,9 @@ in
         && !cfg.nix-license.commitments.disclose-source
         && cfg.nix-license.commitments.include-copyright);
 
-  # ── Token verification config ─────────────────────────────────
+  # ── License overrides ──────────────────────────────────────────
 
-  tokenVerificationDefaults =
-    let
-      cfg = evalModule defaultUsage;
-    in
-    assertTrue "requireTokens empty by default"
-      (cfg.nix-license.tokenVerification.requireTokens == [ ]);
-
-  tokenRequirePackage =
-    let
-      cfg = evalModule (defaultUsage // {
-        nix-license.tokenVerification.requireTokens = [ "vendor-package" ];
-      });
-    in
-    assertTrue "can require tokens for specific packages"
-      (builtins.elem "vendor-package" cfg.nix-license.tokenVerification.requireTokens);
-
-  vendorTokenConfig =
+  vendorLicenseOverride =
     let
       cfg = evalModule (defaultUsage // {
         nix-license.licenses."vendor-package" = {
@@ -258,8 +246,25 @@ in
         };
       });
     in
-    assertTrue "can set vendor token for package"
+    assertTrue "can set vendor license with token"
       (cfg.nix-license.licenses."vendor-package".token != null);
+
+  nixLicenseTokenAsOverride =
+    let
+      cfg = evalModule {
+        nix-license = {
+          enable = true;
+          usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
+          enforcement = "enforce";
+          licenses."nix-license" = {
+            license = "commercial";
+            tokenFile = "/fake/path/token.json";
+          };
+        };
+      };
+    in
+    assertTrue "nix-license token via licenses override"
+      (cfg.nix-license.licenses."nix-license".tokenFile != null);
 
   # ── Content policy files ──────────────────────────────────────
 

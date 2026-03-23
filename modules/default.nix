@@ -49,7 +49,7 @@ let
       noLicenseWarning = !hasLicense && !cfg.usage.commercial-use;
 
       results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) rawLicenses;
-      licenseAllowed = builtins.all (r: r.allowed) results && !noLicenseConflict;
+      licenseConflict = !(builtins.all (r: r.allowed) results) || noLicenseConflict;
 
       conflicts = builtins.concatMap (r: r.conflicts) results;
       conflictMsg =
@@ -57,13 +57,13 @@ let
         else if noLicenseWarning then "no license declared"
         else lib.concatMapStringsSep ", " (c: c.reason) conflicts;
 
-      # Token requirement check
-      requiresToken = builtins.elem pname cfg.tokenVerification.requireTokens;
-      hasToken = cfg.licenses ? ${pname}
+      # License override: if a conflict exists but the user has a commercial
+      # license with a token for this package, allow it
+      hasOverride = cfg.licenses ? ${pname}
         && (cfg.licenses.${pname}.token != null || cfg.licenses.${pname}.tokenFile != null);
-      tokenSatisfied = !requiresToken || hasToken;
+      overridden = licenseConflict && hasOverride;
 
-      compliant = licenseAllowed && tokenSatisfied;
+      compliant = !licenseConflict || overridden;
     in
     if compliant then
     # Even compliant packages get a warning if they have no license
@@ -253,43 +253,9 @@ in
       description = ''
         Vendor public keys for verifying license tokens.
         Keys are keyed by vendor domain, values are lists of
-        Ed25519 public keys (for key rotation support).
-        Example: { "vendor.example.com" = [ "ed25519:..." ]; }
+        PEM public keys (any algorithm openssl supports).
+        Example: { "vendor.example.com" = [ ./keys/vendor.pem ]; }
       '';
-    };
-
-    # Token verification settings
-    tokenVerification = {
-      requireTokens = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = ''
-          List of package names that require a valid cryptographic token.
-          Packages in this list will fail to build without a verified token.
-        '';
-      };
-    };
-
-    # nix-license commercial token
-    # Required when usage.commercial-use = true and enforcement = "enforce"
-    license = {
-      token = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Inline nix-license commercial token (GPG-signed JSON).
-          Required for commercial use in enforce mode.
-        '';
-      };
-
-      tokenFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          Path to nix-license commercial token file.
-          Required for commercial use in enforce mode.
-        '';
-      };
     };
 
     # Enforcement level
@@ -329,11 +295,15 @@ in
         message = "nix-license: saas is true but commercial-use is false. SaaS is commercial use.";
       }
       {
-        assertion = !(cfg.usage.commercial-use && cfg.enforcement == "enforce"
-          && cfg.license.token == null && cfg.license.tokenFile == null);
+        assertion =
+          let
+            hasNixLicenseToken = cfg.licenses ? "nix-license"
+              && (cfg.licenses."nix-license".token != null || cfg.licenses."nix-license".tokenFile != null);
+          in
+            !(cfg.usage.commercial-use && cfg.enforcement == "enforce" && !hasNixLicenseToken);
         message = ''
-          nix-license: commercial use requires a valid nix-license token in enforce mode.
-          Set nix-license.license.token or nix-license.license.tokenFile.
+          nix-license: commercial use requires a nix-license token in enforce mode.
+          Add: nix-license.licenses."nix-license" = { license = "commercial"; tokenFile = ./path/to/token; };
           Visit https://github.com/i-am-logger/nix-license for licensing.
         '';
       }
