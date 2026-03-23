@@ -109,6 +109,7 @@ in
       patent-grant = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to grant patent rights?"; };
       liability-coverage = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to not disclaim liability?"; };
       warranty = lib.mkOption { type = lib.types.bool; default = false; description = "Require licenses to not disclaim warranty?"; };
+      source-available = lib.mkOption { type = lib.types.bool; default = false; description = "Require source code to be available?"; };
     };
 
     licenses = lib.mkOption {

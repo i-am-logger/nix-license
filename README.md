@@ -54,6 +54,8 @@ A NixOS module that checks every package's license against your declared usage a
 
 With this config, any package with a non-commercial license (CC-BY-NC), a SaaS restriction (Elastic, SSPL), or a copyleft obligation you can't fulfill (GPL) fails at eval time. Permissive licenses (MIT, Apache, BSD) pass.
 
+**No more `allowUnfree`.** nixpkgs conflates "closed source" with "has restrictions" in a single boolean. nix-license replaces it with the actual questions: what's your usage, what can you commit to, what guarantees do you need. If you want FOSS-only, set `assurances.source-available = true`. If you're fine with proprietary, don't. Either way, license restrictions are checked properly.
+
 ## How it works
 
 Every nixpkgs license is mapped to [SALT](https://github.com/i-am-logger/salt) (2649 classified licenses). When nixpkgs evaluates a package, `allowUnfreePredicate` runs four checks:
@@ -94,6 +96,7 @@ Every nixpkgs license is mapped to [SALT](https://github.com/i-am-logger/salt) (
 
 | Key | Set true to block licenses that disclaim |
 |-----|----------------------------------------|
+| `source-available` | Source code (blocks closed-source binaries) |
 | `patent-grant` | Patent rights |
 | `liability-coverage` | Liability |
 | `warranty` | Warranty |

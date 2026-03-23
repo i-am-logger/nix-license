@@ -48,12 +48,24 @@ let
       noLicenseConflict = !hasLicense && cfg.usage.commercial-use;
       noLicenseWarning = !hasLicense && !cfg.usage.commercial-use;
 
+      # Source availability check — uses SALT category, not nixpkgs free flag
+      # (nixpkgs free=false includes CC-BY-NC which HAS source)
+      closedCategories = [ "Commercial" "Proprietary Free" ];
+      sourceConflict = cfg.assurances.source-available
+        && builtins.any
+        (nixLic:
+          let salt = nixpkgsMap.lookup nixLic;
+          in salt != null && builtins.elem (salt.category or "") closedCategories
+        )
+        rawLicenses;
+
       results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) rawLicenses;
-      licenseConflict = !(builtins.all (r: r.allowed) results) || noLicenseConflict;
+      licenseConflict = !(builtins.all (r: r.allowed) results) || noLicenseConflict || sourceConflict;
 
       conflicts = builtins.concatMap (r: r.conflicts) results;
       conflictMsg =
-        if noLicenseConflict then "no license declared (commercial use requires explicit license)"
+        if sourceConflict then "closed source (source-available assurance required)"
+        else if noLicenseConflict then "no license declared (commercial use requires explicit license)"
         else if noLicenseWarning then "no license declared"
         else lib.concatMapStringsSep ", " (c: c.reason) conflicts;
 
@@ -186,6 +198,12 @@ in
         type = lib.types.bool;
         default = false;
         description = "Require licenses to not disclaim warranty?";
+      };
+
+      source-available = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Require source code to be available? Blocks closed-source packages.";
       };
     };
 
