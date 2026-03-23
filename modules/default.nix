@@ -40,12 +40,21 @@ let
   checkPackageLicense = pkg:
     let
       pname = pkg.pname or pkg.name or "unknown";
-      licenses = lib.toList (pkg.meta.license or [ ]);
-      results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) licenses;
-      licenseAllowed = builtins.all (r: r.allowed) results;
+      rawLicenses = lib.toList (pkg.meta.license or [ ]);
+
+      # Packages without a license: block for commercial, warn for non-commercial
+      hasLicense = rawLicenses != [ ];
+      noLicenseConflict = !hasLicense && cfg.usage.commercial-use;
+      noLicenseWarning = !hasLicense && !cfg.usage.commercial-use;
+
+      results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) rawLicenses;
+      licenseAllowed = builtins.all (r: r.allowed) results && !noLicenseConflict;
 
       conflicts = builtins.concatMap (r: r.conflicts) results;
-      conflictMsg = lib.concatMapStringsSep ", " (c: c.reason) conflicts;
+      conflictMsg =
+        if noLicenseConflict then "no license declared (commercial use requires explicit license)"
+        else if noLicenseWarning then "no license declared"
+        else lib.concatMapStringsSep ", " (c: c.reason) conflicts;
 
       # Token requirement check
       requiresToken = cfg.tokenVerification.enable
@@ -56,9 +65,13 @@ let
 
       compliant = licenseAllowed && tokenSatisfied;
     in
-    if compliant then true
+    if compliant then
+    # Even compliant packages get a warning if they have no license
+      if noLicenseWarning then
+        builtins.trace "nix-license: WARNING: ${pname} has no license declared" true
+      else true
     else if isEnforce then false
-    else builtins.trace "nix-license: WARNING: ${pname} conflicts with declared usage: ${conflictMsg}" true;
+    else builtins.trace "nix-license: WARNING: ${pname}: ${conflictMsg}" true;
 
   severityOption = cat: lib.mkOption {
     type = licenseTypes.policySeverityType;

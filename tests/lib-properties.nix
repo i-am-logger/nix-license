@@ -6,7 +6,7 @@ let
   cr = import ../lib/content-rating.nix { inherit lib oarsSpec; };
   types = import ../lib/types.nix { inherit lib oarsSpec; };
   licenses = import ../lib/licenses.nix { inherit lib saltLicenses; };
-  lc = import ../lib/license-check.nix { inherit lib; };
+  lc = import ../lib/license-check.nix { };
 
   assertTrue = name: value:
     if value then true
@@ -193,6 +193,146 @@ in
         licenseNames;
     in
     assertTrue "obligations triggered correctly for all 2600+ × 16"
+      (builtins.all (x: x) results);
+
+  # ── Commitments: 2600+ ─────────────────────────────────────────
+  #
+  # If an obligation triggers and the user can't commit → blocked
+  # If an obligation triggers and the user can commit → allowed
+  # If no obligation triggers, commitment value doesn't matter
+
+  commitmentsBlockWhenCantFulfill =
+    let
+      allObligationKeys = [
+        "include-copyright"
+        "disclose-source"
+        "same-license"
+        "same-license--file"
+        "same-license--library"
+        "document-changes"
+        "network-use-disclose"
+      ];
+
+      check = ln:
+        let
+          l = licenses.${ln};
+          obligations = l.obligations or { };
+          oblKeys = builtins.attrNames obligations;
+        in
+        builtins.all
+          (oblName:
+            let
+              triggers = obligations.${oblName} or [ ];
+              # Find a context that triggers this obligation
+              triggerCtx = builtins.foldl'
+                (acc: t:
+                  if acc != null then acc
+                  else if t == "any" then { ${t} = true; }
+                  else { ${t} = true; })
+                null
+                triggers;
+            in
+            if triggerCtx == null || !builtins.elem oblName allObligationKeys then true
+            else
+              let
+                # With commitment = false, should block
+                ctx = triggerCtx // { commitments = { ${oblName} = false; }; };
+                result = lc.evaluateLicenseUsage ctx l;
+              in
+              if !result.allowed then true
+              else throw "FAIL: ${ln}: obligation '${oblName}' triggered but commitment=false didn't block"
+          )
+          oblKeys;
+
+      results = map check licenseNames;
+    in
+    assertTrue "commitments block for all 2600+ when can't fulfill"
+      (builtins.all (x: x) results);
+
+  commitmentsAllowWhenCanFulfill =
+    let
+      check = ln: ctx:
+        let
+          l = licenses.${ln};
+          # All commitments = true means obligations never block
+          ctxWithCommitments = ctx // {
+            commitments = {
+              include-copyright = true;
+              disclose-source = true;
+              same-license = true;
+              same-license--file = true;
+              same-license--library = true;
+              document-changes = true;
+              network-use-disclose = true;
+            };
+          };
+          result = lc.evaluateLicenseUsage ctxWithCommitments l;
+        in
+        # Should only be blocked by restrictions or allowed-use, never by commitments
+        if !result.allowed then
+          builtins.all (c: c.restriction != "commitment") result.conflicts
+        else true;
+
+      results = builtins.concatMap
+        (ln: map (ctx: check ln ctx) allUsageContexts)
+        licenseNames;
+    in
+    assertTrue "commitments=true never blocks for all 2600+ × 16"
+      (builtins.all (x: x) results);
+
+  # ── Assurances: 2600+ ────────────────────────────────────────
+  #
+  # If a license disclaims X and user requires X → blocked
+  # If no assurances required → never blocked by disclaimers
+
+  noAssurancesNeverBlocks =
+    let
+      check = ln: ctx:
+        let
+          result = lc.evaluateLicenseUsage ctx licenses.${ln};
+        in
+        # With no assurances, no assurance conflicts
+        builtins.all (c: c.restriction != "assurance") (result.conflicts or [ ]);
+
+      results = builtins.concatMap
+        (ln: map (ctx: check ln ctx) allUsageContexts)
+        licenseNames;
+    in
+    assertTrue "no assurances = no assurance blocks for all 2600+ × 16"
+      (builtins.all (x: x) results);
+
+  assurancesBlockDisclaimers =
+    let
+      assuranceKeys = {
+        patent-grant = "patent-use";
+        liability-coverage = "liability";
+        warranty = "warranty";
+      };
+
+      check = ln: assuranceKey:
+        let
+          l = licenses.${ln};
+          disclaimers = l.disclaimers or [ ];
+          disclaimerKey = assuranceKeys.${assuranceKey};
+          hasDisclaimer = builtins.elem disclaimerKey disclaimers;
+          result = lc.evaluateLicenseUsage
+            { assurances = { ${assuranceKey} = true; }; }
+            l;
+        in
+        if hasDisclaimer then
+          if !result.allowed then true
+          else throw "FAIL: ${ln}: disclaims '${disclaimerKey}' but assurance '${assuranceKey}' didn't block"
+        else
+        # No disclaimer → assurance should not block
+          let assuranceConflicts = builtins.filter (c: c.restriction == "assurance") result.conflicts;
+          in if assuranceConflicts == [ ] then true
+          else throw "FAIL: ${ln}: no '${disclaimerKey}' disclaimer but assurance '${assuranceKey}' blocked";
+
+      results = builtins.concatMap
+        (ln: map (k: check ln k) (builtins.attrNames assuranceKeys))
+        licenseNames;
+    in
+    assertTrue "assurances correctly block/allow for all 2600+ × 3 assurance keys"
       (builtins.all (x: x) results);
 
   # ── Coverage ────────────────────────────────────────────────────

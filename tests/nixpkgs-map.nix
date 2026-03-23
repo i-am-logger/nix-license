@@ -6,7 +6,7 @@
 
 let
   nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
-  lc = import ../lib/license-check.nix { inherit lib; };
+  lc = import ../lib/license-check.nix { };
 
   assertTrue = name: value:
     if value then true
@@ -228,4 +228,90 @@ in
     in
     if failures == [ ] then true
     else throw "FAIL: empty usage blocked for: ${builtins.concatStringsSep ", " failures}";
+
+  # ── Regression: unfreeRedistributable allows distribution ──────
+  #
+  # NVIDIA drivers (unfreeRedistributable) must not be blocked for distribution.
+  # Previously mapped to proprietary-license which restricts distribution.
+
+  unfreeRedistributableAllowsDistribution =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.unfreeRedistributable;
+      result = lc.evaluateLicenseUsage { distribution = true; } salt;
+    in
+    assertTrue "unfreeRedistributable allows distribution"
+      result.allowed;
+
+  unfreeRedistributableBlocksCommercial =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.unfreeRedistributable;
+    in
+    assertTrue "unfreeRedistributable maps to proprietary-redistributable"
+      (salt.key == "proprietary-redistributable");
+
+  unfreeRedistributableFirmwareAllowsDistribution =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.unfreeRedistributableFirmware;
+      result = lc.evaluateLicenseUsage { distribution = true; } salt;
+    in
+    assertTrue "unfreeRedistributableFirmware allows distribution"
+      result.allowed;
+
+  # ── Multi-license packages ────────────────────────────────────
+  #
+  # meta.license = [ mit gpl3 ] — ALL licenses must pass
+
+  multiLicenseAllPermissive =
+    let
+      results = map
+        (nixLic: lc.evaluateLicenseUsage { type = "commercial"; commercial-use = true; } (nixpkgsMap.lookup nixLic))
+        [ lib.licenses.mit lib.licenses.asl20 ];
+    in
+    assertTrue "multi-license: all permissive → allowed"
+      (builtins.all (r: r.allowed) results);
+
+  multiLicenseOneRestricted =
+    let
+      results = map
+        (nixLic: lc.evaluateLicenseUsage { commercial-use = true; } (nixpkgsMap.lookup nixLic))
+        [ lib.licenses.mit lib.licenses.cc-by-nc-40 ];
+    in
+    assertTrue "multi-license: one restricted → blocked (all must pass)"
+      (!(builtins.all (r: r.allowed) results));
+
+  # ── Assurance key mapping with real SALT licenses ─────────────
+
+  assuranceMitPatent =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.mit;
+      disclaimers = salt.disclaimers or [ ];
+      result = lc.evaluateLicenseUsage { assurances = { patent-grant = true; }; } salt;
+    in
+    # MIT disclaims patent-use → patent-grant assurance should block
+    if builtins.elem "patent-use" disclaimers then
+      assertTrue "MIT + patent-grant assurance → blocked" (!result.allowed)
+    else
+      assertTrue "MIT no patent disclaimer → allowed" result.allowed;
+
+  assuranceMitLiability =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.mit;
+      disclaimers = salt.disclaimers or [ ];
+      result = lc.evaluateLicenseUsage { assurances = { liability-coverage = true; }; } salt;
+    in
+    if builtins.elem "liability" disclaimers then
+      assertTrue "MIT + liability-coverage assurance → blocked" (!result.allowed)
+    else
+      assertTrue "MIT no liability disclaimer → allowed" result.allowed;
+
+  assuranceMitWarranty =
+    let
+      salt = nixpkgsMap.lookup lib.licenses.mit;
+      disclaimers = salt.disclaimers or [ ];
+      result = lc.evaluateLicenseUsage { assurances = { warranty = true; }; } salt;
+    in
+    if builtins.elem "warranty" disclaimers then
+      assertTrue "MIT + warranty assurance → blocked" (!result.allowed)
+    else
+      assertTrue "MIT no warranty disclaimer → allowed" result.allowed;
 }

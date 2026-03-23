@@ -1,10 +1,10 @@
 # Tests for lib/token.nix
 # Cryptographic token authorization, restriction, and validation logic
 
-{ lib }:
+_:
 
 let
-  tk = import ../lib/token.nix { inherit lib; };
+  tk = import ../lib/token.nix { };
 
   assertTrue = name: value:
     if value then true

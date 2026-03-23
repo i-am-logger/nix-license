@@ -5,7 +5,7 @@
 
 let
   licenses = import ../lib/licenses.nix { inherit lib saltLicenses; };
-  lc = import ../lib/license-check.nix { inherit lib; };
+  lc = import ../lib/license-check.nix { };
 
   assertEq = name: actual: expected:
     if actual == expected then true
