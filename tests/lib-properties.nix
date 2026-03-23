@@ -3,10 +3,10 @@
 { lib, oarsSpec, saltLicenses }:
 
 let
-  cr = import ../lib/content-rating.nix { inherit lib oarsSpec; };
-  types = import ../lib/types.nix { inherit lib oarsSpec; };
+  cr = import ../lib/content-rating/rating.nix { inherit lib oarsSpec; };
+  types = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
   licenses = import ../lib/salt.nix { inherit lib saltLicenses; };
-  lc = import ../lib/license-check.nix { };
+  lc = import ../lib/licensing/check.nix { };
 
   assertTrue = name: value:
     if value then true

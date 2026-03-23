@@ -181,7 +181,7 @@
           # Self-license GPG verification (build-time signature check)
           self-license-verify =
             let
-              selfLicense = import ./lib/self-license.nix { inherit lib pkgs; };
+              selfLicense = import ./lib/licensing/verify.nix { inherit lib pkgs; };
             in
             selfLicense.mkVerifyDerivation {
               tokenFile = ./tests/fixtures/test-token.json;
@@ -191,7 +191,7 @@
           # Vendor token verification (algorithm-agnostic via openssl)
           vendor-token-verify =
             let
-              selfLicense = import ./lib/self-license.nix { inherit lib pkgs; };
+              selfLicense = import ./lib/licensing/verify.nix { inherit lib pkgs; };
             in
             selfLicense.mkVendorVerifyDerivation {
               tokenFile = ./tests/fixtures/vendor-token.json;

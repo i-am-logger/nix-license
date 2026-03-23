@@ -11,8 +11,8 @@
 { config, lib, pkgs, oarsSpec, ... }:
 
 let
-  licenseTypes = import ../lib/types.nix { inherit lib oarsSpec; };
-  contentRating = import ../lib/content-rating.nix { inherit lib oarsSpec; };
+  licenseTypes = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
+  contentRating = import ../lib/content-rating/rating.nix { inherit lib oarsSpec; };
   sharedOpts = import ../lib/options.nix { inherit lib licenseTypes; };
 
   cfg = config.my.license;

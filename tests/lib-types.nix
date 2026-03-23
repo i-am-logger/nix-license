@@ -4,7 +4,7 @@
 { lib, oarsSpec }:
 
 let
-  types = import ../lib/types.nix { inherit lib oarsSpec; };
+  types = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
 
   # Test helper: assert with message
   assertEq = name: actual: expected:

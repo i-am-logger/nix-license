@@ -4,7 +4,7 @@
 { lib, pkgs, saltLicenses, saltSpdx, ... }:
 
 let
-  licenseCheck = import ../lib/license-check.nix { };
+  licenseCheck = import ../lib/licensing/check.nix { };
   nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
 
   # Packages to evaluate (covers permissive, copyleft, NC, proprietary)
@@ -98,7 +98,7 @@ let
           cfg.assurances;
       };
 
-      reportLib = import ../lib/report.nix {
+      reportLib = import ../lib/commercial/reporting/report.nix {
         inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext title cfg;
       };
     in

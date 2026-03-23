@@ -14,8 +14,8 @@
 let
   # Embedded author public keys (YubiKey pair, for key rotation)
   publicKeys = [
-    ../keys/yubikey1.asc
-    ../keys/yubikey2.asc
+    ../../keys/yubikey1.asc
+    ../../keys/yubikey2.asc
   ];
 
   # Parse a token JSON string into claims

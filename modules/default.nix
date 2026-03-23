@@ -11,9 +11,9 @@
 { config, lib, pkgs, oarsSpec, saltLicenses, saltSpdx, ... }:
 
 let
-  licenseTypes = import ../lib/types.nix { inherit lib oarsSpec; };
-  contentRating = import ../lib/content-rating.nix { inherit lib oarsSpec; };
-  licenseCheck = import ../lib/license-check.nix { };
+  licenseTypes = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
+  contentRating = import ../lib/content-rating/rating.nix { inherit lib oarsSpec; };
+  licenseCheck = import ../lib/licensing/check.nix { };
   nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
   sharedOpts = import ../lib/options.nix { inherit lib licenseTypes; };
 
@@ -207,7 +207,7 @@ in
     nix-license.report =
       let
         hasNixLicense = cfg.licenses ? "nix-license";
-        reportLib = import ../lib/report.nix {
+        reportLib = import ../lib/commercial/reporting/report.nix {
           inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext cfg;
           title =
             if cfg.name != "" && cfg.description != "" then "${cfg.name} — ${cfg.description}"

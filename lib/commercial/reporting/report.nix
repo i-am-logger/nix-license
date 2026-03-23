@@ -73,7 +73,7 @@ let
       meta = {
         generator = "nix-license";
         inherit title;
-        version = lib.strings.trim (builtins.readFile ../version.txt);
+        version = lib.strings.trim (builtins.readFile ../../../version.txt);
         generatedAt = builtins.currentTime or 0;
         compliant = builtins.length blocked == 0;
         integrity = contentHash;
@@ -89,7 +89,7 @@ let
   mkReportHtml = packages:
     let
       reportJson = builtins.toJSON (mkReport packages);
-      template = builtins.readFile ./report-template.html;
+      template = builtins.readFile ./template.html;
       html = builtins.replaceStrings [ "__REPORT_JSON__" ] [ reportJson ] template;
     in
     pkgs.writeText "nix-license-report.html" html;

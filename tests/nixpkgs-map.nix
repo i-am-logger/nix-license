@@ -6,7 +6,7 @@
 
 let
   nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
-  lc = import ../lib/license-check.nix { };
+  lc = import ../lib/licensing/check.nix { };
 
   assertTrue = name: value:
     if value then true
