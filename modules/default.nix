@@ -315,11 +315,15 @@ in
       allowUnfreePredicate = checkPackageLicense;
     };
 
-    # Content policy files — immutable, symlinked to Nix store
-    environment.etc."nix-license/content-policy/system.json".source =
-      pkgs.writeText "nix-license-content-policy-system.json"
+    # Content policy files — immutable, proper ownership
+    environment.etc."nix-license/content-policy/system.json" = {
+      source = pkgs.writeText "nix-license-content-policy-system.json"
         (builtins.toJSON (contentRating.resolveContentPolicy
           (if cfg.contentPolicy.preset != null then cfg.contentPolicy.preset else "unrestricted")));
+      mode = "0640";
+      user = "root";
+      group = "wheel";
+    };
 
     # Usage consistency assertions
     assertions = [

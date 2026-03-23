@@ -242,12 +242,15 @@ in
       inherit (cfg) contentPolicy licenses tokenVerification;
     };
 
-    # Per-user content policy files — immutable, symlinked to Nix store
+    # Per-user content policy files — immutable, user-owned
     environment.etc = lib.mapAttrs'
       (username: userCfg:
         lib.nameValuePair "nix-license/content-policy/${username}.json" {
           source = pkgs.writeText "nix-license-content-policy-${username}.json"
             (builtins.toJSON (contentRating.resolveContentPolicy userCfg.contentPolicy));
+          mode = "0400";
+          user = username;
+          group = "root";
         })
       config.my.users;
   };
