@@ -1,7 +1,7 @@
 # Commercial company — proprietary product, no distribution
 {
   nix-license = {
-    name = "Commercial Company";
+    name = "Example: Commercial Company";
     description = "Proprietary product, no distribution";
     enable = true;
     enforcement = "enforce";

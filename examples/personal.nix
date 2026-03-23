@@ -1,7 +1,7 @@
 # Personal user — FOSS-only with NVIDIA exception and a licensed app
 {
   nix-license = {
-    name = "Personal";
+    name = "Example: Personal";
     description = "FOSS-only with NVIDIA exception";
     enable = true;
     usage = {

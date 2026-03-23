@@ -50,8 +50,8 @@
 <body>
   <div class="header">
     <div class="header-left">
-      <h1>nix-license</h1>
-      <p class="subtitle" id="reportTitle"></p>
+      <h1 id="headerTitle">nix-license</h1>
+      <p class="subtitle" id="headerSubtitle"></p>
     </div>
     <div id="verdict"></div>
   </div>
@@ -62,7 +62,10 @@
     const app = document.getElementById('app');
     const verdict = document.getElementById('verdict');
     const meta = report.meta || {};
-    document.getElementById('reportTitle').textContent = meta.title || 'License Compliance Report';
+    const name = (meta.title || '').split(' — ')[0] || 'License Compliance Report';
+    const desc = (meta.title || '').split(' — ').slice(1).join(' — ');
+    document.getElementById('headerTitle').textContent = 'nix-license: ' + name;
+    document.getElementById('headerSubtitle').textContent = desc;
     const isCompliant = report.summary.blocked === 0;
     verdict.className = 'verdict ' + (isCompliant ? 'verdict-pass' : 'verdict-fail');
     verdict.innerHTML = isCompliant ? '<span style="color:var(--green)">\u2714</span> PASS' : '<span style="color:var(--red)">\u2718</span> FAIL';

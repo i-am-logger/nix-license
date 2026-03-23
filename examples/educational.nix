@@ -1,7 +1,7 @@
 # University — teaching lab with academic licenses
 {
   nix-license = {
-    name = "University";
+    name = "Example: University";
     description = "Teaching lab with academic licenses";
     enable = true;
     usage = {

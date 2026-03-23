@@ -1,7 +1,7 @@
 # SaaS company — Docker containers, hosting services
 {
   nix-license = {
-    name = "SaaS Company";
+    name = "Example: SaaS Company";
     description = "Docker containers, hosting services";
     enable = true;
     enforcement = "enforce";
