@@ -63,10 +63,10 @@
     const verdict = document.getElementById('verdict');
     const isCompliant = report.summary.blocked === 0;
     verdict.className = 'verdict ' + (isCompliant ? 'verdict-pass' : 'verdict-fail');
-    verdict.textContent = isCompliant ? '\u2705 PASS' : '\u274C FAIL';
-    const statusIcon = { allowed: '\u2705', blocked: '\u274C', overridden: '\u26A0\uFE0F', 'no-license': '\u2753' };
+    verdict.innerHTML = isCompliant ? '<span style="color:var(--green)">\u2714</span> PASS' : '<span style="color:var(--red)">\u2718</span> FAIL';
+    const statusIcon = { allowed: '\u2714', blocked: '\u2718', overridden: '\u2691', 'no-license': '?' };
     const usageBadge = (v) => typeof v === 'boolean'
-      ? `<span class="badge badge-${v}">${v ? '\u2705' : '\u274C'}</span>`
+      ? `<span class="badge badge-${v}">${v ? '\u2714' : '\u2718'}</span>`
       : `<span class="badge badge-true">${v}</span>`;
     app.innerHTML = `
       <div class="summary">
