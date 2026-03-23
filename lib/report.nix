@@ -56,6 +56,12 @@ let
       noLicense = builtins.filter (p: p.status == "no-license") evaluated;
     in
     {
+      meta = {
+        generator = "nix-license";
+        version = lib.strings.trim (builtins.readFile ../version.txt);
+        generatedAt = builtins.currentTime;
+        compliant = builtins.length blocked == 0;
+      };
       usage = {
         inherit (cfg.usage) type commercial-use distribution modifications saas;
       };
