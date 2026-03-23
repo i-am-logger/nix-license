@@ -33,6 +33,9 @@ A NixOS module that checks every package's license against your declared usage a
             # Can't open-source our product → blocks GPL, AGPL
             commitments.same-license = false;
             commitments.disclose-source = false;
+
+            # Commercial token (required in enforce mode)
+            license.tokenFile = ./secrets/nix-license-token.json;
           };
         }
       ];
