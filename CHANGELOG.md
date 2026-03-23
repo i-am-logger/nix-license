@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.0...nix-license-v0.9.1) (2026-03-23)
+
+
+### Bug Fixes
+
+* embedded vendor keys cannot be overridden (source of trust) ([3b97a5f](https://github.com/i-am-logger/nix-license/commit/3b97a5f1a85fbcba039e176da560a430c14d878d))
+* enforce mode error messages, naming, vendor key priority ([6dae546](https://github.com/i-am-logger/nix-license/commit/6dae5469a4331b2a21d42b94af50471f4a9bf397))
+* minor review findings ([b02b439](https://github.com/i-am-logger/nix-license/commit/b02b439beee29638fb824aadd439915206da8501))
+
 ## [0.9.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.8.1...nix-license-v0.9.0) (2026-03-23)
 
 
