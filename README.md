@@ -103,10 +103,12 @@ Commercial use in enforce mode requires a GPG-signed token. Vendor packages can 
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Domain model, library API, module structure
 - [COMPLIANCE.md](docs/COMPLIANCE.md) — Standards (SALT, OARS, OpenChain)
 
-## Development
+## Testing
+
+Every license (2649) is evaluated and tested against every usage context (16 activity combinations × 6 user types × 7 commitment keys × 3 assurance keys), producing over 200,000 individual pass/fail checks per `nix flake check`.
 
 ```bash
-nix develop       # Dev shell
 nix flake check   # Run all checks
+nix develop       # Dev shell
 nix fmt           # Format
 ```
