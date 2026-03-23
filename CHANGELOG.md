@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.5.2...nix-license-v0.6.0) (2026-03-22)
+
+
+### Features
+
+* vendor token verification with algorithm-agnostic signatures ([efd4e82](https://github.com/i-am-logger/nix-license/commit/efd4e82c5ffdb02f7f707a49cd7554823ce83f83))
+
 ## [0.5.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.5.1...nix-license-v0.5.2) (2026-03-22)
 
 
