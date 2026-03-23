@@ -4,26 +4,65 @@
 
 ```
 nix-license/
+├── keys/
+│   ├── yubikey1.asc          # Author public key (YubiKey 1)
+│   └── yubikey2.asc          # Author public key (YubiKey 2)
 ├── lib/
 │   ├── types.nix             # OARS categories + severity values (from upstream RNC schema)
 │   ├── content-rating.nix    # Content policy resolution and evaluation
-│   ├── license-check.nix     # License restriction + allowed-use evaluation
+│   ├── license-check.nix     # Four compliance checks + obligation reporting
 │   ├── licenses.nix          # License definitions from SALT
 │   ├── nixpkgs-map.nix       # Maps nixpkgs licenses to SALT (spdxId → manual → key)
+│   ├── self-license.nix      # Commercial gate: GPG + openssl token verification
 │   └── token.nix             # Token construction, restriction, validation
 ├── modules/
 │   ├── default.nix           # Standalone NixOS module (nix-license.*)
 │   └── mynixos.nix           # mynixos integration (my.license.* + my.users.<name>.*)
 ├── tests/
+│   ├── fixtures/             # Signed test tokens (GPG + Ed25519)
 │   ├── lib-types.nix         # OARS categories, presets
 │   ├── lib-content-rating.nix # Severity, policy resolution, content evaluation
-│   ├── lib-licenses.nix      # License restriction + allowed-use checks
+│   ├── lib-licenses.nix      # Commitments, assurances, restriction checks
 │   ├── lib-token.nix         # Token authorization, restriction, expiry
-│   ├── lib-properties.nix    # Domain model guarantees
-│   ├── nixpkgs-map.nix       # 289/289 nixpkgs→SALT mapping + end-to-end evaluation
-│   └── module-standalone.nix # NixOS module scenarios + assertion tests
+│   ├── lib-properties.nix    # 200,000+ domain model guarantees
+│   ├── nixpkgs-map.nix       # 289/289 mapping + regression tests
+│   ├── self-license.nix      # Token claim validation
+│   └── module-standalone.nix # Module scenarios, commercial gate, assertions
 └── docs/
 ```
+
+## Domain model
+
+Every license carries terms. Every user declares their context. nix-license evaluates one against the other.
+
+**License side** ([SALT](https://github.com/i-am-logger/salt) — 2649 classified licenses):
+
+| Term | What it is | Example |
+|------|-----------|---------|
+| Restrictions | What the license prohibits | `commercial-use`, `distribution`, `modifications`, `saas`, `endorsement`, `competing-use` |
+| Allowed-use | Who the license permits | `educational`, `research` |
+| Obligations | What the license requires you to do | `disclose-source`, `same-license`, `include-copyright` |
+| Disclaimers | What the license doesn't guarantee | `liability`, `warranty`, `patent-use`, `trademark-use` |
+
+**User side** (your NixOS config):
+
+| Term | What it is | Example |
+|------|-----------|---------|
+| Usage (type) | Who you are | `personal`, `commercial`, `nonprofit`, `educational` |
+| Usage (activities) | What you do | `commercial-use`, `distribution`, `modifications`, `saas` |
+| Commitments | Which obligations you can fulfill | `same-license = false` (can't open-source) |
+| Assurances | What guarantees you require | `patent-grant = true` (require patent rights) |
+
+**Evaluation** — four compliance checks, all must pass:
+
+| License | User | Blocks when |
+|---------|------|-------------|
+| Restrictions | Usage (activities) | Activity is restricted |
+| Allowed-use | Usage (type) | Type not in allowed list |
+| Obligations | Commitments | Obligation triggers and user can't commit |
+| Disclaimers | Assurances | License disclaims what user requires |
+
+See [SALT TERMS.md](https://github.com/i-am-logger/salt/blob/master/TERMS.md) for the complete vocabulary.
 
 ## Data sources
 
@@ -48,7 +87,7 @@ Triggered obligations are also returned for reporting but do not block on their 
 `lib/nixpkgs-map.nix` maps every nixpkgs license to its SALT equivalent. Lookup order:
 
 1. `spdxId` → `salt.spdx.${spdxId}` (234 licenses)
-2. Manual map for known mismatches (55 entries, e.g. `asl20` → `apache-2.0`, `unfree` → `proprietary-license`)
+2. Manual map for known mismatches (55 entries, e.g. `asl20` → `apache-2.0`, `unfreeRedistributable` → `proprietary-redistributable`)
 3. `shortName` → `salt.licenses.${shortName}` (direct key match)
 4. `null` → module throws (unknown license must fail)
 
@@ -96,15 +135,29 @@ All fields required, no defaults.
 
 ## Domain model guarantees
 
-| Guarantee | Verified by |
-|-----------|-------------|
-| Empty usage = no conflicts | lib-properties |
-| Adding usage flags never removes conflicts | lib-properties |
-| No restrictions = universally allowed | lib-properties |
-| Severity levels form a total order | lib-properties |
-| Content policy presets are ordered (child < teen < unrestricted) | lib-properties |
-| Relaxing a policy never removes access | lib-properties |
-| All 289 nixpkgs licenses map to SALT | nixpkgs-map |
-| All 289 × 4 usage contexts evaluate without error | nixpkgs-map |
-| Usage assertions catch invalid combinations | module-standalone |
-| Enforce mode sets allowUnfree=false with predicate | module-standalone |
+| Guarantee | Scope | Verified by |
+|-----------|-------|-------------|
+| Restriction enforcement | 2649 × 16 | lib-properties |
+| Allowed-use enforcement | 2649 × 6 | lib-properties |
+| Obligation triggers | 2649 × 16 | lib-properties |
+| Commitments block when can't fulfill | 2649 | lib-properties |
+| Commitments=true never blocks | 2649 × 16 | lib-properties |
+| No assurances = no assurance blocks | 2649 × 16 | lib-properties |
+| Assurances block/allow correctly | 2649 × 3 | lib-properties |
+| Monotonicity (adding flags never removes conflicts) | 2649 × 5 | lib-properties |
+| No restrictions = universally allowed | unrestricted × 16 | lib-properties |
+| Empty usage = no conflicts | 2649 | lib-properties |
+| Severity levels form a total order | all intensities | lib-properties |
+| Content policy presets ordered (child < teen < unrestricted) | all categories | lib-properties |
+| Relaxing a policy never removes access | all presets | lib-properties |
+| All nixpkgs licenses map to SALT | 289/289 | nixpkgs-map |
+| unfreeRedistributable allows distribution | regression | nixpkgs-map |
+| Multi-license packages (all must pass) | targeted | nixpkgs-map |
+| Assurance key mapping with real SALT data | targeted | nixpkgs-map |
+| GPG token signature verification | build-time | self-license-verify |
+| Vendor token signature verification (openssl) | build-time | vendor-token-verify |
+| Token claim validation (package, commercial, expiry) | 12 cases | self-license-claims |
+| Usage assertions catch invalid combinations | targeted | module-standalone |
+| Commercial gate requires token in enforce mode | targeted | module-standalone |
+
+Over 200,000 behavioral assertions across all 2649 SALT licenses, run on every commit.

@@ -7,7 +7,7 @@ All license data comes from [SALT](https://github.com/i-am-logger/salt) (Softwar
 SALT provides 2649 licenses classified with:
 - **Grants**: what the license permits
 - **Obligations**: what you must do
-- **Restrictions**: what the license prohibits (`commercial-use`, `distribution`, `modifications`, `saas`)
+- **Restrictions**: what the license prohibits (`commercial-use`, `distribution`, `modifications`, `saas`, `endorsement`, `competing-use`)
 - **Disclaimers**: what the license doesn't guarantee
 
 nix-license's usage flags match SALT restriction keys exactly. If a license restricts `commercial-use` and the user declares `commercial-use = true`, the build fails.
@@ -46,9 +46,20 @@ Both modes use `allowUnfreePredicate` to check every unfree package against SALT
 | OpenChain requirement | nix-license role |
 |---|---|
 | Written open source policy | Usage declaration in NixOS config is the policy |
-| Process to review licenses | `evaluateLicenseUsage` runs at build time |
-| Ability to produce SBOM | Future work |
+| Process to review licenses | Every package's license is evaluated against declared usage at build time |
+| License identification | All 289 nixpkgs licenses mapped to [SALT](https://github.com/i-am-logger/salt) classifications |
+| Compliance artifacts | Triggered obligations are tracked per-package |
+| Ability to produce SBOM | Future work ([#7](https://github.com/i-am-logger/nix-license/issues/7)) |
+
+See [issue #6](https://github.com/i-am-logger/nix-license/issues/6) for self-certification questionnaire mapping.
 
 ## Token verification
 
-License tokens use GPG signatures (Ed25519 via YubiKey). The token system draws from [Biscuit](https://biscuitsec.org/) (restriction model) and [Macaroons](https://research.google/pubs/macaroons-cookies-with-contextual-caveats-for-decentralized-authorization-in-the-cloud/) (delegation chains).
+Two token verification paths:
+
+| Path | Algorithm | Verifier | Use case |
+|------|-----------|----------|----------|
+| nix-license self-licensing | GPG/YubiKey (Ed25519) | `gpg --verify` | Commercial use of nix-license itself |
+| Vendor package tokens | Any (vendor's choice) | `openssl pkeyutl -verify` | Per-package commercial licenses |
+
+Author public keys are embedded in `keys/`. Vendor public keys are provided via `nix-license.vendorKeys`.
