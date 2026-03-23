@@ -128,11 +128,7 @@ jobs:
     name: Deploy Reports to GitHub Pages
     runs-on: ubuntu-latest
     needs: [demo-reports, release-please]
-    if: |
-      always() &&
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/master' &&
-      needs.demo-reports.result == 'success'
+    if: needs.release-please.outputs.release_created == 'true' && needs.demo-reports.result == 'success'
     permissions:
       pages: write
       id-token: write
