@@ -247,3 +247,38 @@ nix-license.enforcement = "enforce";
 ```
 
 Both modes evaluate every unfree package against your declared usage via `allowUnfreePredicate`. In warn mode, conflicts are logged with `builtins.trace` and the package is allowed. In enforce mode, the build fails.
+
+## Per-package vendor licenses
+
+Some packages require a commercial license from their vendor. You declare the token and tell nix-license to require it:
+
+```nix
+nix-license = {
+  tokenVerification = {
+    enable = true;
+    requireTokens = [ "vendor-sdk" "another-tool" ];
+  };
+
+  # Vendor provides a signed token proving your license
+  licenses."vendor-sdk" = {
+    license = "commercial";
+    licenseId = "LIC-2026-XXXXX";           # for your records
+    tokenFile = ./secrets/vendor-sdk.json;   # signed token from vendor
+  };
+
+  licenses."another-tool" = {
+    license = "commercial";
+    token = ''{"package":"another-tool","commercial":true,"licensee":"Acme Corp"}'';
+  };
+};
+```
+
+Packages in `requireTokens` without a matching entry in `licenses` are blocked in enforce mode.
+
+Vendors sign tokens with their own keys (any algorithm — Ed25519, RSA, ECDSA). Vendor public keys are configured via:
+
+```nix
+nix-license.vendorKeys = {
+  "vendor.example.com" = [ ./keys/vendor-pubkey.pem ];
+};
+```

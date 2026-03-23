@@ -98,7 +98,7 @@ Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oar
 
 ## Commercial licensing
 
-Commercial use in enforce mode requires a GPG-signed token. Vendor packages can use any algorithm via openssl. See [COMPLIANCE.md](docs/COMPLIANCE.md).
+Commercial use in enforce mode requires a GPG-signed nix-license token (`license.tokenFile`). Vendor packages can require their own tokens via `tokenVerification.requireTokens` — vendors sign with any algorithm (Ed25519, RSA, ECDSA), verified via openssl. See [USAGE.md](docs/USAGE.md#per-package-vendor-licenses).
 
 ## Documentation
 
