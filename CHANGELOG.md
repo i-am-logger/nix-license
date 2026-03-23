@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.6.5](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.4...nix-license-v0.6.5) (2026-03-23)
+
+
+### Bug Fixes
+
+* remove tokenVerification.enable — requireTokens is sufficient ([8ffcc43](https://github.com/i-am-logger/nix-license/commit/8ffcc43ad6fdcf043351e50a6c7fb007744e3dab))
+
+
+### Code Refactoring
+
+* unified license API — remove requireTokens and license.* ([feb8c40](https://github.com/i-am-logger/nix-license/commit/feb8c405a037cdba45bcdc0ab761ef6bcc5e5ada))
+
+
+### Documentation
+
+* add DEVELOPMENT.md with domain invariants and test suite ([f528d55](https://github.com/i-am-logger/nix-license/commit/f528d5530e4eb671cc60347b4ab5a772fae03f1b))
+* add DEVELOPMENT.md with domain invariants and test suite ([ed07dda](https://github.com/i-am-logger/nix-license/commit/ed07dda968547609d37128aa9c21395a7ab2d23a))
+* add domain model and data flow diagrams (Mermaid) ([fed2771](https://github.com/i-am-logger/nix-license/commit/fed2771bb394570fbabba8b38f13311f9cc16f07))
+* add license.tokenFile to commercial example in README ([78f02b5](https://github.com/i-am-logger/nix-license/commit/78f02b58dd473eabe721ce5638211d8bda7a30b8))
+* add per-package vendor license setup to USAGE.md and README ([3e593fa](https://github.com/i-am-logger/nix-license/commit/3e593fa688d593708aac39220ac38210e9dc32af))
+* add testing section to README ([af9da45](https://github.com/i-am-logger/nix-license/commit/af9da45471fbadbc1dfed127c0e3d2801e93d283))
+* clarify what the 200k checks actually test ([e811279](https://github.com/i-am-logger/nix-license/commit/e81127941d355a9710c2fb2ed7e02543dc7f3894))
+* rename vendor-sdk to vendor-package in examples ([356f2dd](https://github.com/i-am-logger/nix-license/commit/356f2dd0b5974503eec4c58c11ab60400cc21e6d))
+
 ## [0.6.4](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.3...nix-license-v0.6.4) (2026-03-23)
 
 
