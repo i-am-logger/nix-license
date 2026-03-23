@@ -160,4 +160,4 @@ All fields required, no defaults.
 | Usage assertions catch invalid combinations | targeted | module-standalone |
 | Commercial gate requires token in enforce mode | targeted | module-standalone |
 
-Over 200,000 behavioral assertions across all 2649 SALT licenses, run on every commit.
+Every license (2649) is evaluated and tested against every usage context (16 activity combinations × 6 user types × 7 commitment keys × 3 assurance keys), producing over 200,000 individual pass/fail checks per `nix flake check`.
