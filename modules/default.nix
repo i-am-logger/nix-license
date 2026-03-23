@@ -21,15 +21,16 @@ let
   # Embedded vendor public keys (shipped with nix-license)
   # Supports .asc (GPG) and .pem (openssl) key formats
   embeddedVendorKeysDir = ../keys/vendors;
-  # User-supplied vendor keys override embedded keys (stale key recovery)
+  # Embedded vendor keys take priority — they are the source of trust.
+  # User vendorKeys only for vendors not yet integrated into nix-license.
   getVendorKey = pname:
     let
       pemPath = embeddedVendorKeysDir + "/${pname}.pem";
       ascPath = embeddedVendorKeysDir + "/${pname}.asc";
     in
-    if cfg.vendorKeys ? ${pname} then { type = "pem"; path = cfg.vendorKeys.${pname}; }
-    else if builtins.pathExists pemPath then { type = "pem"; path = pemPath; }
+    if builtins.pathExists pemPath then { type = "pem"; path = pemPath; }
     else if builtins.pathExists ascPath then { type = "gpg"; path = ascPath; }
+    else if cfg.vendorKeys ? ${pname} then { type = "pem"; path = cfg.vendorKeys.${pname}; }
     else null;
 
   cfg = config.nix-license;
