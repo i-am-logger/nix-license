@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.1...nix-license-v0.9.2) (2026-03-23)
+
+
+### Bug Fixes
+
+* check ALL packages, not just unfree (closes [#25](https://github.com/i-am-logger/nix-license/issues/25)) ([81957b9](https://github.com/i-am-logger/nix-license/commit/81957b92dfffa52e956d83997b33dba30de1f1e0))
+
 ## [0.9.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.0...nix-license-v0.9.1) (2026-03-23)
 
 
