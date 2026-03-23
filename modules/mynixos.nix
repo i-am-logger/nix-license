@@ -174,12 +174,6 @@ in
     };
 
     tokenVerification = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable cryptographic token verification";
-      };
-
       requireTokens = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];

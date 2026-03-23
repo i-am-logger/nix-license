@@ -254,10 +254,7 @@ Some packages require a commercial license from their vendor. You declare the to
 
 ```nix
 nix-license = {
-  tokenVerification = {
-    enable = true;
-    requireTokens = [ "vendor-sdk" "another-tool" ];
-  };
+  tokenVerification.requireTokens = [ "vendor-sdk" "another-tool" ];
 
   # Vendor provides a signed token proving your license
   licenses."vendor-sdk" = {

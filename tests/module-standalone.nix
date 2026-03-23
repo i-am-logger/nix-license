@@ -237,22 +237,17 @@ in
     let
       cfg = evalModule defaultUsage;
     in
-    assertTrue "token verification disabled by default"
-      (!cfg.nix-license.tokenVerification.enable
-        && cfg.nix-license.tokenVerification.requireTokens == [ ]);
+    assertTrue "requireTokens empty by default"
+      (cfg.nix-license.tokenVerification.requireTokens == [ ]);
 
   tokenRequirePackage =
     let
       cfg = evalModule (defaultUsage // {
-        nix-license.tokenVerification = {
-          enable = true;
-          requireTokens = [ "vendor-sdk" ];
-        };
+        nix-license.tokenVerification.requireTokens = [ "vendor-sdk" ];
       });
     in
     assertTrue "can require tokens for specific packages"
-      (cfg.nix-license.tokenVerification.enable
-        && builtins.elem "vendor-sdk" cfg.nix-license.tokenVerification.requireTokens);
+      (builtins.elem "vendor-sdk" cfg.nix-license.tokenVerification.requireTokens);
 
   vendorTokenConfig =
     let

@@ -58,8 +58,7 @@ let
         else lib.concatMapStringsSep ", " (c: c.reason) conflicts;
 
       # Token requirement check
-      requiresToken = cfg.tokenVerification.enable
-        && builtins.elem pname cfg.tokenVerification.requireTokens;
+      requiresToken = builtins.elem pname cfg.tokenVerification.requireTokens;
       hasToken = cfg.licenses ? ${pname}
         && (cfg.licenses.${pname}.token != null || cfg.licenses.${pname}.tokenFile != null);
       tokenSatisfied = !requiresToken || hasToken;
@@ -261,12 +260,6 @@ in
 
     # Token verification settings
     tokenVerification = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable cryptographic token verification at build time";
-      };
-
       requireTokens = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
