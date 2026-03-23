@@ -3,7 +3,10 @@ description: 'Generate a license compliance report for a NixOS system'
 inputs:
   system:
     description: 'NixOS system configuration name (e.g., myhost)'
-    required: true
+    required: false
+  target:
+    description: 'Custom nix build target (overrides system). Example: .#demo-reports.x86_64-linux.personal'
+    required: false
   flake:
     description: 'Path to flake (default: current directory)'
     required: false
@@ -12,9 +15,17 @@ inputs:
     description: 'Upload report as a GitHub artifact'
     required: false
     default: 'true'
+  artifact-name:
+    description: 'Name for the uploaded artifact'
+    required: false
+    default: 'nix-license-report'
+  fail-on-blocked:
+    description: 'Fail the build if any packages are blocked'
+    required: false
+    default: 'true'
 outputs:
   report-path:
-    description: 'Path to the generated JSON report'
+    description: 'Path to the generated report directory'
     value: ${{ steps.report.outputs.path }}
   total:
     description: 'Total number of packages evaluated'
@@ -32,9 +43,13 @@ runs:
       id: report
       shell: bash
       run: |
-        nix build "${{ inputs.flake }}#nixosConfigurations.${{ inputs.system }}.config.nix-license.report" --print-build-logs
-        REPORT_PATH=$(readlink -f result)
-        echo "path=$REPORT_PATH" >> "$GITHUB_OUTPUT"
+        if [ -n "${{ inputs.target }}" ]; then
+          BUILD_TARGET="${{ inputs.target }}"
+        else
+          BUILD_TARGET="${{ inputs.flake }}#nixosConfigurations.${{ inputs.system }}.config.nix-license.report"
+        fi
+        nix build "$BUILD_TARGET" --print-build-logs
+        echo "path=$(readlink -f result)" >> "$GITHUB_OUTPUT"
     - name: Parse summary
       id: summary
       shell: bash
@@ -58,14 +73,15 @@ runs:
       if: inputs.upload-artifact == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: nix-license-report
+        name: ${{ inputs.artifact-name }}
         path: result
     - name: Check for blocked packages
+      if: inputs.fail-on-blocked == 'true'
       shell: bash
       run: |
         BLOCKED=${{ steps.summary.outputs.blocked }}
         if [ "$BLOCKED" -gt 0 ]; then
           echo "::error::$BLOCKED packages blocked by license compliance"
-          nix run nixpkgs#jq -- '.packages[] | select(.status == "blocked") | "\(.pname): \(.conflicts[0].reason // "unknown")"' result/report.json
+          nix run nixpkgs#jq -- -r '.packages[] | select(.status == "blocked") | "\(.pname): \(.conflicts[0].reason // "unknown")"' result/report.json
           exit 1
         fi

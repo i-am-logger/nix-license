@@ -67,19 +67,24 @@ jobs:
           extra-conf: |
             extra-substituters = https://nix-community.cachix.org https://cache.nixos.org
             extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-      - name: Build demo reports
-        run: |
-          nix build .#demo-reports.x86_64-linux.personal -o personal-report
-          nix build .#demo-reports.x86_64-linux.saas -o saas-report
-          nix build .#demo-reports.x86_64-linux.proprietary -o proprietary-report
-      - name: Upload reports
-        uses: actions/upload-artifact@v4
+      - name: Personal report (expect PASS)
+        uses: ./action
         with:
-          name: demo-reports
-          path: |
-            personal-report/
-            saas-report/
-            proprietary-report/
+          target: .#demo-reports.x86_64-linux.personal
+          artifact-name: report-personal
+          fail-on-blocked: 'false'
+      - name: SaaS report (expect FAIL)
+        uses: ./action
+        with:
+          target: .#demo-reports.x86_64-linux.saas
+          artifact-name: report-saas
+          fail-on-blocked: 'false'
+      - name: Proprietary report (expect FAIL)
+        uses: ./action
+        with:
+          target: .#demo-reports.x86_64-linux.proprietary
+          artifact-name: report-proprietary
+          fail-on-blocked: 'false'
   release-please:
     name: Release Please
     runs-on: ubuntu-latest
