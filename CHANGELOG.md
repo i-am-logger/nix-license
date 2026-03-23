@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.10.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.4...nix-license-v0.10.0) (2026-03-23)
+
+
+### Features
+
+* demo reports for all example scenarios ([604fcc4](https://github.com/i-am-logger/nix-license/commit/604fcc4a9db8f745c56e2bab4e5cf40c41dc6c9a))
+* GitHub Action for license compliance reports (closes [#38](https://github.com/i-am-logger/nix-license/issues/38)) ([c73e300](https://github.com/i-am-logger/nix-license/commit/c73e3001f3fa7356ac69c70aca98b34b5ce06960))
+* HTML dashboard for license compliance report ([965bf75](https://github.com/i-am-logger/nix-license/commit/965bf75f3264480035f60b155e869f83614c6fa0))
+* license compliance report as JSON (closes [#27](https://github.com/i-am-logger/nix-license/issues/27)) ([3005f67](https://github.com/i-am-logger/nix-license/commit/3005f6790796300222d3b7a6e883dc9bea58b2ac))
+* PASS/FAIL verdict badge in report dashboard ([18414b8](https://github.com/i-am-logger/nix-license/commit/18414b8b1c7afb253b82bd68bae805b7848663f1))
+* report requires nix-license commercial token (dogfooding) ([94f5215](https://github.com/i-am-logger/nix-license/commit/94f5215d1abab2a7f78a21a99f67789f32d2ecbc))
+* unicode icons in report (status, usage, verdict) ([4ee4748](https://github.com/i-am-logger/nix-license/commit/4ee4748432ba4d7c6a09c25c922ea8d25e0ea3a2))
+
+
+### Bug Fixes
+
+* report dashboard polish — icon-only badges, bigger labels ([e4dc792](https://github.com/i-am-logger/nix-license/commit/e4dc7929e165b53d086aeef7d859ea83d303a239))
+* usage declaration layout — type first, yes/no badges, flex wrap ([af76b1d](https://github.com/i-am-logger/nix-license/commit/af76b1d88fa902c8c58592cb45a3c3aceb4ffd2b))
+* usage layout — heading shows type, flags as labeled columns ([a6b1874](https://github.com/i-am-logger/nix-license/commit/a6b18747530c54e013fb5b0f42eb701dbc2bd78a))
+* use plain unicode glyphs + CSS colors instead of emoji ([1a66e6e](https://github.com/i-am-logger/nix-license/commit/1a66e6eaf3d4e9b8b6167b0f7438b484c31f4c60))
+
 ## [0.9.4](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.3...nix-license-v0.9.4) (2026-03-23)
 
 
