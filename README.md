@@ -10,6 +10,24 @@
 
 A NixOS module that checks every package's license against your declared usage at build time. Replaces `allowUnfree`.
 
+## Features
+
+- [x] License enforcement — restrictions, allowed-use, obligations evaluated per-package
+- [x] 2649 classified licenses — powered by [SALT](https://github.com/i-am-logger/salt)
+- [x] Full nixpkgs coverage — all 289 nixpkgs licenses mapped
+- [x] Commitments — declare which obligations you can fulfill
+- [x] Assurances — require patent grants, source availability, warranty
+- [x] Content policy — per-user entitlements based on [OARS 1.1](https://github.com/hughsie/oars)
+- [x] Cryptographic license tokens — GPG/YubiKey + algorithm-agnostic via openssl
+- [x] Compliance reports — JSON + HTML dashboard ([demo reports](https://i-am-logger.github.io/nix-license/))
+- [x] GitHub Action — CI/CD integration with full report in Step Summary
+- [x] 200,000+ checks — every license, every context, every combination
+- [ ] *(commercial)* [SBOM generation](https://github.com/i-am-logger/nix-license/issues/7)
+- [ ] *(commercial)* [OpenChain ISO/IEC 5230](https://github.com/i-am-logger/nix-license/issues/6)
+- [ ] *(commercial)* [Audit trail](https://github.com/i-am-logger/nix-license/issues/36)
+- [ ] *(commercial)* [License change detection](https://github.com/i-am-logger/nix-license/issues/37)
+- [ ] *(commercial)* [Token expiry alerts](https://github.com/i-am-logger/nix-license/issues/39)
+
 ### Personal user — FOSS-only with NVIDIA exception
 
 ```nix
@@ -168,13 +186,16 @@ Generate a license compliance report in your GitHub Actions workflow:
     system: myhost
 ```
 
-Produces a JSON report, prints a summary table, uploads as an artifact, and fails the build if any packages are blocked. See [action/action.yml](action/action.yml).
+Produces a JSON + HTML report, prints full detail in the Step Summary, uploads as an artifact, and fails the build if any packages are blocked.
 
-Build the report locally:
+**Demo reports:** [personal](https://i-am-logger.github.io/nix-license/personal/) · [saas](https://i-am-logger.github.io/nix-license/saas/) · [proprietary](https://i-am-logger.github.io/nix-license/proprietary/)
+
+Build locally:
 
 ```bash
 nix build .#nixosConfigurations.myhost.config.nix-license.report
-cat result  # JSON
+xdg-open result/index.html   # HTML dashboard
+cat result/report.json        # JSON
 ```
 
 ## Testing
