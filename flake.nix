@@ -93,15 +93,20 @@
       # Library functions
       lib = import ./lib { inherit lib oarsSpec saltLicenses; };
 
-      # NixOS modules (oarsSpec is closed over from the flake)
+      # NixOS modules (extra args closed over from the flake via _module.args)
       nixosModules = {
         # Standalone module: provides nix-license.* options
-        default = args:
-          import ./modules/default.nix (args // { inherit oarsSpec saltLicenses saltSpdx; });
+        default = {
+          imports = [ ./modules/default.nix ];
+          _module.args = { inherit oarsSpec saltLicenses saltSpdx; };
+        };
 
         # mynixos integration: provides my.license.* and my.users.<name>.contentPolicy
-        mynixos = args:
-          import ./modules/mynixos.nix (args // { inherit oarsSpec; });
+        # Includes default module — only one import needed
+        mynixos = {
+          imports = [ ./modules/default.nix ./modules/mynixos.nix ];
+          _module.args = { inherit oarsSpec saltLicenses saltSpdx; };
+        };
       };
 
       # Formatter (treefmt: nix + shell + yaml)
