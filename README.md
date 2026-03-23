@@ -8,51 +8,68 @@
 
 # nix-license
 
-A NixOS module that checks every package's license against your declared usage at build time.
+A NixOS module that checks every package's license against your declared usage at build time. Replaces `allowUnfree`.
+
+### Personal user — FOSS-only with NVIDIA exception
 
 ```nix
-{
-  inputs.nix-license.url = "github:i-am-logger/nix-license";
-
-  outputs = { nix-license, ... }: {
-    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
-      modules = [
-        nix-license.nixosModules.default
-        {
-          nix-license = {
-            enable = true;
-            enforcement = "enforce";
-
-            usage = {
-              type = "commercial";
-              commercial-use = true;
-              distribution = false;
-              modifications = true;
-              saas = false;
-            };
-
-            # Can't open-source our product → blocks GPL, AGPL
-            commitments.same-license = false;
-            commitments.disclose-source = false;
-
-            # Commercial licenses (nix-license token required for commercial use)
-            licenses."nix-license" = {
-              license = "commercial";
-              tokenFile = ./secrets/nix-license.token;
-            };
-            licenses."vendor-package" = {
-              license = "commercial";
-              tokenFile = ./secrets/vendor-package.token;
-            };
-          };
-        }
-      ];
-    };
+nix-license = {
+  enable = true;
+  usage = {
+    type = "personal";
+    commercial-use = false;
+    distribution = false;
+    modifications = true;
+    saas = false;
   };
-}
+
+  # FOSS only — block closed-source packages
+  assurances.source-available = true;
+
+  # Exception: accept NVIDIA's proprietary driver
+  licenses."nvidia-x11" = {
+    license = "proprietary";
+    token = "accepted";
+  };
+};
 ```
 
-With this config, any package with a non-commercial license (CC-BY-NC), a SaaS restriction (Elastic, SSPL), or a copyleft obligation you can't fulfill (GPL) fails at eval time. Permissive licenses (MIT, Apache, BSD) pass.
+No more `allowUnfree = true`. Closed-source packages are blocked. NVIDIA is explicitly whitelisted. CC-BY-NC, Elastic, SSPL — allowed because they have source.
+
+### Commercial company — proprietary product
+
+```nix
+nix-license = {
+  enable = true;
+  enforcement = "enforce";
+
+  usage = {
+    type = "commercial";
+    commercial-use = true;
+    distribution = false;
+    modifications = true;
+    saas = false;
+  };
+
+  # Can't open-source our product → blocks GPL, AGPL
+  commitments.same-license = false;
+  commitments.disclose-source = false;
+
+  # Commercial licenses
+  licenses."nix-license" = {
+    license = "commercial";
+    tokenFile = ./secrets/nix-license.token;
+  };
+  licenses."vendor-package" = {
+    license = "commercial";
+    tokenFile = ./secrets/vendor-package.token;
+  };
+};
+```
+
+Any package with a non-commercial license (CC-BY-NC), a SaaS restriction (Elastic, SSPL), or a copyleft obligation you can't fulfill (GPL) fails at eval time. Permissive licenses (MIT, Apache, BSD) pass.
+
+**No more `allowUnfree`.** nixpkgs conflates "closed source" with "has restrictions" in a single boolean. nix-license replaces it with the actual questions: what's your usage, what can you commit to, what guarantees do you need.
 
 **No more `allowUnfree`.** nixpkgs conflates "closed source" with "has restrictions" in a single boolean. nix-license replaces it with the actual questions: what's your usage, what can you commit to, what guarantees do you need. If you want FOSS-only, set `assurances.source-available = true`. If you're fine with proprietary, don't. Either way, license restrictions are checked properly.
 
