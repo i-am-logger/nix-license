@@ -157,8 +157,8 @@
           lib-content-rating = mkNixTest "lib-content-rating"
             (import ./tests/lib-content-rating.nix { inherit lib oarsSpec; });
 
-          lib-token = mkNixTest "lib-token"
-            (import ./tests/lib-token.nix { });
+          lib-license = mkNixTest "lib-license"
+            (import ./tests/lib-license.nix { });
 
           lib-licenses = mkNixTest "lib-licenses"
             (import ./tests/lib-licenses.nix { inherit lib saltLicenses; });

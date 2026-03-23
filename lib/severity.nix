@@ -1,5 +1,5 @@
 # Shared severity level mapping for OARS 1.1
-# Used by content-rating.nix and token.nix
+# Used by content-rating.nix and license.nix
 {
   "none" = 0;
   "mild" = 1;

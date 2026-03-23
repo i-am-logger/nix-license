@@ -1,10 +1,10 @@
-# Tests for lib/token.nix
+# Tests for lib/license.nix
 # Cryptographic token authorization, restriction, and validation logic
 
 _:
 
 let
-  tk = import ../lib/token.nix { };
+  lc = import ../lib/license.nix { };
 
   assertTrue = name: value:
     if value then true
@@ -24,7 +24,7 @@ let
 
   # ── Test fixtures ───────────────────────────────────────────────
 
-  fullToken = tk.mkLicenseToken {
+  fullToken = lc.mkLicense {
     issuer = "vendor.example.com";
     licenseeId = "org-12345";
     licenseeName = "Acme Corp";
@@ -47,7 +47,7 @@ let
     };
   };
 
-  educationalToken = tk.mkLicenseToken {
+  educationalToken = lc.mkLicense {
     issuer = "vendor.example.com";
     licenseeId = "edu-67890";
     licenseeName = "State University";
@@ -67,7 +67,7 @@ let
     };
   };
 
-  minimalToken = tk.mkLicenseToken {
+  minimalToken = lc.mkLicense {
     issuer = "small-vendor.io";
     licenseeId = "user-1";
     licenseeName = "Alice";
@@ -114,48 +114,48 @@ in
 
   # Full token satisfies commercial use
   authCommercialSatisfied =
-    let result = tk.evaluateTokenAuthorizations { type = "commercial"; } fullToken.authorizations;
+    let result = lc.evaluateAuthorizations { type = "commercial"; } fullToken.authorizations;
     in assertTrue "full token satisfies commercial" result.satisfied;
 
   # Full token satisfies commercial + SaaS
   authCommercialSaasSatisfied =
-    let result = tk.evaluateTokenAuthorizations { type = "commercial"; saas = true; } fullToken.authorizations;
+    let result = lc.evaluateAuthorizations { type = "commercial"; saas = true; } fullToken.authorizations;
     in assertTrue "full token satisfies commercial+saas" result.satisfied;
 
   # Full token does NOT satisfy military
   authMilitaryUnsatisfied =
-    let result = tk.evaluateTokenAuthorizations { type = "commercial"; military = true; } fullToken.authorizations;
+    let result = lc.evaluateAuthorizations { type = "commercial"; military = true; } fullToken.authorizations;
     in assertFalse "full token denies military" result.satisfied;
 
   # Full token does NOT satisfy redistribution
   authRedistUnsatisfied =
-    let result = tk.evaluateTokenAuthorizations { type = "personal"; redistribution = true; } fullToken.authorizations;
+    let result = lc.evaluateAuthorizations { type = "personal"; redistribution = true; } fullToken.authorizations;
     in assertFalse "full token denies redistribution" result.satisfied;
 
   # Educational token satisfies educational use
   authEducationalSatisfied =
-    let result = tk.evaluateTokenAuthorizations { type = "educational"; } educationalToken.authorizations;
+    let result = lc.evaluateAuthorizations { type = "educational"; } educationalToken.authorizations;
     in assertTrue "edu token satisfies educational" result.satisfied;
 
   # Educational token does NOT satisfy commercial
   authEducationalCommercialUnsatisfied =
-    let result = tk.evaluateTokenAuthorizations { type = "commercial"; } educationalToken.authorizations;
+    let result = lc.evaluateAuthorizations { type = "commercial"; } educationalToken.authorizations;
     in assertFalse "edu token denies commercial" result.satisfied;
 
   # Personal use always satisfied (no special requirements)
   authPersonalAlwaysSatisfied =
-    let result = tk.evaluateTokenAuthorizations { type = "personal"; } fullToken.authorizations;
+    let result = lc.evaluateAuthorizations { type = "personal"; } fullToken.authorizations;
     in assertTrue "personal always satisfied" result.satisfied;
 
   # Mismatch details
   authMismatchDetails =
-    let result = tk.evaluateTokenAuthorizations { type = "commercial"; military = true; } fullToken.authorizations;
+    let result = lc.evaluateAuthorizations { type = "commercial"; military = true; } fullToken.authorizations;
     in assertTrue "mismatch lists military"
       (builtins.any (m: m.field == "military") result.mismatches);
 
   authMismatchCount =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "commercial"; military = true; redistribution = true; }
         fullToken.authorizations;
     in
@@ -163,11 +163,11 @@ in
 
   # Empty authorizations deny everything
   authEmptyDeniesCommercial =
-    let result = tk.evaluateTokenAuthorizations { type = "commercial"; } { };
+    let result = lc.evaluateAuthorizations { type = "commercial"; } { };
     in assertFalse "empty auths deny commercial" result.satisfied;
 
   authEmptyAllowsPersonal =
-    let result = tk.evaluateTokenAuthorizations { type = "personal"; } { };
+    let result = lc.evaluateAuthorizations { type = "personal"; } { };
     in assertTrue "empty auths allow personal" result.satisfied;
 
   # ══════════════════════════════════════════════════════════════════
@@ -176,63 +176,63 @@ in
 
   # Valid restrictions
   canRestrictTrueToFalse = assertTrue "can restrict true -> false"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { commercial = true; military = true; }
       { military = false; });
 
   canKeepTrueAsTrue = assertTrue "can keep true -> true"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { commercial = true; }
       { commercial = true; });
 
   canKeepFalseAsFalse = assertTrue "can keep false -> false"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { military = false; }
       { military = false; });
 
   canDecreaseIntLimit = assertTrue "can decrease int"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { seats = 500; }
       { seats = 50; });
 
   canKeepIntSame = assertTrue "can keep int same"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { seats = 500; }
       { seats = 500; });
 
   canShortenExpiry = assertTrue "can make date earlier"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { expires_at = "2025-12-31"; }
       { expires_at = "2025-06-15"; });
 
   canKeepExpirySame = assertTrue "can keep date same"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { expires_at = "2025-12-31"; }
       { expires_at = "2025-12-31"; });
 
   canAddNewRestriction = assertTrue "can add new restriction"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { commercial = true; }
       { commercial = true; machine_pattern = "dev-*"; });
 
   canRestrictToEmpty = assertTrue "can restrict to empty (no changes)"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { commercial = true; seats = 500; }
       { });
 
   # Invalid restrictions
   cannotGrantFalseToTrue = assertFalse "cannot grant false -> true"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { military = false; }
       { military = true; });
 
   cannotIncreaseIntLimit = assertFalse "cannot increase int"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { seats = 50; }
       { seats = 500; });
 
   cannotExtendExpiry = assertFalse "cannot make date later"
-    (tk.isValidTokenRestriction
+    (lc.isValidRestriction
       { expires_at = "2025-06-15"; }
       { expires_at = "2025-12-31"; });
 
@@ -241,7 +241,7 @@ in
     let
       original = { commercial = true; military = true; seats = 500; };
       restriction = { military = false; seats = 50; };
-      result = tk.restrictToken original restriction;
+      result = lc.restrictLicense original restriction;
     in
     assertTrue "valid restriction applied"
       (result != null
@@ -253,7 +253,7 @@ in
     let
       original = { military = false; };
       restriction = { military = true; };
-      result = tk.restrictToken original restriction;
+      result = lc.restrictLicense original restriction;
     in
     assertNull "invalid restriction returns null" result;
 
@@ -262,22 +262,22 @@ in
   # ══════════════════════════════════════════════════════════════════
 
   expiryValid = assertTrue "not expired"
-    (tk.isTokenExpired "2024-12-03" "2025-06-15").valid;
+    (lc.isExpired "2024-12-03" "2025-06-15").valid;
 
   expiryExpired = assertFalse "expired"
-    (tk.isTokenExpired "2025-07-01" "2025-06-15").valid;
+    (lc.isExpired "2025-07-01" "2025-06-15").valid;
 
   expiryOnDate = assertTrue "valid on exact expiry date"
-    (tk.isTokenExpired "2025-06-15" "2025-06-15").valid;
+    (lc.isExpired "2025-06-15" "2025-06-15").valid;
 
   expiryNull = assertTrue "no expiry = always valid"
-    (tk.isTokenExpired "2099-01-01" null).valid;
+    (lc.isExpired "2099-01-01" null).valid;
 
   expiryExpiredFlag = assertTrue "expired flag set"
-    (tk.isTokenExpired "2025-07-01" "2025-06-15").expired;
+    (lc.isExpired "2025-07-01" "2025-06-15").expired;
 
   expiryNotExpiredFlag = assertFalse "expired flag not set"
-    (tk.isTokenExpired "2024-12-03" "2025-06-15").expired;
+    (lc.isExpired "2024-12-03" "2025-06-15").expired;
 
   # ══════════════════════════════════════════════════════════════════
   # FULL TOKEN VALIDATION
@@ -285,7 +285,7 @@ in
 
   validateFullValid =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = fullToken;
         usage = { type = "commercial"; saas = true; };
         currentDate = "2024-12-03";
@@ -296,7 +296,7 @@ in
 
   validateWrongPackage =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = fullToken;
         usage = { type = "commercial"; };
         currentDate = "2024-12-03";
@@ -307,7 +307,7 @@ in
 
   validateExpiredToken =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = fullToken;
         usage = { type = "commercial"; };
         currentDate = "2026-01-01";
@@ -318,7 +318,7 @@ in
 
   validateInsufficientAuth =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = fullToken;
         usage = { type = "commercial"; military = true; };
         currentDate = "2024-12-03";
@@ -328,7 +328,7 @@ in
 
   validateLicenseeReturned =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = fullToken;
         usage = { type = "personal"; };
         currentDate = "2024-12-03";
@@ -338,7 +338,7 @@ in
 
   validateExpiryReturned =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = fullToken;
         usage = { type = "personal"; };
         currentDate = "2024-12-03";
@@ -348,7 +348,7 @@ in
 
   validateNoPackageCheck =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = fullToken;
         usage = { type = "commercial"; };
         currentDate = "2024-12-03";
@@ -359,7 +359,7 @@ in
   # Educational token
   validateEduValid =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = educationalToken;
         usage = { type = "educational"; };
         currentDate = "2025-01-01";
@@ -369,7 +369,7 @@ in
 
   validateEduCommercialFails =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = educationalToken;
         usage = { type = "commercial"; };
         currentDate = "2025-01-01";
@@ -387,7 +387,7 @@ in
       auths = { commercial = true; military = false; seats = 100; expires_at = "2025-12-31"; };
     in
     assertTrue "token restriction is reflexive (identity is valid)"
-      (tk.isValidTokenRestriction auths auths);
+      (lc.isValidRestriction auths auths);
 
   # Transitivity: if A restricts to B and B restricts to C, then A restricts to C
   chainedTokenRestrictionsAreValid =
@@ -397,9 +397,9 @@ in
       c = { commercial = false; military = false; seats = 50; expires_at = "2025-03-01"; };
     in
     assertTrue "token restriction is transitive (A->B, B->C implies A->C)"
-      (tk.isValidTokenRestriction a b
-        && tk.isValidTokenRestriction b c
-        && tk.isValidTokenRestriction a c);
+      (lc.isValidRestriction a b
+        && lc.isValidRestriction b c
+        && lc.isValidRestriction a c);
 
   # Antisymmetry: if A restricts to B and B restricts to A, then A = B
   restrictionAntisymmetric =
@@ -409,8 +409,8 @@ in
       c = { commercial = true; seats = 50; };
     in
     assertTrue "token restriction is antisymmetric"
-      ((tk.isValidTokenRestriction a b && tk.isValidTokenRestriction b a)  # a = b, both directions valid
-        && !(tk.isValidTokenRestriction c a && tk.isValidTokenRestriction a c)); # a != c, not both directions
+      ((lc.isValidRestriction a b && lc.isValidRestriction b a)  # a = b, both directions valid
+        && !(lc.isValidRestriction c a && lc.isValidRestriction a c)); # a != c, not both directions
 
   # Monotonicity: if restriction A->B is valid, then for any usage that B satisfies, A also satisfies
   restrictedTokenNeverGrantsMoreThanOriginal =
@@ -439,12 +439,12 @@ in
       ];
     in
     assertTrue "restricted token never grants more than original"
-      (tk.isValidTokenRestriction original restricted
+      (lc.isValidRestriction original restricted
         && builtins.all
         (u:
           let
-            restrictedSatisfied = (tk.evaluateTokenAuthorizations u restricted).satisfied;
-            origSatisfied = (tk.evaluateTokenAuthorizations u original).satisfied;
+            restrictedSatisfied = (lc.evaluateAuthorizations u restricted).satisfied;
+            origSatisfied = (lc.evaluateAuthorizations u original).satisfied;
           in
           if restrictedSatisfied then origSatisfied else true
         )
@@ -457,7 +457,7 @@ in
       bottom = { commercial = false; military = false; seats = 0; };
     in
     assertTrue "all-false/zero is always a valid restriction"
-      (tk.isValidTokenRestriction any bottom);
+      (lc.isValidRestriction any bottom);
 
   # Top element: the original is always a valid self-restriction
   tokenIsAlwaysValidRestrictionOfItself =
@@ -465,7 +465,7 @@ in
       any = { commercial = true; military = false; seats = 100; };
     in
     assertTrue "identity is always a valid restriction"
-      (tk.isValidTokenRestriction any any);
+      (lc.isValidRestriction any any);
 
   # Cannot escalate: no single field can be made more permissive
   restrictionCannotEscalatePermissions =
@@ -483,9 +483,9 @@ in
       ];
     in
     assertTrue "no field can be escalated"
-      (builtins.all (p: !tk.isValidTokenRestriction { x = p.orig; } { x = p.att; }) boolPairs
-        && builtins.all (p: !tk.isValidTokenRestriction { x = p.orig; } { x = p.att; }) intPairs
-        && builtins.all (p: !tk.isValidTokenRestriction { x = p.orig; } { x = p.att; }) datePairs);
+      (builtins.all (p: !lc.isValidRestriction { x = p.orig; } { x = p.att; }) boolPairs
+        && builtins.all (p: !lc.isValidRestriction { x = p.orig; } { x = p.att; }) intPairs
+        && builtins.all (p: !lc.isValidRestriction { x = p.orig; } { x = p.att; }) datePairs);
 
   # ══════════════════════════════════════════════════════════════════
   # EXHAUSTIVE: all authorization fields x all usage contexts
@@ -514,7 +514,7 @@ in
           in
           map
             (u:
-              let result = tk.evaluateTokenAuthorizations u auths;
+              let result = lc.evaluateAuthorizations u auths;
               in result ? satisfied && result ? mismatches
             )
             usages
@@ -531,7 +531,7 @@ in
   # Modification authorization
   authModificationRequired =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "personal"; modification = true; }
         { modification = false; };
     in
@@ -539,7 +539,7 @@ in
 
   authModificationGranted =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "personal"; modification = true; }
         { modification = true; };
     in
@@ -548,7 +548,7 @@ in
   # Seat limits
   authSeatsWithinLimit =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "commercial"; seats = 10; }
         { commercial = true; seats = 25; };
     in
@@ -556,7 +556,7 @@ in
 
   authSeatsExceedLimit =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "commercial"; seats = 50; }
         { commercial = true; seats = 25; };
     in
@@ -564,7 +564,7 @@ in
 
   authSeatsExactLimit =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "commercial"; seats = 25; }
         { commercial = true; seats = 25; };
     in
@@ -572,7 +572,7 @@ in
 
   authSeatsUnlimited =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "commercial"; seats = 1000; }
         { commercial = true; seats = 0; };
     in
@@ -581,7 +581,7 @@ in
   # Machine limits
   authMachinesWithinLimit =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "commercial"; machines = 5; }
         { commercial = true; machines = 100; };
     in
@@ -589,7 +589,7 @@ in
 
   authMachinesExceedLimit =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "commercial"; machines = 200; }
         { commercial = true; machines = 100; };
     in
@@ -598,7 +598,7 @@ in
   # Seat mismatch details
   authSeatMismatchDetails =
     let
-      result = tk.evaluateTokenAuthorizations
+      result = lc.evaluateAuthorizations
         { type = "commercial"; seats = 50; }
         { commercial = true; seats = 25; };
     in
@@ -611,7 +611,7 @@ in
 
   contentAuthSatisfied =
     let
-      result = tk.evaluateTokenContentPolicy
+      result = lc.evaluateContentPolicy
         { violence-cartoon = "moderate"; social-chat = "mild"; }
         { content-violence-cartoon = "mild"; content-social-chat = "none"; };
     in
@@ -619,7 +619,7 @@ in
 
   contentAuthViolated =
     let
-      result = tk.evaluateTokenContentPolicy
+      result = lc.evaluateContentPolicy
         { violence-cartoon = "mild"; }
         { content-violence-cartoon = "intense"; };
     in
@@ -627,7 +627,7 @@ in
 
   contentAuthViolationDetails =
     let
-      result = tk.evaluateTokenContentPolicy
+      result = lc.evaluateContentPolicy
         { violence-cartoon = "mild"; }
         { content-violence-cartoon = "intense"; };
     in
@@ -636,7 +636,7 @@ in
 
   contentAuthIgnoresNonContent =
     let
-      result = tk.evaluateTokenContentPolicy
+      result = lc.evaluateContentPolicy
         { violence-cartoon = "mild"; }
         { commercial = true; content-violence-cartoon = "mild"; };
     in
@@ -644,7 +644,7 @@ in
 
   contentAuthAllowUnratedIgnored =
     let
-      result = tk.evaluateTokenContentPolicy
+      result = lc.evaluateContentPolicy
         { violence-cartoon = "intense"; }
         { content-allow-unrated = "false"; content-violence-cartoon = "mild"; };
     in
@@ -653,7 +653,7 @@ in
   # Full validation with content policy
   validateWithContentPolicy =
     let
-      claims = tk.mkLicenseToken {
+      claims = lc.mkLicense {
         issuer = "test";
         licenseeId = "1";
         licenseeName = "Test";
@@ -664,7 +664,7 @@ in
           content-social-chat = "moderate";
         };
       };
-      result = tk.validateToken {
+      result = lc.validateLicense {
         inherit claims;
         usage = { type = "commercial"; };
         contentPolicy = { violence-cartoon = "mild"; social-chat = "intense"; };
@@ -674,7 +674,7 @@ in
 
   validateWithContentPolicyPass =
     let
-      claims = tk.mkLicenseToken {
+      claims = lc.mkLicense {
         issuer = "test";
         licenseeId = "1";
         licenseeName = "Test";
@@ -684,7 +684,7 @@ in
           content-violence-cartoon = "mild";
         };
       };
-      result = tk.validateToken {
+      result = lc.validateLicense {
         inherit claims;
         usage = { type = "commercial"; };
         contentPolicy = { violence-cartoon = "moderate"; };
@@ -694,7 +694,7 @@ in
 
   validateNoContentPolicy =
     let
-      result = tk.validateToken {
+      result = lc.validateLicense {
         claims = fullToken;
         usage = { type = "commercial"; };
         currentDate = "2024-12-03";

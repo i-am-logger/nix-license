@@ -10,7 +10,7 @@ let
   # ── Token construction ──────────────────────────────────────────
 
   # Create a license token
-  mkLicenseToken =
+  mkLicense =
     { issuer
     , licenseeId
     , licenseeName
@@ -41,7 +41,7 @@ let
 
   # Evaluate whether a token's authorizations satisfy a usage context
   # Returns: { satisfied = bool; mismatches = [ { field, required, granted } ]; }
-  evaluateTokenAuthorizations = usage: authorizations:
+  evaluateAuthorizations = usage: authorizations:
     let
       auths = defaultAuthorizations // authorizations;
 
@@ -100,7 +100,7 @@ let
   #   - Numeric value → can only decrease
   #   - Date string → can only make earlier (ISO 8601 lexicographic)
   #   - New keys can be added (additional restrictions)
-  isValidTokenRestriction = original: restricted:
+  isValidRestriction = original: restricted:
     let
       checkKey = key:
         if !(original ? ${key}) then
@@ -131,8 +131,8 @@ let
 
   # Apply a restriction to a token, returning the restricted token
   # Returns null if the restriction is invalid (would escalate permissions)
-  restrictToken = original: restriction:
-    if isValidTokenRestriction original restriction then
+  restrictLicense = original: restriction:
+    if isValidRestriction original restriction then
       original // restriction
     else
       null;
@@ -140,7 +140,7 @@ let
   # ── Expiry ──────────────────────────────────────────────────────
 
   # Is a token expired?
-  isTokenExpired = currentDate: expiresAt:
+  isExpired = currentDate: expiresAt:
     if expiresAt == null then
       { valid = true; expired = false; }
     else
@@ -154,7 +154,7 @@ let
   # Evaluate token content authorizations against a content policy
   # Token content fields are: content-<category> = "none"|"mild"|"moderate"|"intense"
   # Returns: { satisfied = bool; violations = [ { category, tokenLevel, policyLevel } ]; }
-  evaluateTokenContentPolicy = contentPolicy: tokenContentAuths:
+  evaluateContentPolicy = contentPolicy: tokenContentAuths:
     let
       severityLevel = import ./severity.nix;
       categories = builtins.filter
@@ -184,7 +184,7 @@ let
 
   # Validate a token against a usage context (excluding signature verification)
   # Signature verification is handled at build time via a derivation
-  validateToken =
+  validateLicense =
     { claims
     , usage ? { type = "personal"; }
     , currentDate ? "9999-12-31"
@@ -192,8 +192,8 @@ let
     , contentPolicy ? null
     }:
     let
-      authCheck = evaluateTokenAuthorizations usage claims.authorizations;
-      expiryCheck = isTokenExpired currentDate (claims.validity.expires_at or null);
+      authCheck = evaluateAuthorizations usage claims.authorizations;
+      expiryCheck = isExpired currentDate (claims.validity.expires_at or null);
       packageMatch =
         if requiredPackage == null then true
         else claims.package == requiredPackage;
@@ -205,7 +205,7 @@ let
         (builtins.attrNames tokenContentAuths);
       contentCheck =
         if contentPolicy != null && hasContentFields then
-          evaluateTokenContentPolicy contentPolicy tokenContentAuths
+          evaluateContentPolicy contentPolicy tokenContentAuths
         else
           { satisfied = true; violations = [ ]; };
     in
@@ -224,13 +224,13 @@ let
 in
 {
   inherit
-    mkLicenseToken
+    mkLicense
     defaultAuthorizations
-    evaluateTokenAuthorizations
-    evaluateTokenContentPolicy
-    isValidTokenRestriction
-    restrictToken
-    isTokenExpired
-    validateToken
+    evaluateAuthorizations
+    evaluateContentPolicy
+    isValidRestriction
+    restrictLicense
+    isExpired
+    validateLicense
     ;
 }

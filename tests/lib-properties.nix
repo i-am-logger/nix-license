@@ -5,7 +5,7 @@
 let
   cr = import ../lib/content-rating.nix { inherit lib oarsSpec; };
   types = import ../lib/types.nix { inherit lib oarsSpec; };
-  licenses = import ../lib/licenses.nix { inherit lib saltLicenses; };
+  licenses = import ../lib/salt.nix { inherit lib saltLicenses; };
   lc = import ../lib/license-check.nix { };
 
   assertTrue = name: value:

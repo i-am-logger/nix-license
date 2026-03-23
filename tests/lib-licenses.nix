@@ -1,10 +1,10 @@
-# Tests for lib/licenses.nix and lib/license-check.nix
+# Tests for lib/salt.nix and lib/license-check.nix
 # Usage fields match SALT restriction keys
 
 { lib, saltLicenses }:
 
 let
-  licenses = import ../lib/licenses.nix { inherit lib saltLicenses; };
+  licenses = import ../lib/salt.nix { inherit lib saltLicenses; };
   lc = import ../lib/license-check.nix { };
 
   assertEq = name: actual: expected:
