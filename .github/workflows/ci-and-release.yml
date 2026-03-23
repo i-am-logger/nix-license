@@ -10,6 +10,8 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  pages: write
+  id-token: write
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
@@ -49,67 +51,10 @@ jobs:
         run: nix run nixpkgs#statix -- check .
       - name: Run deadnix
         run: nix run nixpkgs#deadnix -- --fail .
-  demo-reports:
-    name: Demo Reports
-    runs-on: ubuntu-latest
-    needs: [nix-flake-check]
-    if: |
-      !(
-        (github.event_name == 'pull_request' && startsWith(github.event.pull_request.title, 'chore(master): release')) ||
-        (github.event_name == 'push' && contains(github.event.head_commit.message, 'release-please--branches--master'))
-      )
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v17
-        with:
-          extra-conf: |
-            extra-substituters = https://nix-community.cachix.org https://cache.nixos.org
-            extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-      - name: Personal report (expect PASS)
-        uses: ./action
-        with:
-          target: .#demo-reports.x86_64-linux.personal
-          artifact-name: report-personal
-          fail-on-blocked: 'false'
-          pages-path: pages/personal
-      - name: SaaS report (expect FAIL)
-        uses: ./action
-        with:
-          target: .#demo-reports.x86_64-linux.saas
-          artifact-name: report-saas
-          fail-on-blocked: 'false'
-          pages-path: pages/saas
-      - name: Proprietary report (expect FAIL)
-        uses: ./action
-        with:
-          target: .#demo-reports.x86_64-linux.proprietary
-          artifact-name: report-proprietary
-          fail-on-blocked: 'false'
-          pages-path: pages/proprietary
-      - name: Pages index
-        run: |
-          cat > pages/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html><head><meta charset="utf-8"><title>nix-license demo reports</title>
-          <style>body{font-family:sans-serif;background:#0d1117;color:#c9d1d9;padding:2rem;max-width:600px;margin:0 auto}
-          a{color:#58a6ff;text-decoration:none;font-size:1.2rem}a:hover{text-decoration:underline}
-          li{margin:1rem 0}h1{margin-bottom:2rem}</style></head>
-          <body><h1>nix-license demo reports</h1><ul>
-          <li><a href="personal/index.html">Personal — FOSS-only with NVIDIA exception</a></li>
-          <li><a href="saas/index.html">SaaS — Docker containers</a></li>
-          <li><a href="proprietary/index.html">Proprietary — commercial product</a></li>
-          </ul></body></html>
-          EOF
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: pages
   release-please:
     name: Release Please
     runs-on: ubuntu-latest
-    needs: [nix-flake-check, nix-lint, demo-reports]
+    needs: [nix-flake-check, nix-lint]
     if: |
       always() &&
       github.event_name == 'push' &&
@@ -124,3 +69,68 @@ jobs:
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+  example-reports:
+    name: Example Reports
+    runs-on: ubuntu-latest
+    needs: [release-please]
+    if: needs.release-please.outputs.release_created == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v17
+        with:
+          extra-conf: |
+            extra-substituters = https://nix-community.cachix.org https://cache.nixos.org
+            extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+      - name: Personal report
+        uses: ./action
+        with:
+          target: .#example-reports.x86_64-linux.personal
+          artifact-name: report-personal
+          fail-on-blocked: 'false'
+          pages-path: pages/personal
+      - name: SaaS report
+        uses: ./action
+        with:
+          target: .#example-reports.x86_64-linux.saas
+          artifact-name: report-saas
+          fail-on-blocked: 'false'
+          pages-path: pages/saas
+      - name: Proprietary report
+        uses: ./action
+        with:
+          target: .#example-reports.x86_64-linux.proprietary
+          artifact-name: report-proprietary
+          fail-on-blocked: 'false'
+          pages-path: pages/proprietary
+      - name: Pages index
+        run: |
+          cat > pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html><head><meta charset="utf-8"><title>nix-license example reports</title>
+          <style>body{font-family:sans-serif;background:#0d1117;color:#c9d1d9;padding:2rem;max-width:600px;margin:0 auto}
+          a{color:#58a6ff;text-decoration:none;font-size:1.2rem}a:hover{text-decoration:underline}
+          li{margin:1rem 0}h1{margin-bottom:2rem}</style></head>
+          <body><h1>nix-license example reports</h1><ul>
+          <li><a href="personal/index.html">Personal — FOSS-only with NVIDIA exception</a></li>
+          <li><a href="saas/index.html">SaaS — Docker containers</a></li>
+          <li><a href="proprietary/index.html">Proprietary — commercial product</a></li>
+          </ul></body></html>
+          EOF
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages
+  deploy-pages:
+    name: Deploy Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [example-reports]
+    if: needs.example-reports.result == 'success'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

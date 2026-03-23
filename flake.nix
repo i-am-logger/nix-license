@@ -109,8 +109,8 @@
         };
       };
 
-      # Demo reports — build with: nix build .#demo-reports.<system>.personal
-      demo-reports = forAllSystems (system:
+      # Demo reports — build with: nix build .#example-reports.<system>.personal
+      example-reports = forAllSystems (system:
         let pkgs = nixpkgs.legacyPackages.${system};
         in import ./demos { inherit lib pkgs oarsSpec saltLicenses saltSpdx; }
       );
