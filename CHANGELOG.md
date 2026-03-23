@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.5...nix-license-v0.7.0) (2026-03-23)
+
+
+### Features
+
+* add source-available assurance — replaces allowUnfree for FOSS users ([a4de1e0](https://github.com/i-am-logger/nix-license/commit/a4de1e08fc623abc48f395dc66996302cc60e6d7))
+
+
+### Documentation
+
+* update readme.md, workflow name ([d8fb8da](https://github.com/i-am-logger/nix-license/commit/d8fb8daca9bd073893ceeed37133d6bb3db04fa1))
+
 ## [0.6.5](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.4...nix-license-v0.6.5) (2026-03-23)
 
 
