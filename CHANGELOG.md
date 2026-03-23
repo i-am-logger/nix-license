@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.1...nix-license-v0.11.2) (2026-03-23)
+
+
+### Code Refactoring
+
+* remove demos/, examples are the single source of truth ([3e0d182](https://github.com/i-am-logger/nix-license/commit/3e0d182c7bcec61a731f4e77bef214535a04efe4))
+
 ## [0.11.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.0...nix-license-v0.11.1) (2026-03-23)
 
 
