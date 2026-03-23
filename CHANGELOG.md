@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.4](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.3...nix-license-v0.9.4) (2026-03-23)
+
+
+### Code Refactoring
+
+* extract shared options to lib/options.nix (closes [#30](https://github.com/i-am-logger/nix-license/issues/30)) ([3b9045a](https://github.com/i-am-logger/nix-license/commit/3b9045affd113965c6b8148d06abf8f5bcddf3da))
+
 ## [0.9.3](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.2...nix-license-v0.9.3) (2026-03-23)
 
 
