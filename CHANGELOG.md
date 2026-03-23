@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.8.0...nix-license-v0.8.1) (2026-03-23)
+
+
+### Code Refactoring
+
+* assurances as { required; exceptions; } submodules ([764de9e](https://github.com/i-am-logger/nix-license/commit/764de9e072b398dfac19c993f6a3f8e5a65a64a9))
+
 ## [0.8.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.7.0...nix-license-v0.8.0) (2026-03-23)
 
 
