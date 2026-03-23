@@ -284,10 +284,22 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    # Mark all licenses as unfree so allowUnfreePredicate fires for every package.
+    # Without this, nixpkgs only checks packages where meta.license.free = false,
+    # meaning copyleft licenses (GPL, AGPL) would bypass commitment checks.
+    nixpkgs.overlays = [
+      (_: prev: {
+        lib = prev.lib // {
+          licenses = builtins.mapAttrs
+            (_: lic: if builtins.isAttrs lic then lic // { free = false; } else lic)
+            prev.lib.licenses;
+        };
+      })
+    ];
+
     nixpkgs.config = {
-      # Always use the predicate so both warn and enforce modes work.
-      # Warn mode: predicate traces warnings and returns true (allows all).
-      # Enforce mode: predicate returns false for non-compliant packages.
+      # nix-license handles all compliance — allowUnfreePredicate fires for
+      # every package because the overlay marks all licenses as unfree.
       allowUnfreePredicate = checkPackageLicense;
     };
 

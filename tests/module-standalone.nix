@@ -8,6 +8,7 @@ let
         {
           options = {
             nixpkgs.config = lib.mkOption { type = lib.types.attrs; default = { }; };
+            nixpkgs.overlays = lib.mkOption { type = lib.types.listOf lib.types.anything; default = [ ]; };
             assertions = lib.mkOption { type = lib.types.listOf lib.types.attrs; default = [ ]; };
             environment.etc = lib.mkOption { type = lib.types.attrs; default = { }; };
           };
@@ -48,6 +49,10 @@ in
   enableSetsPredicate =
     let cfg = evalModule (defaultUsage // { nix-license.enable = true; });
     in assertTrue "enable sets allowUnfreePredicate" (cfg.nixpkgs.config ? allowUnfreePredicate);
+
+  enableSetsOverlay =
+    let cfg = evalModule (defaultUsage // { nix-license.enable = true; });
+    in assertTrue "enable adds license overlay" (cfg.nixpkgs.overlays != [ ]);
 
   usageType =
     let
