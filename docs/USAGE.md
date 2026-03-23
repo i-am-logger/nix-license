@@ -176,15 +176,19 @@ Declare which license obligations you can fulfill. If an obligation triggers and
 
 ```nix
 commitments = {
-  include-copyright = true;      # default: true
-  disclose-source = false;       # can't share source → blocks copyleft on distribution
-  same-license = false;          # can't open-source → blocks GPL, AGPL
-  same-license--file = true;     # can do per-file (MPL)
-  same-license--library = true;  # can do library linking (LGPL)
-  document-changes = true;       # default: true
-  network-use-disclose = false;  # can't share source for network use → blocks AGPL on SaaS
+  same-license.fulfilled = false;          # can't open-source → blocks GPL, AGPL
+  disclose-source.fulfilled = false;       # can't share source
+  network-use-disclose.fulfilled = false;  # blocks AGPL on SaaS
+
+  # Per-package exceptions
+  same-license = {
+    fulfilled = false;
+    exceptions = [ "libfoo" ];  # except this one we open-sourced
+  };
 };
 ```
+
+Each commitment defaults to `fulfilled = true`. Set `fulfilled = false` to block packages that trigger that obligation. Use `exceptions` for per-package overrides.
 
 ## Assurances
 

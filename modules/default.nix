@@ -21,14 +21,15 @@ let
   # Embedded vendor public keys (shipped with nix-license)
   # Supports .asc (GPG) and .pem (openssl) key formats
   embeddedVendorKeysDir = ../keys/vendors;
+  # User-supplied vendor keys override embedded keys (stale key recovery)
   getVendorKey = pname:
     let
       pemPath = embeddedVendorKeysDir + "/${pname}.pem";
       ascPath = embeddedVendorKeysDir + "/${pname}.asc";
     in
-    if builtins.pathExists pemPath then { type = "pem"; path = pemPath; }
+    if cfg.vendorKeys ? ${pname} then { type = "pem"; path = cfg.vendorKeys.${pname}; }
+    else if builtins.pathExists pemPath then { type = "pem"; path = pemPath; }
     else if builtins.pathExists ascPath then { type = "gpg"; path = ascPath; }
-    else if cfg.vendorKeys ? ${pname} then { type = "pem"; path = cfg.vendorKeys.${pname}; }
     else null;
 
   cfg = config.nix-license;
@@ -53,8 +54,11 @@ let
         else isExcepted                       # can't fulfill, except these CAN
       )
       cfg.commitments;
+    # source-available is handled separately via SALT categories in checkPackageLicense
     assurances = lib.mapAttrs
-      (_: a: a.required && !builtins.elem pname a.exceptions)
+      (name: a:
+        if name == "source-available" then false
+        else a.required && !builtins.elem pname a.exceptions)
       cfg.assurances;
   };
 
@@ -68,8 +72,8 @@ let
 
       # Packages without a license: block for commercial, warn for non-commercial
       hasLicense = rawLicenses != [ ];
-      noLicenseConflict = !hasLicense && cfg.usage.commercial-use;
-      noLicenseWarning = !hasLicense && !cfg.usage.commercial-use;
+      missingLicenseBlocks = !hasLicense && cfg.usage.commercial-use;
+      missingLicenseWarns = !hasLicense && !cfg.usage.commercial-use;
 
       # Source availability check — uses SALT category, not nixpkgs free flag
       # (nixpkgs free=false includes CC-BY-NC which HAS source)
@@ -85,13 +89,13 @@ let
 
       usageContext = mkUsageContext pname;
       results = map (nixLic: licenseCheck.evaluateLicenseUsage usageContext (toSaltLicense nixLic)) rawLicenses;
-      licenseConflict = !(builtins.all (r: r.allowed) results) || noLicenseConflict || sourceConflict;
+      licenseConflict = !(builtins.all (r: r.allowed) results) || missingLicenseBlocks || sourceConflict;
 
       conflicts = builtins.concatMap (r: r.conflicts) results;
       conflictMsg =
         if sourceConflict then "closed source (source-available assurance required)"
-        else if noLicenseConflict then "no license declared (commercial use requires explicit license)"
-        else if noLicenseWarning then "no license declared"
+        else if missingLicenseBlocks then "no license declared (commercial use requires explicit license)"
+        else if missingLicenseWarns then "no license declared"
         else lib.concatMapStringsSep ", " (c: c.reason) conflicts;
 
       # License override: if a conflict exists but the user has a
@@ -110,10 +114,11 @@ let
           builtins.trace "nix-license: ERROR: ${pname}: no vendor key, cannot verify license" false
         else
           builtins.trace "nix-license: WARNING: ${pname}: unverified license (no vendor key)" true
-      else if noLicenseWarning then
+      else if missingLicenseWarns then
         builtins.trace "nix-license: WARNING: ${pname} has no license declared" true
       else true
-    else if isEnforce then false
+    else if isEnforce then
+      builtins.trace "nix-license: BLOCKED: ${pname}: ${conflictMsg}" false
     else builtins.trace "nix-license: WARNING: ${pname}: ${conflictMsg}" true;
 
   severityOption = cat: lib.mkOption {
