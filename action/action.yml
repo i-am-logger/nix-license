@@ -23,6 +23,9 @@ inputs:
     description: 'Fail the build if any packages are blocked'
     required: false
     default: 'true'
+  pages-path:
+    description: 'Path to assemble pages output (for GitHub Pages deployment). If set, copies report to this directory.'
+    required: false
 outputs:
   report-path:
     description: 'Path to the generated report directory'
@@ -105,6 +108,12 @@ runs:
       with:
         name: ${{ inputs.artifact-name }}
         path: result
+    - name: Copy to pages
+      if: inputs.pages-path != ''
+      shell: bash
+      run: |
+        mkdir -p "${{ inputs.pages-path }}"
+        cp -rL result/* "${{ inputs.pages-path }}/"
     - name: Check for blocked packages
       if: inputs.fail-on-blocked == 'true'
       shell: bash

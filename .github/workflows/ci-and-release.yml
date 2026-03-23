@@ -73,27 +73,24 @@ jobs:
           target: .#demo-reports.x86_64-linux.personal
           artifact-name: report-personal
           fail-on-blocked: 'false'
+          pages-path: pages/personal
       - name: SaaS report (expect FAIL)
         uses: ./action
         with:
           target: .#demo-reports.x86_64-linux.saas
           artifact-name: report-saas
           fail-on-blocked: 'false'
+          pages-path: pages/saas
       - name: Proprietary report (expect FAIL)
         uses: ./action
         with:
           target: .#demo-reports.x86_64-linux.proprietary
           artifact-name: report-proprietary
           fail-on-blocked: 'false'
-      - name: Assemble pages
+          pages-path: pages/proprietary
+      - name: Pages index
         run: |
-          mkdir -p pages
-          cp -rL result pages/proprietary
-          nix build .#demo-reports.x86_64-linux.personal -o personal-result
-          cp -rL personal-result pages/personal
-          nix build .#demo-reports.x86_64-linux.saas -o saas-result
-          cp -rL saas-result pages/saas
-          cat > pages/index.html << 'INDEXEOF'
+          cat > pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html><head><meta charset="utf-8"><title>nix-license demo reports</title>
           <style>body{font-family:sans-serif;background:#0d1117;color:#c9d1d9;padding:2rem;max-width:600px;margin:0 auto}
@@ -104,26 +101,11 @@ jobs:
           <li><a href="saas/index.html">SaaS — Docker containers</a></li>
           <li><a href="proprietary/index.html">Proprietary — commercial product</a></li>
           </ul></body></html>
-          INDEXEOF
+          EOF
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: pages
-  deploy-pages:
-    name: Deploy Reports to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: [demo-reports]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
   release-please:
     name: Release Please
     runs-on: ubuntu-latest
@@ -142,3 +124,22 @@ jobs:
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+  deploy-pages:
+    name: Deploy Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [demo-reports, release-please]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/master' &&
+      needs.demo-reports.result == 'success'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
