@@ -15,6 +15,7 @@ let
   contentRating = import ../lib/content-rating.nix { inherit lib oarsSpec; };
   licenseCheck = import ../lib/license-check.nix { };
   nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
+  sharedOpts = import ../lib/options.nix { inherit lib licenseTypes; };
 
   isEnforce = cfg.enforcement == "enforce";
 
@@ -57,8 +58,8 @@ let
       cfg.commitments;
     # source-available is handled separately via SALT categories in checkPackageLicense
     assurances = lib.mapAttrs
-      (name: a:
-        if name == "source-available" then false
+      (n: a:
+        if n == "source-available" then false
         else a.required && !builtins.elem pname a.exceptions)
       cfg.assurances;
   };
@@ -122,165 +123,24 @@ let
       builtins.trace "nix-license: BLOCKED: ${pname}: ${conflictMsg}" false
     else builtins.trace "nix-license: WARNING: ${pname}: ${conflictMsg}" true;
 
-  severityOption = cat: lib.mkOption {
-    type = licenseTypes.policySeverityType;
-    default = "intense";
-    description = "Maximum allowed severity for ${cat}";
-  };
-
-  mkOarsCategoryOptions = builtins.listToAttrs (map
-    (cat: {
-      name = cat;
-      value = severityOption cat;
-    })
-    licenseTypes.oarsCategories);
 in
 {
   options.nix-license = {
     enable = lib.mkEnableOption "nix-license compliance module";
 
-    # Usage declaration
-    # All fields are required — you must explicitly declare your usage.
-    usage = {
-      # Who you are — checked against SALT allowed-use lists
-      type = lib.mkOption {
-        type = lib.types.enum [ "personal" "commercial" "educational" "research" "government" "nonprofit" ];
-        description = "What type of organization or individual are you?";
-      };
+    usage = sharedOpts.usageOptions;
+    commitments = sharedOpts.commitmentOptions;
+    assurances = sharedOpts.assuranceOptions;
+    contentPolicy = sharedOpts.contentPolicyOptions;
 
-      # What you do — each matches a SALT restriction key
-      commercial-use = lib.mkOption {
-        type = lib.types.bool;
-        description = "Are you using software for commercial purposes?";
-      };
-
-      distribution = lib.mkOption {
-        type = lib.types.bool;
-        description = "Are you distributing software to others?";
-      };
-
-      modifications = lib.mkOption {
-        type = lib.types.bool;
-        description = "Are you modifying the software source code?";
-      };
-
-      saas = lib.mkOption {
-        type = lib.types.bool;
-        description = "Are you providing the software as a hosted or managed service?";
-      };
-    };
-
-    # Commitments — which license obligations you can fulfill
-    # If an obligation triggers and you can't fulfill it, the package is blocked.
-    # fulfilled=true (default): can fulfill. exceptions = packages you CAN'T fulfill for.
-    # fulfilled=false: can't fulfill. exceptions = packages you CAN fulfill for.
-    commitments =
-      let
-        mkCommitment = description: {
-          fulfilled = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            inherit description;
-          };
-          exceptions = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ ];
-            description = "Package names exempt from this commitment.";
-          };
-        };
-      in
-      {
-        include-copyright = mkCommitment "Can you include copyright notices when distributing?";
-        disclose-source = mkCommitment "Can you disclose source code when required?";
-        same-license = mkCommitment "Can you distribute under the same license (copyleft)?";
-        same-license--file = mkCommitment "Can you apply the same license per-file (weak copyleft)?";
-        same-license--library = mkCommitment "Can you apply the same license for linked libraries (LGPL)?";
-        document-changes = mkCommitment "Can you document changes to modified source code?";
-        network-use-disclose = mkCommitment "Can you disclose source for network service use (AGPL)?";
-      };
-
-    # Assurances — what guarantees you require from licenses
-    # If a license disclaims something you require, the package is blocked.
-    # Each assurance has { required; exceptions; } — exceptions are package names.
-    assurances =
-      let
-        mkAssurance = description: {
-          required = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            inherit description;
-          };
-          exceptions = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ ];
-            description = "Package names exempt from this assurance.";
-          };
-        };
-      in
-      {
-        source-available = mkAssurance "Require source code to be available? Blocks closed-source packages.";
-        patent-grant = mkAssurance "Require licenses to grant patent rights?";
-        liability-coverage = mkAssurance "Require licenses to not disclaim liability?";
-        warranty = mkAssurance "Require licenses to not disclaim warranty?";
-      };
-
-    # Content policy (system-wide default)
-    contentPolicy = {
-      preset = lib.mkOption {
-        type = lib.types.nullOr licenseTypes.contentPolicyPresetType;
-        default = null;
-        description = ''
-          Content policy preset. When set, provides defaults for all
-          OARS categories. Individual categories can still be overridden.
-          If null, defaults to unrestricted.
-        '';
-      };
-
-      allowUnrated = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Allow packages without content ratings";
-      };
-    } // mkOarsCategoryOptions;
-
-    # Per-package license overrides
     licenses = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule {
-        options = {
-          licenseFile = lib.mkOption {
-            type = lib.types.path;
-            description = "Path to signed license token file (GPG or openssl)";
-          };
-
-          install = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Install license file to /etc/nix-license/licenses/ for runtime use";
-          };
-        };
-      });
+      type = lib.types.attrsOf (lib.types.submodule { options = sharedOpts.licenseSubmoduleOptions; });
       default = { };
       description = "Per-package license overrides and commercial license declarations";
     };
 
-    # Additional vendor public keys (for vendors not yet in keys/vendors/)
-    # Keyed by package name, value is path to public key file (.pem or .asc)
-    vendorKeys = lib.mkOption {
-      type = lib.types.attrsOf lib.types.path;
-      default = { };
-      description = ''
-        Vendor public keys for packages not yet integrated into nix-license.
-        Keyed by package name, value is path to the vendor's public key.
-        Example: { "some-tool" = ./keys/some-vendor.pem; }
-      '';
-    };
-
-    # Enforcement level
-    enforcement = lib.mkOption {
-      type = licenseTypes.enforcementType;
-      default = "warn";
-      description = "License enforcement level: 'warn' logs warnings, 'enforce' blocks builds";
-    };
+    vendorKeys = sharedOpts.vendorKeysOption;
+    enforcement = sharedOpts.enforcementOption;
   };
 
   config = lib.mkIf cfg.enable {
