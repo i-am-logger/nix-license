@@ -255,24 +255,17 @@ When a package's license conflicts with your usage, you can override it with a c
 ```nix
 nix-license = {
   # nix-license itself requires a token for commercial use
-  licenses."nix-license" = {
-    license = "commercial";
-    tokenFile = ./secrets/nix-license.token;
-  };
+  licenses."nix-license".licenseFile = sops.secrets.nix-license-token.path;
 
   # Vendor package with a commercial license
-  licenses."vendor-package" = {
-    license = "commercial";
-    licenseId = "LIC-2026-XXXXX";                # for your records
-    tokenFile = ./secrets/vendor-package.token;   # signed token from vendor
-  };
+  licenses."vendor-package".licenseFile = sops.secrets.vendor-package-token.path;
 };
 ```
 
-Vendors sign tokens with their own keys (any algorithm — Ed25519, RSA, ECDSA). Vendor public keys are configured via:
+Vendors sign tokens with their own keys (any algorithm — Ed25519, RSA, ECDSA). Vendor public keys are embedded in nix-license at `keys/vendors/`. In enforce mode, every license must be cryptographically verified — no vendor key means the package is blocked.
+
+For vendors not yet integrated into nix-license, provide the key manually:
 
 ```nix
-nix-license.vendorKeys = {
-  "vendor.example.com" = [ ./keys/vendor-pubkey.pem ];
-};
+nix-license.vendorKeys."some-tool" = ./keys/some-vendor.pem;
 ```

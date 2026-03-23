@@ -134,33 +134,9 @@ in
     licenses = lib.mkOption {
       type = lib.types.attrsOf (lib.types.submodule {
         options = {
-          license = lib.mkOption {
-            type = lib.types.str;
-            description = "License type override";
-          };
-
-          licenseId = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "License ID for audit";
-          };
-
-          expiresAt = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "License expiry date (ISO 8601)";
-          };
-
-          tokenFile = lib.mkOption {
-            type = lib.types.nullOr lib.types.path;
-            default = null;
-            description = "Path to cryptographic license token file";
-          };
-
-          token = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "Inline cryptographic license token";
+          licenseFile = lib.mkOption {
+            type = lib.types.path;
+            description = "Path to signed license token file (GPG or openssl)";
           };
         };
       });
@@ -175,9 +151,9 @@ in
     };
 
     vendorKeys = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+      type = lib.types.attrsOf lib.types.path;
       default = { };
-      description = "Vendor public keys for token verification";
+      description = "Vendor public keys for packages not yet in nix-license (keyed by package name)";
     };
   };
 
@@ -203,7 +179,7 @@ in
       options.licenseTokens = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule {
           options = {
-            tokenFile = lib.mkOption {
+            licenseFile = lib.mkOption {
               type = lib.types.nullOr lib.types.path;
               default = null;
               description = "Path to this user's attenuated license token file";

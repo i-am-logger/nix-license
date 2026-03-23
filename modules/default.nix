@@ -18,6 +18,19 @@ let
 
   isEnforce = cfg.enforcement == "enforce";
 
+  # Embedded vendor public keys (shipped with nix-license)
+  # Supports .asc (GPG) and .pem (openssl) key formats
+  embeddedVendorKeysDir = ../keys/vendors;
+  getVendorKey = pname:
+    let
+      pemPath = embeddedVendorKeysDir + "/${pname}.pem";
+      ascPath = embeddedVendorKeysDir + "/${pname}.asc";
+    in
+    if builtins.pathExists pemPath then { type = "pem"; path = pemPath; }
+    else if builtins.pathExists ascPath then { type = "gpg"; path = ascPath; }
+    else if cfg.vendorKeys ? ${pname} then { type = "pem"; path = cfg.vendorKeys.${pname}; }
+    else null;
+
   cfg = config.nix-license;
 
   # Convert a nixpkgs license to SALT format for evaluation
@@ -81,17 +94,23 @@ let
         else if noLicenseWarning then "no license declared"
         else lib.concatMapStringsSep ", " (c: c.reason) conflicts;
 
-      # License override: if a conflict exists but the user has a commercial
-      # license with a token for this package, allow it
-      hasOverride = cfg.licenses ? ${pname}
-        && (cfg.licenses.${pname}.token != null || cfg.licenses.${pname}.tokenFile != null);
+      # License override: if a conflict exists but the user has a
+      # license for this package, allow it (vendor key verified at build time)
+      hasOverride = cfg.licenses ? ${pname};
+      vendorKey = getVendorKey pname;
+      hasVendorKey = vendorKey != null;
       overridden = licenseConflict && hasOverride;
 
       compliant = !licenseConflict || overridden;
     in
     if compliant then
-    # Even compliant packages get a warning if they have no license
-      if noLicenseWarning then
+      if hasOverride && !hasVendorKey then
+      # License exists but no vendor key — can't verify signature
+        if isEnforce then
+          builtins.trace "nix-license: ERROR: ${pname}: no vendor key, cannot verify license" false
+        else
+          builtins.trace "nix-license: WARNING: ${pname}: unverified license (no vendor key)" true
+      else if noLicenseWarning then
         builtins.trace "nix-license: WARNING: ${pname} has no license declared" true
       else true
     else if isEnforce then false
@@ -222,33 +241,9 @@ in
     licenses = lib.mkOption {
       type = lib.types.attrsOf (lib.types.submodule {
         options = {
-          license = lib.mkOption {
-            type = lib.types.str;
-            description = "License type override (e.g., 'commercial')";
-          };
-
-          licenseId = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "License ID for documentation/audit";
-          };
-
-          expiresAt = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "License expiry date (ISO 8601), enables expiry warnings";
-          };
-
-          tokenFile = lib.mkOption {
-            type = lib.types.nullOr lib.types.path;
-            default = null;
-            description = "Path to cryptographic license token file";
-          };
-
-          token = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "Inline cryptographic license token";
+          licenseFile = lib.mkOption {
+            type = lib.types.path;
+            description = "Path to signed license token file (GPG or openssl)";
           };
         };
       });
@@ -256,15 +251,15 @@ in
       description = "Per-package license overrides and commercial license declarations";
     };
 
-    # Vendor public keys for token verification
+    # Additional vendor public keys (for vendors not yet in keys/vendors/)
+    # Keyed by package name, value is path to public key file (.pem or .asc)
     vendorKeys = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+      type = lib.types.attrsOf lib.types.path;
       default = { };
       description = ''
-        Vendor public keys for verifying license tokens.
-        Keys are keyed by vendor domain, values are lists of
-        PEM public keys (any algorithm openssl supports).
-        Example: { "vendor.example.com" = [ ./keys/vendor.pem ]; }
+        Vendor public keys for packages not yet integrated into nix-license.
+        Keyed by package name, value is path to the vendor's public key.
+        Example: { "some-tool" = ./keys/some-vendor.pem; }
       '';
     };
 
@@ -307,13 +302,12 @@ in
       {
         assertion =
           let
-            hasNixLicenseToken = cfg.licenses ? "nix-license"
-              && (cfg.licenses."nix-license".token != null || cfg.licenses."nix-license".tokenFile != null);
+            hasNixLicenseToken = cfg.licenses ? "nix-license";
           in
             !(cfg.usage.commercial-use && cfg.enforcement == "enforce" && !hasNixLicenseToken);
         message = ''
           nix-license: commercial use requires a nix-license token in enforce mode.
-          Add: nix-license.licenses."nix-license" = { license = "commercial"; tokenFile = ./path/to/token; };
+          Add: nix-license.licenses."nix-license".licenseFile = ./path/to/token;
           Visit https://github.com/i-am-logger/nix-license for licensing.
         '';
       }

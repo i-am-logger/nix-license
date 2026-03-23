@@ -33,7 +33,30 @@ nix-license = {
 
 No more `allowUnfree = true`. Closed-source packages are blocked. NVIDIA is explicitly whitelisted. CC-BY-NC, Elastic, SSPL — allowed because they have source.
 
-### Commercial company — proprietary product
+### Open-source developer
+
+```nix
+nix-license = {
+  enable = true;
+  usage = {
+    type = "personal";
+    commercial-use = false;
+    distribution = true;     # publishes packages, releases, ISOs
+    modifications = true;
+    saas = false;
+  };
+
+  # FOSS only — with firmware exceptions
+  assurances.source-available = {
+    required = true;
+    exceptions = [ "linux-firmware" "nvidia-x11" ];
+  };
+};
+```
+
+Copyleft obligations (GPL, AGPL) trigger on distribution — but all commitments default to `fulfilled = true`, so they're allowed. The developer can fulfill source disclosure, same-license, and attribution.
+
+### SaaS company — Docker containers
 
 ```nix
 nix-license = {
@@ -43,37 +66,29 @@ nix-license = {
   usage = {
     type = "commercial";
     commercial-use = true;
-    distribution = false;
+    distribution = true;      # shipping containers to customers
     modifications = true;
-    saas = false;
+    saas = true;              # hosting services
   };
 
-  # Can't open-source our product → blocks GPL, AGPL
-  commitments.same-license = {
-    fulfilled = false;
-    exceptions = [ "libfoo" ];  # except this one we already open-sourced
-  };
+  # Can't open-source our stack
+  commitments.same-license.fulfilled = false;
   commitments.disclose-source.fulfilled = false;
-
-  # Require patent grants, except for legacy code
-  assurances.patent-grant = {
-    required = true;
-    exceptions = [ "legacy-lib" ];
-  };
+  commitments.network-use-disclose.fulfilled = false;  # blocks AGPL
 
   # Commercial licenses
   licenses."nix-license" = {
-    license = "commercial";
-    tokenFile = ./secrets/nix-license.token;
+    licenseFile = sops.secrets.nix-license-token.path;
   };
-  licenses."vendor-package" = {
-    license = "commercial";
-    tokenFile = ./secrets/vendor-package.token;
+  licenses."datadog" = {
+    licenseFile = sops.secrets.datadog-token.path;
   };
 };
 ```
 
-GPL is blocked — except `libfoo` which you've already open-sourced. Patent grants are required — except `legacy-lib`. Non-commercial licenses (CC-BY-NC) and SaaS restrictions (Elastic, SSPL) fail at eval time. Permissive licenses (MIT, Apache, BSD) pass.
+AGPL, SSPL, Elastic, and GPL are all blocked — the company can't disclose source or use the same license. MongoDB (SSPL) and Elasticsearch (Elastic) fail because of the SaaS restriction. Datadog is allowed via its commercial license token. Permissive licenses pass.
+
+More examples in [examples/](examples/) — [proprietary company](examples/proprietary.nix), [educational](examples/educational.nix), [nonprofit](examples/nonprofit.nix).
 
 **No more `allowUnfree`.** nixpkgs conflates "closed source" with "has restrictions" in a single boolean. nix-license replaces it with the actual questions: what's your usage, what can you commit to, what guarantees do you need.
 
@@ -134,7 +149,7 @@ Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oar
 
 ## Commercial licensing
 
-Commercial use in enforce mode requires `licenses."nix-license"` with a valid token. Vendor packages use the same pattern — `licenses."package-name"` with a signed token overrides a license conflict. nix-license tokens are GPG/YubiKey-signed; vendor tokens use any algorithm (Ed25519, RSA, ECDSA) via openssl. See [USAGE.md](docs/USAGE.md#per-package-vendor-licenses).
+Commercial use in enforce mode requires `licenses."nix-license".licenseFile`. Vendor packages use the same pattern — `licenses."package-name".licenseFile` overrides a license conflict. Vendor public keys are embedded in `keys/vendors/` (GPG or PEM). In enforce mode, every license is cryptographically verified — no vendor key = blocked. See [USAGE.md](docs/USAGE.md#per-package-vendor-licenses).
 
 ## Documentation
 

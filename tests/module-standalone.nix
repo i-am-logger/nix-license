@@ -195,8 +195,7 @@ in
           usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
           enforcement = "enforce";
           licenses."nix-license" = {
-            license = "commercial";
-            token = ''{ "package": "nix-license", "commercial": true, "licensee": "Test Corp" }'';
+            licenseFile = "/fake/nix-license.token";
           };
         };
       };
@@ -241,7 +240,7 @@ in
           commitments.same-license.fulfilled = false;
           commitments.disclose-source.fulfilled = false;
           enforcement = "enforce";
-          licenses."nix-license" = { license = "commercial"; tokenFile = "/fake/token"; };
+          licenses."nix-license".licenseFile = "/fake/nix-license.token";
         };
       };
     in
@@ -256,13 +255,12 @@ in
     let
       cfg = evalModule (defaultUsage // {
         nix-license.licenses."vendor-package" = {
-          license = "commercial";
-          token = ''{ "package": "vendor-package", "commercial": true }'';
+          licenseFile = "/fake/vendor.token";
         };
       });
     in
-    assertTrue "can set vendor license with token"
-      (cfg.nix-license.licenses."vendor-package".token != null);
+    assertTrue "can set vendor license with licenseFile"
+      (cfg.nix-license.licenses."vendor-package".licenseFile == "/fake/vendor.token");
 
   nixLicenseTokenAsOverride =
     let
@@ -272,14 +270,13 @@ in
           usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
           enforcement = "enforce";
           licenses."nix-license" = {
-            license = "commercial";
-            tokenFile = "/fake/path/token.json";
+            licenseFile = "/fake/nix-license.token";
           };
         };
       };
     in
     assertTrue "nix-license token via licenses override"
-      (cfg.nix-license.licenses."nix-license".tokenFile != null);
+      (cfg.nix-license.licenses."nix-license".licenseFile == "/fake/nix-license.token");
 
   # ── Content policy files ──────────────────────────────────────
 
