@@ -26,11 +26,11 @@ The test suite proves these properties by exhaustive evaluation over every licen
 | `lib-types` | OARS categories, severity levels, presets |
 | `lib-content-rating` | Severity ordering, policy resolution, content evaluation |
 | `lib-licenses` | Restrictions, commitments, assurances, allowed-use |
-| `lib-token` | Token authorization, restriction, expiry |
+| `lib-license` | Token authorization, restriction, expiry |
 | `lib-properties` | Domain invariants across all 2649 SALT licenses |
 | `nixpkgs-map` | 289/289 nixpkgs mapping + regression tests |
 | `module-standalone` | Module config, assertions, commercial gate, content policy files |
-| `self-license-claims` | Token claim validation (package, commercial, expiry) |
+| `self-license-claims` | License claim validation (package, commercial, expiry) |
 | `self-license-verify` | Build-time GPG signature verification |
 | `vendor-token-verify` | Build-time openssl signature verification |
 | `formatting` | treefmt (nix, shell, yaml) |

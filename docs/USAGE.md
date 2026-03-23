@@ -254,15 +254,15 @@ Both modes evaluate every unfree package against your declared usage via `allowU
 
 ## Per-package vendor licenses
 
-When a package's license conflicts with your usage, you can override it with a commercial license token. nix-license checks for an override automatically — if the conflict exists and `licenses."package-name"` has a token, the package is allowed.
+When a package's license conflicts with your usage, you can override it with a commercial license. nix-license checks for an override automatically — if the conflict exists and `licenses."package-name"` has a license, the package is allowed.
 
 ```nix
 nix-license = {
-  # nix-license itself requires a token for commercial use
-  licenses."nix-license".licenseFile = sops.secrets.nix-license-token.path;
+  # nix-license itself requires a license for commercial use
+  licenses."nix-license".licenseFile = sops.secrets.nix-license-license.path;
 
   # Vendor package with a commercial license
-  licenses."vendor-package".licenseFile = sops.secrets.vendor-package-token.path;
+  licenses."vendor-package".licenseFile = sops.secrets.vendor-package-license.path;
 };
 ```
 

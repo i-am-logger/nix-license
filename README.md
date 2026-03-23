@@ -21,7 +21,7 @@ A NixOS module that checks every package's license against your declared usage a
 | Assurances (require patent grants, source availability, warranty) | ✔ | ✔ |
 | Content policy ([OARS 1.1](https://github.com/hughsie/oars) per-user entitlements) | ✔ | ✔ |
 | 200,000+ checks (every license, every context, every combination) | ✔ | ✔ |
-| Cryptographic license tokens (GPG/YubiKey + openssl) | | ✔ |
+| Cryptographic license verification (GPG/YubiKey + openssl) | | ✔ |
 | Compliance reports (JSON + HTML — [demo](https://i-am-logger.github.io/nix-license/)) | | ✔ |
 | GitHub Action (CI/CD with full report in Step Summary) | | ✔ |
 | [SBOM generation](https://github.com/i-am-logger/nix-license/issues/7) | | planned |
@@ -98,15 +98,15 @@ nix-license = {
 
   # Commercial licenses
   licenses."nix-license" = {
-    licenseFile = sops.secrets.nix-license-token.path;
+    licenseFile = sops.secrets.nix-license.path;
   };
   licenses."datadog" = {
-    licenseFile = sops.secrets.datadog-token.path;
+    licenseFile = sops.secrets.datadog-license.path;
   };
 };
 ```
 
-AGPL, SSPL, Elastic, and GPL are all blocked — the company can't disclose source or use the same license. MongoDB (SSPL) and Elasticsearch (Elastic) fail because of the SaaS restriction. Datadog is allowed via its commercial license token. Permissive licenses pass.
+AGPL, SSPL, Elastic, and GPL are all blocked — the company can't disclose source or use the same license. MongoDB (SSPL) and Elasticsearch (Elastic) fail because of the SaaS restriction. Datadog is allowed via its commercial license. Permissive licenses pass.
 
 More examples in [examples/](examples/) — [proprietary company](examples/proprietary.nix), [educational](examples/educational.nix), [nonprofit](examples/nonprofit.nix).
 

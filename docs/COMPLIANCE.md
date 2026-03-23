@@ -53,7 +53,7 @@ See [issue #6](https://github.com/i-am-logger/nix-license/issues/6) for self-cer
 
 ## Token verification
 
-Two token verification paths:
+Two license verification paths:
 
 | Path | Algorithm | Verifier | Use case |
 |------|-----------|----------|----------|

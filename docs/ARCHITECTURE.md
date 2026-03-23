@@ -13,20 +13,20 @@ nix-license/
 │   ├── license-check.nix     # Four compliance checks + obligation reporting
 │   ├── licenses.nix          # License definitions from SALT
 │   ├── nixpkgs-map.nix       # Maps nixpkgs licenses to SALT (spdxId → manual → key)
-│   ├── self-license.nix      # Commercial gate: GPG + openssl token verification
-│   └── token.nix             # Token construction, restriction, validation
+│   ├── self-license.nix      # Commercial gate: GPG + openssl license verification
+│   └── token.nix             # License construction, restriction, validation
 ├── modules/
 │   ├── default.nix           # Standalone NixOS module (nix-license.*)
 │   └── mynixos.nix           # mynixos integration (my.license.* + my.users.<name>.*)
 ├── tests/
-│   ├── fixtures/             # Signed test tokens (GPG + Ed25519)
+│   ├── fixtures/             # Signed test licenses (GPG + Ed25519)
 │   ├── lib-types.nix         # OARS categories, presets
 │   ├── lib-content-rating.nix # Severity, policy resolution, content evaluation
 │   ├── lib-licenses.nix      # Commitments, assurances, restriction checks
-│   ├── lib-token.nix         # Token authorization, restriction, expiry
+│   ├── lib-token.nix         # License authorization, restriction, expiry
 │   ├── lib-properties.nix    # 200,000+ domain model guarantees
 │   ├── nixpkgs-map.nix       # 289/289 mapping + regression tests
-│   ├── self-license.nix      # Token claim validation
+│   ├── self-license.nix      # License claim validation
 │   └── module-standalone.nix # Module scenarios, commercial gate, assertions
 └── docs/
 ```
@@ -98,9 +98,9 @@ graph TD
     predicate -->|"enforce"| block["Block build"]
     predicate -->|"warn"| trace["builtins.trace warning"]
 
-    subgraph "Token verification"
-        selfToken["nix-license token"] --> gpg["GPG verify<br/>(YubiKey)"]
-        vendorToken["Vendor token"] --> openssl["openssl verify<br/>(any algorithm)"]
+    subgraph "License verification"
+        selfLicense["nix-license license"] --> gpg["GPG verify<br/>(YubiKey)"]
+        vendorLicense["Vendor license"] --> openssl["openssl verify<br/>(any algorithm)"]
     end
 ```
 
@@ -167,11 +167,11 @@ All fields required, no defaults.
 
 | Function | Description |
 |----------|-------------|
-| `mkLicenseToken` | Create a license token |
-| `evaluateTokenAuthorizations` | Check token authorizations against usage |
-| `isValidTokenRestriction` | Can this token be restricted further? |
+| `mkLicenseToken` | Create a license license |
+| `evaluateTokenAuthorizations` | Check license authorizations against usage |
+| `isValidTokenRestriction` | Can this license be restricted further? |
 | `restrictToken` | Apply a restriction (returns null if invalid) |
-| `validateToken` | Full token validation |
+| `validateToken` | Full license validation |
 
 ## Domain model guarantees
 
@@ -194,10 +194,10 @@ All fields required, no defaults.
 | unfreeRedistributable allows distribution | regression | nixpkgs-map |
 | Multi-license packages (all must pass) | targeted | nixpkgs-map |
 | Assurance key mapping with real SALT data | targeted | nixpkgs-map |
-| GPG token signature verification | build-time | self-license-verify |
-| Vendor token signature verification (openssl) | build-time | vendor-token-verify |
-| Token claim validation (package, commercial, expiry) | 12 cases | self-license-claims |
+| GPG license signature verification | build-time | self-license-verify |
+| Vendor license signature verification (openssl) | build-time | vendor-token-verify |
+| License claim validation (package, commercial, expiry) | 12 cases | self-license-claims |
 | Usage assertions catch invalid combinations | targeted | module-standalone |
-| Commercial gate requires token in enforce mode | targeted | module-standalone |
+| Commercial gate requires license in enforce mode | targeted | module-standalone |
 
 Every license (2649) is evaluated and tested against every usage context (16 activity combinations × 6 user types × 7 commitment keys × 3 assurance keys), producing over 200,000 individual pass/fail checks per `nix flake check`.

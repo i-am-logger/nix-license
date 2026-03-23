@@ -64,7 +64,7 @@ let
       cfg.assurances;
   };
 
-  # Check if a package's license conflicts with usage + token requirements
+  # Check if a package's license conflicts with usage + license requirements
   # In enforce mode: returns false to block non-compliant packages
   # In warn mode: traces warnings and returns true (allows all packages)
   checkPackageLicense = pkg:
@@ -203,10 +203,10 @@ in
           })
         (lib.filterAttrs (_: licCfg: licCfg.install) cfg.licenses);
 
-    # License compliance report (commercial feature — requires nix-license token)
+    # License compliance report (commercial feature — requires a nix-license commercial license)
     nix-license.report =
       let
-        hasToken = cfg.licenses ? "nix-license";
+        hasNixLicense = cfg.licenses ? "nix-license";
         reportLib = import ../lib/report.nix {
           inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext cfg;
           title =
@@ -216,9 +216,9 @@ in
             else "License Compliance Report";
         };
       in
-      assert hasToken || throw ''
+      assert hasNixLicense || throw ''
         nix-license: report generation requires a nix-license commercial license.
-        Add: nix-license.licenses."nix-license".licenseFile = ./path/to/token;
+        Add: nix-license.licenses."nix-license".licenseFile = ./path/to/license;
         Visit https://github.com/i-am-logger/nix-license for licensing.
       '';
       reportLib.mkReportBundle (config.environment.systemPackages or [ ]);
@@ -236,12 +236,12 @@ in
       {
         assertion =
           let
-            hasNixLicenseToken = cfg.licenses ? "nix-license";
+            hasNixLicense = cfg.licenses ? "nix-license";
           in
-            !(cfg.usage.commercial-use && cfg.enforcement == "enforce" && !hasNixLicenseToken);
+            !(cfg.usage.commercial-use && cfg.enforcement == "enforce" && !hasNixLicense);
         message = ''
-          nix-license: commercial use requires a nix-license token in enforce mode.
-          Add: nix-license.licenses."nix-license".licenseFile = ./path/to/token;
+          nix-license: commercial use requires a nix-license commercial license in enforce mode.
+          Add: nix-license.licenses."nix-license".licenseFile = ./path/to/license;
           Visit https://github.com/i-am-logger/nix-license for licensing.
         '';
       }

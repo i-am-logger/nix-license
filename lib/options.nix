@@ -107,7 +107,7 @@ in
   licenseSubmoduleOptions = {
     licenseFile = lib.mkOption {
       type = lib.types.path;
-      description = "Path to signed license token file (GPG or openssl)";
+      description = "Path to signed license file (GPG or openssl)";
     };
 
     install = lib.mkOption {
