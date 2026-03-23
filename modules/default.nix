@@ -141,6 +141,12 @@ in
 
     vendorKeys = sharedOpts.vendorKeysOption;
     enforcement = sharedOpts.enforcementOption;
+
+    report = lib.mkOption {
+      type = lib.types.package;
+      readOnly = true;
+      description = "License compliance report (JSON file). Build with: nix build .#nixosConfigurations.<host>.config.nix-license.report";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -184,6 +190,16 @@ in
             group = "root";
           })
         (lib.filterAttrs (_: licCfg: licCfg.install) cfg.licenses);
+
+    # License compliance report
+    nix-license.report =
+      let
+        reportLib = import ../lib/report.nix {
+          inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext cfg;
+          usageContext = mkUsageContext "";
+        };
+      in
+      reportLib.mkReportFile (config.environment.systemPackages or [ ]);
 
     # Usage consistency assertions
     assertions = [

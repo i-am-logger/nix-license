@@ -11,6 +11,7 @@ let
             nixpkgs.overlays = lib.mkOption { type = lib.types.listOf lib.types.anything; default = [ ]; };
             assertions = lib.mkOption { type = lib.types.listOf lib.types.attrs; default = [ ]; };
             environment.etc = lib.mkOption { type = lib.types.attrs; default = { }; };
+            environment.systemPackages = lib.mkOption { type = lib.types.listOf lib.types.anything; default = [ ]; };
           };
         }
         { _module.args = { inherit oarsSpec saltLicenses saltSpdx pkgs; }; }
