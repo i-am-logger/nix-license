@@ -62,7 +62,47 @@ Every license carries terms. Every user declares their context. nix-license eval
 | Obligations | Commitments | Obligation triggers and user can't commit |
 | Disclaimers | Assurances | License disclaims what user requires |
 
+```mermaid
+graph LR
+    subgraph "License (SALT)"
+        R[Restrictions]
+        A[Allowed-use]
+        O[Obligations]
+        D[Disclaimers]
+    end
+
+    subgraph "User (NixOS config)"
+        UA[Usage activities]
+        UT[Usage type]
+        C[Commitments]
+        AS[Assurances]
+    end
+
+    R -->|"activity restricted?"| UA
+    A -->|"type allowed?"| UT
+    O -->|"can fulfill?"| C
+    D -->|"guarantee required?"| AS
+```
+
 See [SALT TERMS.md](https://github.com/i-am-logger/salt/blob/master/TERMS.md) for the complete vocabulary.
+
+## Data flow
+
+```mermaid
+graph TD
+    SALT["SALT (2649 licenses)"] --> nixpkgsMap["lib/nixpkgs-map.nix"]
+    nixpkgs["nixpkgs lib.licenses (289)"] --> nixpkgsMap
+    nixpkgsMap --> licenseCheck["lib/license-check.nix"]
+    userConfig["NixOS config<br/>usage + commitments + assurances"] --> licenseCheck
+    licenseCheck --> predicate["allowUnfreePredicate"]
+    predicate -->|"enforce"| block["Block build"]
+    predicate -->|"warn"| trace["builtins.trace warning"]
+
+    subgraph "Token verification"
+        selfToken["nix-license token"] --> gpg["GPG verify<br/>(YubiKey)"]
+        vendorToken["Vendor token"] --> openssl["openssl verify<br/>(any algorithm)"]
+    end
+```
 
 ## Data sources
 
