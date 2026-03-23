@@ -128,6 +128,18 @@ in
   options.nix-license = {
     enable = lib.mkEnableOption "nix-license compliance module";
 
+    name = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "System name (e.g., 'yoga', 'prod-web-01')";
+    };
+
+    description = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "System description (e.g., 'Primary development workstation')";
+    };
+
     usage = sharedOpts.usageOptions;
     commitments = sharedOpts.commitmentOptions;
     assurances = sharedOpts.assuranceOptions;
@@ -145,7 +157,7 @@ in
     report = lib.mkOption {
       type = lib.types.package;
       readOnly = true;
-      description = "License compliance report (JSON file). Build with: nix build .#nixosConfigurations.<host>.config.nix-license.report";
+      description = "License compliance report bundle (JSON + HTML). Build with: nix build .#nixosConfigurations.<host>.config.nix-license.report";
     };
   };
 
@@ -197,6 +209,11 @@ in
         hasToken = cfg.licenses ? "nix-license";
         reportLib = import ../lib/report.nix {
           inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext cfg;
+          title =
+            if cfg.name != "" && cfg.description != "" then "${cfg.name} — ${cfg.description}"
+            else if cfg.name != "" then cfg.name
+            else if cfg.description != "" then cfg.description
+            else "License Compliance Report";
         };
       in
       assert hasToken || throw ''
