@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.3](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.2...nix-license-v0.6.3) (2026-03-23)
+
+
+### Bug Fixes
+
+* proper file permissions on content policy files ([77317c8](https://github.com/i-am-logger/nix-license/commit/77317c88c44a99af994e2c5196a34bae53e7ee67))
+* system content policy root:root 0644 (apps need to read it) ([564d8a6](https://github.com/i-am-logger/nix-license/commit/564d8a61ce6ff98583610fab3a6c8485c782a506))
+
 ## [0.6.2](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.6.1...nix-license-v0.6.2) (2026-03-23)
 
 
