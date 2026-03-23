@@ -61,7 +61,12 @@ runs:
     - name: Print summary
       shell: bash
       run: |
-        echo "## License Compliance Report" >> "$GITHUB_STEP_SUMMARY"
+        BLOCKED=${{ steps.summary.outputs.blocked }}
+        if [ "$BLOCKED" -gt 0 ]; then
+          echo "## :x: License Compliance Report: ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "## :white_check_mark: License Compliance Report: ${{ inputs.artifact-name }}" >> "$GITHUB_STEP_SUMMARY"
+        fi
         echo "" >> "$GITHUB_STEP_SUMMARY"
         echo "| Metric | Count |" >> "$GITHUB_STEP_SUMMARY"
         echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
