@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.11.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.10.0...nix-license-v0.11.0) (2026-03-23)
+
+
+### Features
+
+* embed full HTML report in GitHub Step Summary ([559860a](https://github.com/i-am-logger/nix-license/commit/559860a222682143a1e09dcc2b1c2f113df37ea3))
+* full detail report in GitHub Step Summary with package table ([bd2dd6e](https://github.com/i-am-logger/nix-license/commit/bd2dd6e1abae07798b721d73d6b2b8251784adc4))
+* name + description on all examples, report title from config ([114bebd](https://github.com/i-am-logger/nix-license/commit/114bebdeeb38dcaa4dcccf866c16eba274c0b1a8))
+* nix-license.description — user sets report title ([fbb89b1](https://github.com/i-am-logger/nix-license/commit/fbb89b1c549ff72f50b4b9e1a4c06e65766f4457))
+* report integrity — per-package hash + report SHA-256 ([4f120bc](https://github.com/i-am-logger/nix-license/commit/4f120bc508becbf41e3bf6bcd95b12307ff9475d))
+* report metadata — version, timestamp, compliance status in footer ([784b4a5](https://github.com/i-am-logger/nix-license/commit/784b4a576b9df7d3f0e4e36c42365f96ccde5b4f))
+* report title — each report shows its scenario name ([d06d9b1](https://github.com/i-am-logger/nix-license/commit/d06d9b1cdccbfc580c4e5d2f38f322031755e2b5))
+
+
+### Bug Fixes
+
+* add scenario name and verdict to GitHub Step Summary ([cce424c](https://github.com/i-am-logger/nix-license/commit/cce424c77fc35d688b2d3446e26ef6d0cddcf3b3))
+* all examples use 'Example -' prefix, demos use config name/description ([a7764b6](https://github.com/i-am-logger/nix-license/commit/a7764b60c4e565b28bd0e69f7f319b13bb029f87))
+* markdown Step Summary with full detail (HTML not supported) ([073371e](https://github.com/i-am-logger/nix-license/commit/073371eca485d6650c17ced9d0877bb694ca86f8))
+* plain unicode icons in Step Summary (no color emoji) ([8a8546c](https://github.com/i-am-logger/nix-license/commit/8a8546c26b3e7446e3af5c4dff4e8e077b9f66ed))
+* report header shows name + description on separate lines, add Example prefix ([b07564c](https://github.com/i-am-logger/nix-license/commit/b07564c7ffbf0c3e81f6a56c19dafdc8c27ae6d3))
+* report layout — industry standard header, tighter spacing ([92cb337](https://github.com/i-am-logger/nix-license/commit/92cb3378e9bed323f6caaafe1eb7ce3f29164dfe))
+* report layout — nix-license top-right, verdict above title, hash color ([0b08a63](https://github.com/i-am-logger/nix-license/commit/0b08a632d0e564403495766f3ece411cb14fc071))
+* verdict + nix-license + datetime on right, title on left ([d75bf8f](https://github.com/i-am-logger/nix-license/commit/d75bf8fea14970138c36441794789c6be0e0e2a7))
+
+
+### Code Refactoring
+
+* action handles pages-path, CI uses it — no duplication ([a41b5d7](https://github.com/i-am-logger/nix-license/commit/a41b5d72fe38f4fe3c611ab9682e05210f792b83))
+
+
+### Documentation
+
+* add features checklist and demo report links to README ([a3f0148](https://github.com/i-am-logger/nix-license/commit/a3f0148b3793e7fded59edf71dae33520a135128))
+* features table — free vs commercial, clear separation ([c1788fa](https://github.com/i-am-logger/nix-license/commit/c1788fadc4d08d4234a151393b6e6a146c16f6c7))
+
 ## [0.10.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.9.4...nix-license-v0.10.0) (2026-03-23)
 
 
