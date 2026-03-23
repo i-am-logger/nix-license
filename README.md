@@ -88,7 +88,7 @@ All usage fields are required. No defaults — you must explicitly declare your 
 
 ## Content policy
 
-Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oars). See [USAGE.md](docs/USAGE.md).
+Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oars). Resolved policies are written to `/etc/nix-license/content-policy/` as immutable Nix store symlinks for apps to query at runtime. See [USAGE.md](docs/USAGE.md).
 
 ## Commercial licensing
 

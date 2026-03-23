@@ -8,10 +8,11 @@
 #   my.license.enforcement
 #   my.users.<name>.contentPolicy.*
 
-{ config, lib, oarsSpec, ... }:
+{ config, lib, pkgs, oarsSpec, ... }:
 
 let
   licenseTypes = import ../lib/types.nix { inherit lib oarsSpec; };
+  contentRating = import ../lib/content-rating.nix { inherit lib oarsSpec; };
 
   cfg = config.my.license;
 
@@ -240,6 +241,15 @@ in
       inherit (cfg) usage commitments assurances;
       inherit (cfg) contentPolicy licenses tokenVerification;
     };
+
+    # Per-user content policy files — immutable, symlinked to Nix store
+    environment.etc = lib.mapAttrs'
+      (username: userCfg:
+        lib.nameValuePair "nix-license/content-policy/${username}.json" {
+          source = pkgs.writeText "nix-license-content-policy-${username}.json"
+            (builtins.toJSON (contentRating.resolveContentPolicy userCfg.contentPolicy));
+        })
+      config.my.users;
   };
 }
 

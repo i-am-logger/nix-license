@@ -8,10 +8,11 @@
 #   nix-license.licenses.*
 #   nix-license.enforcement
 
-{ config, lib, oarsSpec, saltLicenses, saltSpdx, ... }:
+{ config, lib, pkgs, oarsSpec, saltLicenses, saltSpdx, ... }:
 
 let
   licenseTypes = import ../lib/types.nix { inherit lib oarsSpec; };
+  contentRating = import ../lib/content-rating.nix { inherit lib oarsSpec; };
   licenseCheck = import ../lib/license-check.nix { };
   nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
 
@@ -313,6 +314,12 @@ in
       # Enforce mode: predicate returns false for non-compliant packages.
       allowUnfreePredicate = checkPackageLicense;
     };
+
+    # Content policy files — immutable, symlinked to Nix store
+    environment.etc."nix-license/content-policy/system.json".source =
+      pkgs.writeText "nix-license-content-policy-system.json"
+        (builtins.toJSON (contentRating.resolveContentPolicy
+          (if cfg.contentPolicy.preset != null then cfg.contentPolicy.preset else "unrestricted")));
 
     # Usage consistency assertions
     assertions = [

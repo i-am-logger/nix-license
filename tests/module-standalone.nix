@@ -1,4 +1,4 @@
-{ lib, oarsSpec, saltLicenses ? { }, saltSpdx ? { } }:
+{ lib, oarsSpec, saltLicenses ? { }, saltSpdx ? { }, pkgs ? { writeText = name: _: "/nix/store/fake-${name}"; } }:
 
 let
   evalModule = extraConfig:
@@ -6,10 +6,13 @@ let
       modules = [
         ../modules/default.nix
         {
-          options.nixpkgs.config = lib.mkOption { type = lib.types.attrs; default = { }; };
-          options.assertions = lib.mkOption { type = lib.types.listOf lib.types.attrs; default = [ ]; };
+          options = {
+            nixpkgs.config = lib.mkOption { type = lib.types.attrs; default = { }; };
+            assertions = lib.mkOption { type = lib.types.listOf lib.types.attrs; default = [ ]; };
+            environment.etc = lib.mkOption { type = lib.types.attrs; default = { }; };
+          };
         }
-        { _module.args = { inherit oarsSpec saltLicenses saltSpdx; }; }
+        { _module.args = { inherit oarsSpec saltLicenses saltSpdx pkgs; }; }
         extraConfig
       ];
     }).config;
@@ -262,4 +265,13 @@ in
     in
     assertTrue "can set vendor token for package"
       (cfg.nix-license.licenses."vendor-sdk".token != null);
+
+  # ── Content policy files ──────────────────────────────────────
+
+  contentPolicyFileCreated =
+    let
+      cfg = evalModule (defaultUsage // { nix-license.enable = true; });
+    in
+    assertTrue "system content policy file created"
+      (cfg.environment.etc ? "nix-license/content-policy/system.json");
 }

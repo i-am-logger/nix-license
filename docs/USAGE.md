@@ -200,7 +200,13 @@ assurances = {
 
 ## Content policy
 
-Content policies control what software is available per user based on [OARS 1.1](https://github.com/hughsie/oars) content ratings.
+Per-user content policies based on [OARS 1.1](https://github.com/hughsie/oars). This is a **runtime** feature — the resolved policy is written to `/etc/nix-license/content-policy/` as immutable files (symlinks to the Nix store). Apps and launchers query these files to decide what content to show.
+
+```
+/etc/nix-license/content-policy/system.json   # system-wide default
+/etc/nix-license/content-policy/logger.json   # per-user (via mynixos)
+/etc/nix-license/content-policy/son.json      # per-user (via mynixos)
+```
 
 ### Presets
 
@@ -224,6 +230,10 @@ my.users.son.contentPolicy = {
 `none` < `mild` < `moderate` < `intense`
 
 A policy of `violence-cartoon = "moderate"` allows packages rated `none`, `mild`, or `moderate` for that category, but blocks `intense`.
+
+### Build-time content enforcement
+
+Requires packages to have `meta.contentRating` (OARS attrset). nixpkgs does not currently provide this data. See [#15](https://github.com/i-am-logger/nix-license/issues/15) for the overlay approach to sourcing OARS ratings from AppStream.
 
 ## Enforcement
 
