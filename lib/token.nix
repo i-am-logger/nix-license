@@ -156,7 +156,7 @@ let
   # Returns: { satisfied = bool; violations = [ { category, tokenLevel, policyLevel } ]; }
   evaluateTokenContentPolicy = contentPolicy: tokenContentAuths:
     let
-      severityLevel = { "none" = 0; "mild" = 1; "moderate" = 2; "intense" = 3; };
+      severityLevel = import ./severity.nix;
       categories = builtins.filter
         (key: builtins.substring 0 8 key == "content-" && key != "content-allow-unrated")
         (builtins.attrNames tokenContentAuths);

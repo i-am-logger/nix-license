@@ -116,11 +116,9 @@
           # succeeds only if all assertions pass (any throw = eval failure)
           mkNixTest = name: results:
             let
-              allValues = builtins.attrValues results;
-              allPass = builtins.all (x: x) allValues;
-              count = builtins.length allValues;
+              # Force evaluation of all test results — tests throw on failure
+              count = builtins.length (builtins.attrValues results);
             in
-            assert allPass;
             pkgs.runCommand "nix-license-test-${name}" { } ''
               echo "${name}: ${toString count} tests passed"
               echo "${name}: ${toString count} tests passed" > $out

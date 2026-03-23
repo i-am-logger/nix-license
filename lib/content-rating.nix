@@ -7,13 +7,7 @@
 let
   licenseTypes = import ./types.nix { inherit lib oarsSpec; };
 
-  # Maps severity names to their rank for comparison
-  severityLevel = {
-    "none" = 0;
-    "mild" = 1;
-    "moderate" = 2;
-    "intense" = 3;
-  };
+  severityLevel = import ./severity.nix;
 
   # Is this severity level allowed by the policy maximum?
   severityAllowed = rating: maximum:
@@ -62,9 +56,10 @@ let
     };
 
   # Does this content policy allow unrated packages?
+  # Defaults to false (deny) if allowUnrated is not explicitly set
   allowsUnratedContent = policy:
     let resolved = resolveContentPolicy policy;
-    in resolved.allowUnrated or true;
+    in resolved.allowUnrated or false;
 
 in
 {

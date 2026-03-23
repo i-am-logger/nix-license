@@ -26,6 +26,10 @@ in
     "oarsCategories is not empty"
     (builtins.length types.oarsCategories > 0);
 
+  oarsCategoriesExactCount = assertEq
+    "OARS 1.1 has exactly 22 categories"
+    (builtins.length types.oarsCategories) 22;
+
   oarsCategoriesContainsViolence = assertTrue
     "oarsCategories contains violence-cartoon"
     (builtins.elem "violence-cartoon" types.oarsCategories);
