@@ -176,6 +176,7 @@ Commercial use in enforce mode requires `licenses."nix-license".licenseFile`. Ve
 - [USAGE.md](docs/USAGE.md) — Installation, configuration, examples
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Domain model, library API, module structure
 - [COMPLIANCE.md](docs/COMPLIANCE.md) — Standards (SALT, OARS)
+- [CONTENT-POLICY.md](docs/CONTENT-POLICY.md) — Content policy (OARS 1.1, age verification alternative)
 - [OPENCHAIN.md](docs/OPENCHAIN.md) — OpenChain ISO/IEC 5230 specification mapping
 - [DEVELOPMENT.md](docs/DEVELOPMENT.md) — Testing, domain invariants, pre-commit hooks
 
