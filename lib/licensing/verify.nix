@@ -1,7 +1,7 @@
 # nix-license self-licensing gate
 #
 # When usage.commercial-use = true and enforcement = "enforce",
-# a valid nix-license token is required.
+# a valid nix-license commercial license is required.
 #
 # Token format: GPG-signed JSON with claims:
 #   { package = "nix-license"; commercial = true; licensee = "..."; expires_at = "..."; }
@@ -18,11 +18,11 @@ let
     ../../keys/yubikey2.asc
   ];
 
-  # Parse a token JSON string into claims
-  parseClaims = tokenJson:
-    builtins.fromJSON tokenJson;
+  # Parse a license JSON string into claims
+  parseClaims = licenseJson:
+    builtins.fromJSON licenseJson;
 
-  # Validate token claims at eval time (no crypto, just structure + expiry)
+  # Validate license claims at eval time (no crypto, just structure + expiry)
   validateClaims = { claims, currentDate ? "9999-12-31" }:
     let
       isNixLicense = (claims.package or "") == "nix-license";
@@ -41,14 +41,14 @@ let
     };
 
   # Build-time GPG signature verification derivation
-  # Takes the token file (detached signature) and verifies against embedded public keys
-  mkVerifyDerivation = { tokenFile, signatureFile ? null }:
+  # Takes the license file (detached signature) and verifies against embedded public keys
+  mkVerifyDerivation = { licenseFile, signatureFile ? null }:
     let
       sigFile =
         if signatureFile != null then signatureFile
-        else "${tokenFile}.sig";
+        else "${licenseFile}.sig";
     in
-    pkgs.runCommand "nix-license-verify-token"
+    pkgs.runCommand "nix-license-verify"
       {
         nativeBuildInputs = [ pkgs.gnupg ];
       } ''
@@ -58,10 +58,10 @@ let
       ${lib.concatMapStringsSep "\n" (key: "gpg --import ${key}") publicKeys}
 
       # Verify the signature
-      if gpg --trust-model always --verify ${sigFile} ${tokenFile}; then
-        echo "nix-license: token signature verified" > $out
+      if gpg --trust-model always --verify ${sigFile} ${licenseFile}; then
+        echo "nix-license: license signature verified" > $out
       else
-        echo "nix-license: INVALID token signature"
+        echo "nix-license: INVALID license signature"
         exit 1
       fi
     '';
@@ -69,18 +69,18 @@ let
   # Build-time vendor token verification (algorithm-agnostic via openssl)
   # Vendors provide PEM public keys — any algorithm openssl supports
   # (Ed25519, RSA, ECDSA, etc.)
-  mkVendorVerifyDerivation = { tokenFile, signatureFile, publicKeyFile }:
-    pkgs.runCommand "nix-license-verify-vendor-token"
+  mkVendorVerifyDerivation = { licenseFile, signatureFile, publicKeyFile }:
+    pkgs.runCommand "nix-license-verify-vendor"
       {
         nativeBuildInputs = [ pkgs.openssl ];
       } ''
       if openssl pkeyutl -verify \
         -pubin -inkey ${publicKeyFile} \
         -sigfile ${signatureFile} \
-        -rawin -in ${tokenFile}; then
-        echo "nix-license: vendor token signature verified" > $out
+        -rawin -in ${licenseFile}; then
+        echo "nix-license: vendor license signature verified" > $out
       else
-        echo "nix-license: INVALID vendor token signature"
+        echo "nix-license: INVALID vendor license signature"
         exit 1
       fi
     '';

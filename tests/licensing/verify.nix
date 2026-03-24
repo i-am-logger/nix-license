@@ -18,7 +18,7 @@ let
     if actual == expected then true
     else throw "FAIL: ${name}: expected ${builtins.toJSON expected}, got ${builtins.toJSON actual}";
 
-  # Test token (same as fixtures/test-token.json)
+  # Test token (same as fixtures/nix-license-commercial-license.json)
   validClaims = {
     package = "nix-license";
     commercial = true;

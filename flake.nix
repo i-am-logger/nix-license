@@ -184,8 +184,8 @@
               selfLicense = import ./lib/licensing/verify.nix { inherit lib pkgs; };
             in
             selfLicense.mkVerifyDerivation {
-              tokenFile = ./tests/fixtures/test-token.json;
-              signatureFile = ./tests/fixtures/test-token.json.sig;
+              licenseFile = ./tests/licensing/fixtures/nix-license-commercial-license.json;
+              signatureFile = ./tests/licensing/fixtures/nix-license-commercial-license.json.sig;
             };
 
           # Vendor token verification (algorithm-agnostic via openssl)
@@ -194,9 +194,9 @@
               selfLicense = import ./lib/licensing/verify.nix { inherit lib pkgs; };
             in
             selfLicense.mkVendorVerifyDerivation {
-              tokenFile = ./tests/fixtures/vendor-token.json;
-              signatureFile = ./tests/fixtures/vendor-token.json.sig;
-              publicKeyFile = ./tests/fixtures/vendor-pubkey.pem;
+              licenseFile = ./tests/licensing/fixtures/vendor-package-license.json;
+              signatureFile = ./tests/licensing/fixtures/vendor-package-license.json.sig;
+              publicKeyFile = ./tests/licensing/fixtures/vendor-package-license.pem;
             };
 
           # Example reports (verifies examples evaluate correctly)
