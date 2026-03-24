@@ -2,6 +2,22 @@
 
 Content policy controls what software content each user on a system is entitled to access — violence levels, gambling, adult content, social features, and more. The administrator sets the policy. Apps query it at runtime. The system enforces it consistently.
 
+## A proven model
+
+Content rating has been the industry standard for decades:
+
+| Industry | System | How it works |
+|----------|--------|-------------|
+| Movies | MPAA (G, PG, PG-13, R, NC-17) | Rate the content, not the viewer |
+| Television | TV Parental Guidelines (TV-Y, TV-PG, TV-MA) | Per-show rating, V-chip enforces |
+| Games | ESRB (E, T, M, AO) / PEGI (3, 7, 12, 16, 18) | Per-game rating, platform enforces |
+| Music | Parental Advisory | Label the content, parent decides |
+| Apps | OARS / IARC | App stores rate and filter |
+
+Every industry rates the **content**, then lets a **gatekeeper** (parent, platform, broadcaster) decide what to allow. Nobody asks the viewer for their birth certificate.
+
+nix-license applies this same model to software — rate the content (OARS 1.1), set the policy (administrator), enforce at the system level.
+
 ## The problem with age verification
 
 California (AB 2273), Colorado, New York, and other states are pushing age verification laws that require platforms to verify users' ages before allowing access to content.
