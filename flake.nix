@@ -91,7 +91,7 @@
     in
     {
       # Library functions
-      lib = import ./lib { inherit lib oarsSpec saltLicenses; };
+      lib = import ./lib { inherit lib oarsSpec saltLicenses saltSpdx; };
 
       # NixOS modules (extra args closed over from the flake via _module.args)
       nixosModules = {

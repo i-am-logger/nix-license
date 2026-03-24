@@ -102,4 +102,6 @@ in
   proprietary = mkExampleReport ../examples/proprietary.nix;
   educational = mkExampleReport ../examples/educational.nix;
   nonprofit = mkExampleReport ../examples/nonprofit.nix;
+  government = mkExampleReport ../examples/government.nix;
+  research = mkExampleReport ../examples/research.nix;
 }

@@ -173,7 +173,7 @@ in
         "nix-license/content-policy/system.json" = {
           source = pkgs.writeText "nix-license-content-policy-system.json"
             (builtins.toJSON (contentRating.resolveContentPolicy
-              (if cfg.contentPolicy.preset != null then cfg.contentPolicy.preset else "unrestricted")));
+              cfg.contentPolicy));
           mode = "0644";
           user = "root";
           group = "root";
@@ -192,7 +192,7 @@ in
     # License compliance report (commercial feature — requires a nix-license commercial license)
     nix-license.report =
       let
-        hasNixLicense = cfg.licenses ? constants.nixLicensePackageName;
+        hasNixLicense = cfg.licenses ? ${constants.nixLicensePackageName};
         reportLib = import ../lib/commercial/reporting/report.nix {
           inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext cfg;
           title =
@@ -222,7 +222,7 @@ in
       {
         assertion =
           let
-            hasNixLicense = cfg.licenses ? constants.nixLicensePackageName;
+            hasNixLicense = cfg.licenses ? ${constants.nixLicensePackageName};
           in
             !(cfg.usage.commercial-use && cfg.enforcement == "enforce" && !hasNixLicense);
         message = ''
