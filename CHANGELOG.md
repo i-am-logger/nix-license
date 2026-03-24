@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.12.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.8...nix-license-v0.12.0) (2026-03-24)
+
+
+### Features
+
+* presentation + reports for GitHub Pages, OSS developer in showcase ([7b13d9b](https://github.com/i-am-logger/nix-license/commit/7b13d9b8b842c115a49cdf88cbf28e9282e5fcbb))
+* presentation as GitHub Pages landing + features slide + report links ([95563db](https://github.com/i-am-logger/nix-license/commit/95563dbf20b838f78693cd3b25582a13bb3e63d8))
+
+
+### Documentation
+
+* finalize presentation — 7 slides, live report embeds, full feature list ([6dffacc](https://github.com/i-am-logger/nix-license/commit/6dffacc23591d87a4add25a3a34a7205b114ea57))
+
 ## [0.11.8](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.7...nix-license-v0.11.8) (2026-03-24)
 
 
