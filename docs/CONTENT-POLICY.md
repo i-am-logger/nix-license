@@ -96,7 +96,7 @@ Each category has a severity level: `none` < `mild` < `moderate` < `intense`
 
 ```nix
 nix-license.contentPolicy = {
-  preset = "teen";
+  preset = "moderate";
 };
 ```
 
@@ -117,7 +117,7 @@ Any category can be overridden regardless of preset:
 
 ```nix
 my.users.teen.contentPolicy = {
-  preset = "teen";
+  preset = "moderate";
   money-gambling = "none";      # stricter: no gambling
   language-humor = "intense";   # looser: allow crude humor
 };
