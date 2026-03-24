@@ -44,11 +44,7 @@ nix-license content policy stores **zero personally identifiable information**:
 - No user accounts, no passwords
 - No network requests to verify identity
 
-The policy file contains only severity levels per content category — what the user is entitled to, not who the user is.
-
-**Are preset names like "restricted" and "moderate" PII?** No. These are policy PRESET names, not user attributes. The system doesn't store that a user is restricted — it stores that a user's content entitlement MATCHES the "restricted" preset. The resolved policy file contains only severity levels (`"violence-cartoon": "mild"`), not the preset name. Even if leaked, it reveals nothing about the user's identity or age — only their content entitlements.
-
-The username in the filename (e.g., `guest.json`) is system configuration set by the administrator, not collected user data. It exists regardless of nix-license — NixOS always has usernames.
+The policy file contains only severity levels per content category — what the user is entitled to, not who the user is. The resolved file stores no preset name, no age, no identity — just severity levels like `"violence-cartoon": "mild"`.
 
 ## How it works
 
