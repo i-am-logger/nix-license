@@ -2,6 +2,10 @@
 
 Content policy controls what software content each user on a system is entitled to access — violence levels, gambling, adult content, social features, and more. The administrator sets the policy. Apps query it at runtime. The system enforces it consistently.
 
+## Limitation
+
+Content policy protects the local system. If the user accesses a SaaS application, the service may still collect behavioral data regardless of local policy. No legislation currently requires services to stop storing user history — age verification laws address the gate but not the surveillance behind it.
+
 ## A proven model
 
 Content rating has been the industry standard for decades:
@@ -45,8 +49,6 @@ nix-license content policy stores **zero personally identifiable information**:
 - No network requests to verify identity
 
 The policy file contains only severity levels per content category — what the user is entitled to, not who the user is. The resolved file stores no preset name, no age, no identity — just severity levels like `"violence-cartoon": "mild"`.
-
-**Limitation:** content policy protects the local system. If the user accesses a SaaS application, the service may still collect behavioral data regardless of local policy. No legislation currently requires services to stop storing user history — age verification laws address the gate but not the surveillance behind it.
 
 ## How it works
 
