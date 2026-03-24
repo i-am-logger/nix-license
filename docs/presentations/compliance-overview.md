@@ -41,19 +41,31 @@ Compliance moved from manual to automated in AML because transaction volume made
 
 ---
 
-# Features
+# Features — free
 
-| Feature | Free | Commercial |
-|---------|:----:|:----------:|
-| License enforcement — restrictions, obligations, allowed-use | ✔ | ✔ |
-| 2649 classified licenses (SALT) | ✔ | ✔ |
-| Commitments — declare what you can fulfill | ✔ | ✔ |
-| Assurances — require patent grants, source, warranty | ✔ | ✔ |
-| Content policy — per-user entitlements (OARS 1.1) | ✔ | ✔ |
-| Compliance reports — JSON + HTML dashboard | | ✔ |
-| GitHub Action — CI/CD integration | | ✔ |
-| SBOM generation (SPDX/CycloneDX) | | planned |
-| OpenChain ISO/IEC 5230 conformance | | planned |
+| Feature | |
+|---------|:---:|
+| License enforcement — restrictions, obligations, allowed-use | ✔ |
+| 2649 classified licenses (SALT) | ✔ |
+| Full nixpkgs coverage (289 licenses mapped) | ✔ |
+| Commitments — declare what you can fulfill | ✔ |
+| Assurances — require patent grants, source, warranty | ✔ |
+| Content policy — per-user entitlements (OARS 1.1) | ✔ |
+| 200,000+ compliance checks per build | ✔ |
+
+---
+
+# Features — commercial + planned
+
+| Feature | Status |
+|---------|:------:|
+| Cryptographic license verification (GPG + openssl) | ✔ |
+| Compliance reports — JSON + HTML dashboard | ✔ |
+| GitHub Action — CI/CD integration | ✔ |
+| SBOM generation (SPDX/CycloneDX) | planned |
+| OpenChain ISO/IEC 5230 conformance | planned |
+| Audit trail | planned |
+| License change detection | planned |
 
 ---
 
@@ -77,6 +89,8 @@ The build **won't succeed** if any package violates these declarations.
 
 # What you get
 
+*Demo — live reports generated on every release from nix-license examples*
+
 <div style="display:flex;gap:1%;height:82%">
 <div style="flex:1;overflow:hidden;border:1px solid #30363d;border-radius:6px">
 <iframe src="personal/index.html" style="width:400%;height:400%;border:none;transform:scale(0.25);transform-origin:0 0;background:#0d1117"></iframe>
@@ -93,7 +107,13 @@ The build **won't succeed** if any package violates these declarations.
 
 # Thank you
 
-**Ido Samuelson**
+<div style="display:flex;align-items:center;gap:1.5em;margin:2em 0">
+<img src="https://github.com/i-am-logger.png" style="width:120px;border-radius:50%;border:3px solid #30363d">
+<div>
+<div style="font-size:1.4em;font-weight:bold;color:#f0f6fc">Logger</div>
+<div style="color:#8b949e;font-size:1.1em">i-am-logger</div>
+</div>
+</div>
 
 [nix-license.dev](https://nix-license.dev)
 
