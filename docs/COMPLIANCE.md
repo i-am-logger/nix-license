@@ -140,14 +140,4 @@ Per-user content policies use [OARS 1.1](https://github.com/hughsie/oars) (22 ca
 
 ### OpenChain ISO/IEC 5230
 
-[OpenChain ISO/IEC 5230](https://openchainproject.org/license-compliance) certifies organizational compliance programs:
-
-| OpenChain requirement | nix-license |
-|---|---|
-| Written open source policy | Usage declaration in NixOS config |
-| Process to review licenses | Every package evaluated at build time |
-| License identification | 289 nixpkgs licenses mapped to SALT |
-| Compliance artifacts | Obligations tracked per-package |
-| SBOM | [Planned](https://github.com/i-am-logger/nix-license/issues/7) |
-
-See [issue #6](https://github.com/i-am-logger/nix-license/issues/6) for self-certification questionnaire mapping.
+See [OPENCHAIN.md](OPENCHAIN.md) for the full specification mapping — requirement-by-requirement coverage analysis with diagrams.
