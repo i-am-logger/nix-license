@@ -104,6 +104,13 @@ jobs:
           artifact-name: report-proprietary
           fail-on-blocked: 'false'
           pages-path: pages/proprietary
+      - name: OSS Developer report
+        uses: ./action
+        with:
+          target: .#example-reports.x86_64-linux.oss-developer
+          artifact-name: report-oss-developer
+          fail-on-blocked: 'false'
+          pages-path: pages/oss-developer
       - name: Build presentation
         run: nix run nixpkgs#marp-cli -- docs/presentations/compliance-overview.md --html -o pages/index.html
       - name: Upload pages artifact
