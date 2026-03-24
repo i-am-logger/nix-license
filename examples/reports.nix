@@ -85,18 +85,8 @@ let
         else if cfgName != "" then cfgName
         else cfgDesc;
 
-      mkUsageContext = pname: cfg.usage // {
-        commitments = lib.mapAttrs
-          (_: c:
-            let isExcepted = builtins.elem pname c.exceptions;
-            in if c.fulfilled then !isExcepted else isExcepted)
-          cfg.commitments;
-        assurances = lib.mapAttrs
-          (n: a:
-            if n == "source-available" then false
-            else a.required && !builtins.elem pname a.exceptions)
-          cfg.assurances;
-      };
+      licensingContext = import ../lib/licensing/context.nix { inherit lib; };
+      mkUsageContext = licensingContext.mkUsageContext cfg;
 
       reportLib = import ../lib/commercial/reporting/report.nix {
         inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext title cfg;

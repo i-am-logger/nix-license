@@ -11,9 +11,9 @@
 { config, lib, pkgs, oarsSpec, ... }:
 
 let
-  licenseTypes = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
+  contentTypes = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
   contentRating = import ../lib/content-rating/rating.nix { inherit lib oarsSpec; };
-  sharedOpts = import ../lib/options.nix { inherit lib licenseTypes; };
+  sharedOpts = import ../lib/options.nix { inherit lib; licenseTypes = contentTypes; };
 
   cfg = config.my.license;
 
@@ -21,7 +21,7 @@ let
   contentPolicySubmodule = lib.types.submodule {
     options = {
       preset = lib.mkOption {
-        type = lib.types.nullOr licenseTypes.contentPolicyPresetType;
+        type = lib.types.nullOr contentTypes.contentPolicyPresetType;
         default = null;
         description = "Content policy preset for this user.";
       };
@@ -35,12 +35,12 @@ let
       (cat: {
         name = cat;
         value = lib.mkOption {
-          type = licenseTypes.policySeverityType;
+          type = contentTypes.policySeverityType;
           default = "intense";
           description = "Maximum allowed severity for ${cat}";
         };
       })
-      licenseTypes.oarsCategories);
+      contentTypes.oarsCategories);
   };
 in
 {

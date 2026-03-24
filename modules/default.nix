@@ -11,11 +11,13 @@
 { config, lib, pkgs, oarsSpec, saltLicenses, saltSpdx, ... }:
 
 let
-  licenseTypes = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
+  contentTypes = import ../lib/content-rating/types.nix { inherit lib oarsSpec; };
   contentRating = import ../lib/content-rating/rating.nix { inherit lib oarsSpec; };
   licenseCheck = import ../lib/licensing/check.nix { };
+  licensingContext = import ../lib/licensing/context.nix { inherit lib; };
+  constants = import ../lib/licensing/constants.nix;
   nixpkgsMap = import ../lib/nixpkgs-map.nix { inherit saltLicenses saltSpdx; };
-  sharedOpts = import ../lib/options.nix { inherit lib licenseTypes; };
+  sharedOpts = import ../lib/options.nix { inherit lib; licenseTypes = contentTypes; };
 
   isEnforce = cfg.enforcement == "enforce";
 
@@ -46,23 +48,7 @@ let
     if saltLic != null then saltLic
     else throw "nix-license: license '${name}' not found in SALT. Add it to SALT or lib/nixpkgs-map.nix.";
 
-  # Build the full usage context including policy
-  # Commitments and assurances are resolved per-package (exceptions applied)
-  mkUsageContext = pname: cfg.usage // {
-    commitments = lib.mapAttrs
-      (_: c:
-        let isExcepted = builtins.elem pname c.exceptions;
-        in if c.fulfilled then !isExcepted   # can fulfill, except these
-        else isExcepted                       # can't fulfill, except these CAN
-      )
-      cfg.commitments;
-    # source-available is handled separately via SALT categories in checkPackageLicense
-    assurances = lib.mapAttrs
-      (n: a:
-        if n == "source-available" then false
-        else a.required && !builtins.elem pname a.exceptions)
-      cfg.assurances;
-  };
+  mkUsageContext = licensingContext.mkUsageContext cfg;
 
   # Check if a package's license conflicts with usage + license requirements
   # In enforce mode: returns false to block non-compliant packages
@@ -79,7 +65,7 @@ let
 
       # Source availability check — uses SALT category, not nixpkgs free flag
       # (nixpkgs free=false includes CC-BY-NC which HAS source)
-      closedCategories = [ "Commercial" "Proprietary Free" ];
+      closedCategories = constants.closedSourceCategories;
       isClosed = builtins.any
         (nixLic:
           let salt = nixpkgsMap.lookup nixLic;
@@ -206,7 +192,7 @@ in
     # License compliance report (commercial feature — requires a nix-license commercial license)
     nix-license.report =
       let
-        hasNixLicense = cfg.licenses ? "nix-license";
+        hasNixLicense = cfg.licenses ? constants.nixLicensePackageName;
         reportLib = import ../lib/commercial/reporting/report.nix {
           inherit lib pkgs licenseCheck nixpkgsMap mkUsageContext cfg;
           title =
@@ -236,7 +222,7 @@ in
       {
         assertion =
           let
-            hasNixLicense = cfg.licenses ? "nix-license";
+            hasNixLicense = cfg.licenses ? constants.nixLicensePackageName;
           in
             !(cfg.usage.commercial-use && cfg.enforcement == "enforce" && !hasNixLicense);
         message = ''
