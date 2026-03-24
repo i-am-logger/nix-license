@@ -163,8 +163,29 @@
           licensing-check = mkNixTest "licensing-check"
             (import ./tests/licensing/check.nix { inherit lib saltLicenses; });
 
-          content-rating-properties = mkNixTest "content-rating-properties"
-            (import ./tests/content-rating/properties.nix { inherit lib oarsSpec saltLicenses; });
+          licensing-restrictions = mkNixTest "licensing-restrictions"
+            (import ./tests/licensing/restrictions.nix { inherit lib saltLicenses; });
+
+          licensing-allowed-use = mkNixTest "licensing-allowed-use"
+            (import ./tests/licensing/allowed-use.nix { inherit lib saltLicenses; });
+
+          licensing-obligations = mkNixTest "licensing-obligations"
+            (import ./tests/licensing/obligations.nix { inherit lib saltLicenses; });
+
+          licensing-commitments = mkNixTest "licensing-commitments"
+            (import ./tests/licensing/commitments.nix { inherit lib saltLicenses; });
+
+          licensing-assurances = mkNixTest "licensing-assurances"
+            (import ./tests/licensing/assurances.nix { inherit lib saltLicenses; });
+
+          licensing-monotonicity = mkNixTest "licensing-monotonicity"
+            (import ./tests/licensing/monotonicity.nix { inherit lib saltLicenses; });
+
+          content-rating-severity = mkNixTest "content-rating-severity"
+            (import ./tests/content-rating/severity.nix { inherit lib oarsSpec; });
+
+          content-rating-policy = mkNixTest "content-rating-policy"
+            (import ./tests/content-rating/policy.nix { inherit lib oarsSpec; });
 
           # Mapping tests
           nixpkgs-map = mkNixTest "nixpkgs-map"
