@@ -23,16 +23,24 @@ The test suite proves these properties by exhaustive evaluation over every licen
 
 | Check | What it tests |
 |-------|--------------|
-| `lib-types` | OARS categories, severity levels, presets |
-| `lib-content-rating` | Severity ordering, policy resolution, content evaluation |
-| `lib-licenses` | Restrictions, commitments, assurances, allowed-use |
-| `lib-license` | Token authorization, restriction, expiry |
-| `lib-properties` | Domain invariants across all 2649 SALT licenses |
+| `content-rating-types` | OARS categories, severity levels, presets |
+| `content-rating` | Severity ordering, policy resolution, content evaluation |
+| `content-rating-severity` | Severity total order properties |
+| `content-rating-policy` | Policy hierarchy, stability |
+| `licensing-license` | License authorization, restriction, expiry |
+| `licensing-check` | Targeted restriction, commitment, assurance checks |
+| `licensing-restrictions` | 2649 × 16 restriction enforcement |
+| `licensing-allowed-use` | 2649 × 6 type checks |
+| `licensing-obligations` | 2649 × 16 obligation triggers |
+| `licensing-commitments` | 2649 commitment blocking |
+| `licensing-assurances` | 2649 × 3 assurance blocking |
+| `licensing-monotonicity` | Adding flags never removes conflicts |
+| `licensing-verify` | License claim validation |
 | `nixpkgs-map` | 289/289 nixpkgs mapping + regression tests |
-| `module-standalone` | Module config, assertions, commercial gate, content policy files |
-| `self-license-claims` | License claim validation (package, commercial, expiry) |
+| `module-standalone` | Module config, assertions, commercial gate |
 | `self-license-verify` | Build-time GPG signature verification |
-| `vendor-token-verify` | Build-time openssl signature verification |
+| `vendor-license-verify` | Build-time openssl signature verification |
+| `example-*` | Example reports evaluate correctly |
 | `formatting` | treefmt (nix, shell, yaml) |
 | `pre-commit` | deadnix, statix, treefmt |
 

@@ -5,29 +5,48 @@
 ```
 nix-license/
 ├── keys/
-│   ├── yubikey1.asc          # Author public key (YubiKey 1)
-│   └── yubikey2.asc          # Author public key (YubiKey 2)
+│   ├── yubikey1.asc
+│   ├── yubikey2.asc
+│   └── vendors/              # Embedded vendor public keys
 ├── lib/
-│   ├── types.nix             # OARS categories + severity values (from upstream RNC schema)
-│   ├── content-rating.nix    # Content policy resolution and evaluation
-│   ├── license-check.nix     # Four compliance checks + obligation reporting
-│   ├── licenses.nix          # License definitions from SALT
-│   ├── nixpkgs-map.nix       # Maps nixpkgs licenses to SALT (spdxId → manual → key)
-│   ├── self-license.nix      # Commercial gate: GPG + openssl license verification
-│   └── token.nix             # License construction, restriction, validation
+│   ├── licensing/
+│   │   ├── check.nix         # Four compliance checks
+│   │   ├── license.nix       # License construction, authorization, restriction
+│   │   └── verify.nix        # GPG + openssl signature verification
+│   ├── content-rating/
+│   │   ├── types.nix         # OARS categories, severity, presets
+│   │   ├── rating.nix        # Policy resolution, evaluation
+│   │   └── severity.nix      # Shared severity levels
+│   ├── commercial/
+│   │   └── reporting/        # Report generation (commercial feature)
+│   │       ├── report.nix
+│   │       └── template.html
+│   ├── salt.nix              # SALT license data
+│   ├── nixpkgs-map.nix       # nixpkgs → SALT mapping
+│   └── options.nix           # Shared module options
 ├── modules/
 │   ├── default.nix           # Standalone NixOS module (nix-license.*)
-│   └── mynixos.nix           # mynixos integration (my.license.* + my.users.<name>.*)
+│   └── mynixos.nix           # mynixos integration (my.license.*)
 ├── tests/
-│   ├── fixtures/             # Signed test licenses (GPG + Ed25519)
-│   ├── lib-types.nix         # OARS categories, presets
-│   ├── lib-content-rating.nix # Severity, policy resolution, content evaluation
-│   ├── lib-licenses.nix      # Commitments, assurances, restriction checks
-│   ├── lib-token.nix         # License authorization, restriction, expiry
-│   ├── lib-properties.nix    # 200,000+ domain model guarantees
+│   ├── licensing/
+│   │   ├── restrictions.nix  # 2649 × 16 restriction enforcement
+│   │   ├── allowed-use.nix   # 2649 × 6 type checks
+│   │   ├── obligations.nix   # 2649 × 16 obligation triggers
+│   │   ├── commitments.nix   # 2649 commitment blocking
+│   │   ├── assurances.nix    # 2649 × 3 assurance blocking
+│   │   ├── monotonicity.nix  # Adding flags never removes conflicts
+│   │   ├── check.nix         # Targeted checks
+│   │   ├── license.nix       # License construction, authorization
+│   │   ├── verify.nix        # Claim validation
+│   │   └── fixtures/         # Signed test licenses
+│   ├── content-rating/
+│   │   ├── severity.nix      # Total order properties
+│   │   ├── policy.nix        # Hierarchy, stability
+│   │   ├── rating.nix        # Evaluation tests
+│   │   └── types.nix         # Categories, presets
 │   ├── nixpkgs-map.nix       # 289/289 mapping + regression tests
-│   ├── self-license.nix      # License claim validation
-│   └── module-standalone.nix # Module scenarios, commercial gate, assertions
+│   └── module-standalone.nix # Module scenarios, commercial gate
+├── examples/                  # Usage examples + report generation
 └── docs/
 ```
 
@@ -163,41 +182,42 @@ All fields required, no defaults.
 | `resolveContentPolicy` | Resolve a preset or attrset into a full content policy |
 | `evaluateContentRating` | Evaluate a package's content rating against a policy |
 
-### License tokens (`lib.token`)
+### License operations (`lib.licensing.license`)
 
 | Function | Description |
 |----------|-------------|
-| `mkLicenseToken` | Create a license license |
-| `evaluateTokenAuthorizations` | Check license authorizations against usage |
-| `isValidTokenRestriction` | Can this license be restricted further? |
-| `restrictToken` | Apply a restriction (returns null if invalid) |
-| `validateToken` | Full license validation |
+| `mkLicense` | Create a license |
+| `evaluateAuthorizations` | Check license authorizations against usage |
+| `isValidRestriction` | Can this license be restricted further? |
+| `restrictLicense` | Apply a restriction (returns null if invalid) |
+| `validateLicense` | Full license validation |
 
 ## Domain model guarantees
 
 | Guarantee | Scope | Verified by |
 |-----------|-------|-------------|
-| Restriction enforcement | 2649 × 16 | lib-properties |
-| Allowed-use enforcement | 2649 × 6 | lib-properties |
-| Obligation triggers | 2649 × 16 | lib-properties |
-| Commitments block when can't fulfill | 2649 | lib-properties |
-| Commitments=true never blocks | 2649 × 16 | lib-properties |
-| No assurances = no assurance blocks | 2649 × 16 | lib-properties |
-| Assurances block/allow correctly | 2649 × 3 | lib-properties |
-| Monotonicity (adding flags never removes conflicts) | 2649 × 5 | lib-properties |
-| No restrictions = universally allowed | unrestricted × 16 | lib-properties |
-| Empty usage = no conflicts | 2649 | lib-properties |
-| Severity levels form a total order | all intensities | lib-properties |
-| Content policy presets ordered (child < teen < unrestricted) | all categories | lib-properties |
-| Relaxing a policy never removes access | all presets | lib-properties |
+| Restriction enforcement | 2649 × 16 | licensing/restrictions |
+| Allowed-use enforcement | 2649 × 6 | licensing/allowed-use |
+| Obligation triggers | 2649 × 16 | licensing/obligations |
+| Commitments block when can't fulfill | 2649 | licensing/commitments |
+| Commitments=true never blocks | 2649 × 16 | licensing/commitments |
+| No assurances = no assurance blocks | 2649 × 16 | licensing/assurances |
+| Assurances block/allow correctly | 2649 × 3 | licensing/assurances |
+| Monotonicity (adding flags never removes conflicts) | 2649 × 5 | licensing/monotonicity |
+| No restrictions = universally allowed | unrestricted × 16 | licensing/restrictions |
+| Empty usage = no conflicts | 2649 | licensing/monotonicity |
+| Severity levels form a total order | all intensities | content-rating/severity |
+| Content policy presets ordered (child < teen < unrestricted) | all categories | content-rating/policy |
+| Relaxing a policy never removes access | all presets | content-rating/policy |
 | All nixpkgs licenses map to SALT | 289/289 | nixpkgs-map |
 | unfreeRedistributable allows distribution | regression | nixpkgs-map |
 | Multi-license packages (all must pass) | targeted | nixpkgs-map |
 | Assurance key mapping with real SALT data | targeted | nixpkgs-map |
 | GPG license signature verification | build-time | self-license-verify |
-| Vendor license signature verification (openssl) | build-time | vendor-token-verify |
-| License claim validation (package, commercial, expiry) | 12 cases | self-license-claims |
+| Vendor license signature verification (openssl) | build-time | vendor-license-verify |
+| License claim validation | 12 cases | licensing/verify |
 | Usage assertions catch invalid combinations | targeted | module-standalone |
 | Commercial gate requires license in enforce mode | targeted | module-standalone |
+| Example reports evaluate correctly | 6 scenarios | example-* |
 
 Every license (2649) is evaluated and tested against every usage context (16 activity combinations × 6 user types × 7 commitment keys × 3 assurance keys), producing over 200,000 individual pass/fail checks per `nix flake check`.

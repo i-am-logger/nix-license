@@ -22,7 +22,7 @@ A NixOS module that checks every package's license against your declared usage a
 | Content policy ([OARS 1.1](https://github.com/hughsie/oars) per-user entitlements) | ✔ | ✔ |
 | 200,000+ checks (every license, every context, every combination) | ✔ | ✔ |
 | Cryptographic license verification (GPG/YubiKey + openssl) | | ✔ |
-| Compliance reports (JSON + HTML — [demo](https://i-am-logger.github.io/nix-license/)) | | ✔ |
+| Compliance reports (JSON + HTML — [examples](https://i-am-logger.github.io/nix-license/)) | | ✔ |
 | GitHub Action (CI/CD with full report in Step Summary) | | ✔ |
 | [SBOM generation](https://github.com/i-am-logger/nix-license/issues/7) | | planned |
 | [OpenChain ISO/IEC 5230](https://github.com/i-am-logger/nix-license/issues/6) | | planned |
