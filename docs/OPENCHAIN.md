@@ -12,8 +12,7 @@
 | 1.4 | Program scope is defined | Scope = the NixOS system, every package checked | **covered** |
 | 2.1 | Staff can access relevant information | SALT (2649 licenses), compliance reports | **covered** |
 | 2.2 | Program is staffed and funded | | not possible |
-| 3.1 | Bill of materials process | Compliance report (JSON + HTML) per system | **covered** |
-| 3.1+ | SPDX/CycloneDX export | [#7](https://github.com/i-am-logger/nix-license/issues/7) | planned |
+| 3.1 | Bill of materials process | [#7](https://github.com/i-am-logger/nix-license/issues/7) — SPDX/CycloneDX export | planned |
 | 3.2 | Process to handle each license | Four checks at build time (restrictions, allowed-use, commitments, assurances) | **covered** |
 | 4.1 | Create compliance artifacts | Obligations tracked per-package in reports | **covered** |
 | 4.2 | Archive artifacts | Nix store (immutable, content-addressed), SHA-256 integrity | **covered** |
@@ -22,6 +21,6 @@
 | 6.2 | Conformance maintained over time | Runs on every build — continuous, not periodic | **covered** |
 | 6.2+ | Detect license changes between updates | [#37](https://github.com/i-am-logger/nix-license/issues/37) | planned |
 
-**10** covered · **2** planned · **3** not possible (organizational — requires humans, not software)
+**9** covered · **3** planned · **3** not possible (organizational — requires humans, not software)
 
 **Enforced by code.** Policy is code. Reviewed in PRs. Enforced on every build. No manual audits, no spreadsheets, no drift.
