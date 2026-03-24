@@ -231,7 +231,7 @@ error: Package 'game-x' has content rating 'violence-realistic = intense'
        but user 'son' content policy allows maximum 'mild'.
 
        To allow this package, update the user's content policy:
-         my.users.son.contentPolicy.violence-realistic = "intense";
+         my.users.guest.contentPolicy.violence-realistic = "intense";
 ```
 
 Only the administrator can change the content policy — the user cannot override it.

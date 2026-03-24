@@ -207,7 +207,7 @@ All fields required, no defaults.
 | No restrictions = universally allowed | unrestricted × 16 | licensing/restrictions |
 | Empty usage = no conflicts | 2649 | licensing/monotonicity |
 | Severity levels form a total order | all intensities | content-rating/severity |
-| Content policy presets ordered (child < teen < unrestricted) | all categories | content-rating/policy |
+| Content policy presets ordered (restricted < teen < unrestricted) | all categories | content-rating/policy |
 | Relaxing a policy never removes access | all presets | content-rating/policy |
 | All nixpkgs licenses map to SALT | 289/289 | nixpkgs-map |
 | unfreeRedistributable allows distribution | regression | nixpkgs-map |

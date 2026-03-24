@@ -63,13 +63,13 @@ in
   # String preset resolution
   resolveChildPreset = assertEq
     "resolve 'child' string"
-    (cr.resolveContentPolicy "child")
-    types.policyPresets.child;
+    (cr.resolveContentPolicy "restricted")
+    types.policyPresets.restricted;
 
   resolveTeen = assertEq
     "resolve 'teen' string"
-    (cr.resolveContentPolicy "teen")
-    types.policyPresets.teen;
+    (cr.resolveContentPolicy "moderate")
+    types.policyPresets.moderate;
 
   resolveUnrestricted = assertEq
     "resolve 'unrestricted' string"
@@ -80,7 +80,7 @@ in
   resolvePresetWithOverride = assertEq
     "resolve preset with override"
     (cr.resolveContentPolicy {
-      preset = "child";
+      preset = "restricted";
       violence-cartoon = "moderate";
     }).violence-cartoon
     "moderate";
@@ -88,7 +88,7 @@ in
   resolvePresetKeepsOthers = assertEq
     "resolve preset keeps non-overridden values"
     (cr.resolveContentPolicy {
-      preset = "child";
+      preset = "restricted";
       violence-cartoon = "moderate";
     }).violence-realistic
     "none";
@@ -122,16 +122,16 @@ in
 
   checkAllowedChild =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         violence-cartoon = "mild";
         language-humor = "mild";
       };
     in
-    assertTrue "child allows mild cartoon + mild humor" result.allowed;
+    assertTrue "restricted allows mild cartoon + mild humor" result.allowed;
 
   checkAllowedExactMatch =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         violence-cartoon = "mild";
       };
     in
@@ -139,7 +139,7 @@ in
 
   checkAllowedNone =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         violence-cartoon = "none";
         violence-realistic = "none";
         money-gambling = "none";
@@ -150,32 +150,32 @@ in
   # Package exceeds policy
   checkBlockedViolence =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         violence-realistic = "moderate";
       };
     in
-    assertFalse "child blocks moderate realistic violence" result.allowed;
+    assertFalse "restricted blocks moderate realistic violence" result.allowed;
 
   checkBlockedGambling =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         money-gambling = "mild";
       };
     in
-    assertFalse "child blocks any gambling" result.allowed;
+    assertFalse "restricted blocks any gambling" result.allowed;
 
   checkBlockedChat =
     let
-      result = cr.evaluateContentRating "teen" {
+      result = cr.evaluateContentRating "moderate" {
         social-chat = "intense";
       };
     in
-    assertFalse "teen blocks intense chat" result.allowed;
+    assertFalse "moderate blocks intense chat" result.allowed;
 
   # Violations list
   violationsCount =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         violence-realistic = "intense";
         money-gambling = "moderate";
         violence-cartoon = "mild";
@@ -185,7 +185,7 @@ in
 
   violationsContainCategory =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         violence-realistic = "intense";
       };
       v = builtins.head result.violations;
@@ -194,7 +194,7 @@ in
 
   violationsContainRating =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         violence-realistic = "intense";
       };
       v = builtins.head result.violations;
@@ -203,7 +203,7 @@ in
 
   violationsContainMaximum =
     let
-      result = cr.evaluateContentRating "child" {
+      result = cr.evaluateContentRating "restricted" {
         violence-realistic = "intense";
       };
       v = builtins.head result.violations;
@@ -212,19 +212,19 @@ in
 
   # Empty content rating
   checkEmptyRating =
-    let result = cr.evaluateContentRating "child" { };
+    let result = cr.evaluateContentRating "restricted" { };
     in assertTrue "empty content rating is allowed" result.allowed;
 
   # Unknown categories in rating are ignored
   checkUnknownCategory =
-    let result = cr.evaluateContentRating "child" { unknown-category = "intense"; };
+    let result = cr.evaluateContentRating "restricted" { unknown-category = "intense"; };
     in assertTrue "unknown categories are ignored" result.allowed;
 
   # With preset + override policy
   checkCustomPolicy =
     let
       result = cr.evaluateContentRating
-        { preset = "child"; violence-cartoon = "intense"; }
+        { preset = "restricted"; violence-cartoon = "intense"; }
         { violence-cartoon = "intense"; };
     in
     assertTrue "custom policy with override allows intense cartoon" result.allowed;
@@ -232,7 +232,7 @@ in
   checkCustomPolicyStillBlocks =
     let
       result = cr.evaluateContentRating
-        { preset = "child"; violence-cartoon = "intense"; }
+        { preset = "restricted"; violence-cartoon = "intense"; }
         { violence-realistic = "moderate"; };
     in
     assertFalse "custom policy still blocks non-overridden categories" result.allowed;
@@ -244,12 +244,12 @@ in
     (cr.allowsUnratedContent "unrestricted");
 
   unratedBlockedChild = assertFalse
-    "child blocks unrated"
-    (cr.allowsUnratedContent "child");
+    "restricted blocks unrated"
+    (cr.allowsUnratedContent "restricted");
 
   unratedBlockedTeen = assertFalse
-    "teen blocks unrated"
-    (cr.allowsUnratedContent "teen");
+    "moderate blocks unrated"
+    (cr.allowsUnratedContent "moderate");
 
   unratedCustomAllow = assertTrue
     "custom policy can allow unrated"
@@ -358,8 +358,8 @@ in
       "child is at most as permissive as teen for all categories"
       (builtins.all
         (cat: cr.severityAllowed
-          types.policyPresets.child.${cat}
-          types.policyPresets.teen.${cat})
+          types.policyPresets.restricted.${cat}
+          types.policyPresets.moderate.${cat})
         types.oarsCategories);
 
   # Teen is strictly more restrictive than unrestricted for all categories
@@ -368,7 +368,7 @@ in
       "teen is at most as permissive as unrestricted for all categories"
       (builtins.all
         (cat: cr.severityAllowed
-          types.policyPresets.teen.${cat}
+          types.policyPresets.moderate.${cat}
           types.policyPresets.unrestricted.${cat})
         types.oarsCategories);
 }

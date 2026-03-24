@@ -52,8 +52,8 @@ my.license = {
 };
 
 my.users.logger.contentPolicy = "unrestricted";
-my.users.son.contentPolicy = {
-  preset = "child";
+my.users.guest.contentPolicy = {
+  preset = "restricted";
   violence-cartoon = "moderate";
 };
 ```
@@ -216,15 +216,15 @@ Per-user content policies based on [OARS 1.1](https://github.com/hughsie/oars). 
 
 | Preset | Description |
 |--------|-------------|
-| `child` | Restrictive — no violence, social, gambling, adult content |
-| `teen` | Moderate — allows mild/moderate in most categories |
+| `restricted` | Restrictive — no violence, social, gambling, adult content |
+| `moderate` | Moderate — allows mild/moderate in most categories |
 | `unrestricted` | Everything allowed (default) |
 
 ### Per-category overrides
 
 ```nix
-my.users.son.contentPolicy = {
-  preset = "child";
+my.users.guest.contentPolicy = {
+  preset = "restricted";
   violence-cartoon = "moderate";  # allow a bit more cartoon violence
 };
 ```

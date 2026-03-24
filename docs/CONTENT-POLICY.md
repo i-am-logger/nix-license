@@ -1,5 +1,7 @@
 # Content Policy
 
+Content policy controls what software content each user on a system is entitled to access — violence levels, gambling, adult content, social features, and more. The administrator sets the policy. Apps query it at runtime. The system enforces it consistently.
+
 ## The problem with age verification
 
 California (AB 2273), Colorado, New York, and other states are pushing age verification laws that require platforms to verify users' ages before allowing access to content.
@@ -28,9 +30,9 @@ nix-license content policy stores **zero personally identifiable information**:
 
 The policy file contains only severity levels per content category — what the user is entitled to, not who the user is.
 
-**Are preset names like "child" and "teen" PII?** No. These are policy PRESET names, not user attributes. The system doesn't store that a user IS a child — it stores that a user's content entitlement MATCHES the "child" preset. The resolved policy file contains only severity levels (`"violence-cartoon": "mild"`), not the preset name. Even if leaked, it reveals nothing about the user's identity or age — only their content entitlements.
+**Are preset names like "restricted" and "moderate" PII?** No. These are policy PRESET names, not user attributes. The system doesn't store that a user is restricted — it stores that a user's content entitlement MATCHES the "restricted" preset. The resolved policy file contains only severity levels (`"violence-cartoon": "mild"`), not the preset name. Even if leaked, it reveals nothing about the user's identity or age — only their content entitlements.
 
-The username in the filename (e.g., `son.json`) is system configuration set by the administrator, not collected user data. It exists regardless of nix-license — NixOS always has usernames.
+The username in the filename (e.g., `guest.json`) is system configuration set by the administrator, not collected user data. It exists regardless of nix-license — NixOS always has usernames.
 
 ## How it works
 
@@ -84,8 +86,8 @@ Each category has a severity level: `none` < `mild` < `moderate` < `intense`
 
 | Preset | Description |
 |--------|-------------|
-| `child` | Restrictive — blocks violence, social, gambling, adult content |
-| `teen` | Moderate — allows mild/moderate in most categories |
+| `restricted` | Restrictive — blocks violence, social, gambling, adult content |
+| `moderate` | Moderate — allows mild/moderate in most categories |
 | `unrestricted` | Everything allowed (default) |
 
 ## Configuration
@@ -103,8 +105,8 @@ nix-license.contentPolicy = {
 ```nix
 my.users.logger.contentPolicy = "unrestricted";
 
-my.users.son.contentPolicy = {
-  preset = "child";
+my.users.guest.contentPolicy = {
+  preset = "restricted";
   violence-cartoon = "moderate";  # allow some cartoon violence
 };
 ```
@@ -129,7 +131,7 @@ Resolved policies are written as immutable JSON files:
 /etc/nix-license/content-policy/
 ├── system.json     # root:root 0644 — system default, apps fallback
 ├── logger.json     # logger:root 0400 — user-specific
-└── son.json        # son:root 0400 — user-specific
+└── guest.json        # guest:root 0400 — user-specific
 ```
 
 - **System**: readable by all (apps need it as fallback)
@@ -189,6 +191,6 @@ The content policy system is verified by exhaustive testing:
 | Property | Verified by |
 |----------|-------------|
 | Severity levels form a total order | `content-rating/severity` |
-| child < teen < unrestricted | `content-rating/policy` |
+| restricted < teen < unrestricted | `content-rating/policy` |
 | Relaxing a policy never removes access | `content-rating/policy` |
 | Resolving a policy is stable (idempotent) | `content-rating/policy` |

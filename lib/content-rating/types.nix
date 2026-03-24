@@ -23,15 +23,15 @@ in
   contentRatingPresetType = types.enum [
     "everyone"
     "everyone-10"
-    "teen"
+    "moderate"
     "mature"
     "adults-only"
   ];
 
   # Content policy preset type
   contentPolicyPresetType = types.enum [
-    "child"
-    "teen"
+    "restricted"
+    "moderate"
     "unrestricted"
   ];
 
@@ -53,14 +53,14 @@ in
         // { inherit allowUnrated; };
     in
     {
-      child = mkPreset
+      restricted = mkPreset
         {
           violence-cartoon = "mild";
           language-humor = "mild";
         }
         false;
 
-      teen = mkPreset
+      moderate = mkPreset
         {
           violence-cartoon = "intense";
           violence-fantasy = "moderate";

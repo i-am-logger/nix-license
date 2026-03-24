@@ -76,7 +76,7 @@ in
             "unrestricted";
         description = ''
           Content policy for this user. Can be a preset string
-          ("child", "teen", "unrestricted") or an attrset with
+          ("restricted", "moderate", "unrestricted") or an attrset with
           per-category overrides.
         '';
       };

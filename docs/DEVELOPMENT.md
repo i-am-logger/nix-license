@@ -17,7 +17,7 @@ The test suite proves these properties by exhaustive evaluation over every licen
 - **Correctness** — restrictions block iff active, allowed-use blocks iff type excluded, commitments block iff obligation triggers and can't fulfill, assurances block iff disclaimer present and required (all 2649 × all combinations)
 - **Safety** — empty usage = no conflicts (2649), no restrictions = universally allowed
 - **Severity total order** — reflexive, transitive, antisymmetric, total (content policy)
-- **Policy hierarchy** — child < teen < unrestricted, relaxing never removes access
+- **Policy hierarchy** — restricted < moderate < unrestricted, relaxing never removes access
 
 ## Test suite
 

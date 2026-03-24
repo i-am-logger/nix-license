@@ -13,15 +13,15 @@ let
   intensities = [ "none" "mild" "moderate" "intense" ];
 in
 {
-  childMoreRestrictiveThanTeen = assertTrue "child < teen"
-    (builtins.all (cat: cr.severityAllowed types.policyPresets.child.${cat} types.policyPresets.teen.${cat}) types.oarsCategories);
+  childMoreRestrictiveThanTeen = assertTrue "moderate < teen"
+    (builtins.all (cat: cr.severityAllowed types.policyPresets.restricted.${cat} types.policyPresets.moderate.${cat}) types.oarsCategories);
 
   relaxingPolicyNeverRemovesAccess = assertTrue "relaxing never removes access"
     (builtins.all
       (rating:
         let
-          c = (cr.evaluateContentRating "child" rating).allowed;
-          t = (cr.evaluateContentRating "teen" rating).allowed;
+          c = (cr.evaluateContentRating "restricted" rating).allowed;
+          t = (cr.evaluateContentRating "moderate" rating).allowed;
           u = (cr.evaluateContentRating "unrestricted" rating).allowed;
         in
         (if c then t && u else true) && (if t then u else true)
@@ -30,5 +30,5 @@ in
 
   resolvingPolicyIsStable = assertTrue "resolving policy is stable"
     (builtins.all (p: cr.resolveContentPolicy p == cr.resolveContentPolicy (cr.resolveContentPolicy p))
-      [ "child" "teen" "unrestricted" ]);
+      [ "restricted" "moderate" "unrestricted" ]);
 }

@@ -60,55 +60,55 @@ in
     oarsSpec.categories;
 
   # Policy presets exist
-  presetChildExists = assertHasAttr "child preset exists" "child" types.policyPresets;
-  presetTeenExists = assertHasAttr "teen preset exists" "teen" types.policyPresets;
+  presetRestrictedExists = assertHasAttr "restricted preset exists" "restricted" types.policyPresets;
+  presetModerateExists = assertHasAttr "moderate preset exists" "moderate" types.policyPresets;
   presetUnrestrictedExists = assertHasAttr "unrestricted preset exists" "unrestricted" types.policyPresets;
 
   # Child preset is restrictive
-  childNoViolence = assertEq
-    "child preset blocks realistic violence"
-    types.policyPresets.child.violence-realistic
+  restrictedNoViolence = assertEq
+    "restricted preset blocks realistic violence"
+    types.policyPresets.restricted.violence-realistic
     "none";
 
-  childNoGambling = assertEq
-    "child preset blocks gambling"
-    types.policyPresets.child.money-gambling
+  restrictedNoGambling = assertEq
+    "restricted preset blocks gambling"
+    types.policyPresets.restricted.money-gambling
     "none";
 
-  childNoChat = assertEq
-    "child preset blocks chat"
-    types.policyPresets.child.social-chat
+  restrictedNoChat = assertEq
+    "restricted preset blocks chat"
+    types.policyPresets.restricted.social-chat
     "none";
 
-  childAllowsMildCartoon = assertEq
-    "child preset allows mild cartoon violence"
-    types.policyPresets.child.violence-cartoon
+  restrictedAllowsMildCartoon = assertEq
+    "restricted preset allows mild cartoon violence"
+    types.policyPresets.restricted.violence-cartoon
     "mild";
 
   childBlocksUnrated = assertEq
-    "child preset blocks unrated"
-    types.policyPresets.child.allowUnrated
+    "restricted preset blocks unrated"
+    types.policyPresets.restricted.allowUnrated
     false;
 
   # Teen preset is moderate
-  teenAllowsModerateFantasy = assertEq
-    "teen preset allows moderate fantasy violence"
-    types.policyPresets.teen.violence-fantasy
+  moderateAllowsModerateFantasy = assertEq
+    "moderate preset allows moderate fantasy violence"
+    types.policyPresets.moderate.violence-fantasy
     "moderate";
 
-  teenAllowsMildRealistic = assertEq
-    "teen preset allows mild realistic violence"
-    types.policyPresets.teen.violence-realistic
+  moderateAllowsMildRealistic = assertEq
+    "moderate preset allows mild realistic violence"
+    types.policyPresets.moderate.violence-realistic
     "mild";
 
-  teenNoGambling = assertEq
-    "teen preset blocks gambling"
-    types.policyPresets.teen.money-gambling
+  moderateNoGambling = assertEq
+    "moderate preset blocks gambling"
+    types.policyPresets.moderate.money-gambling
     "none";
 
   teenBlocksUnrated = assertEq
-    "teen preset blocks unrated"
-    types.policyPresets.teen.allowUnrated
+    "moderate preset blocks unrated"
+    types.policyPresets.moderate.allowUnrated
     false;
 
   # Unrestricted preset allows everything
@@ -129,12 +129,12 @@ in
 
   # Every preset covers all OARS categories
   childCoversAll = assertTrue
-    "child preset covers all OARS categories"
-    (builtins.all (cat: types.policyPresets.child ? ${cat}) types.oarsCategories);
+    "restricted preset covers all OARS categories"
+    (builtins.all (cat: types.policyPresets.restricted ? ${cat}) types.oarsCategories);
 
   teenCoversAll = assertTrue
-    "teen preset covers all OARS categories"
-    (builtins.all (cat: types.policyPresets.teen ? ${cat}) types.oarsCategories);
+    "moderate preset covers all OARS categories"
+    (builtins.all (cat: types.policyPresets.moderate ? ${cat}) types.oarsCategories);
 
   unrestrictedCoversAll = assertTrue
     "unrestricted preset covers all OARS categories"
