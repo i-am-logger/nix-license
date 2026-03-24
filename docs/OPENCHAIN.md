@@ -16,11 +16,11 @@
 | 3.2 | Process to handle each license | Four checks at build time (restrictions, allowed-use, commitments, assurances) | **covered** |
 | 4.1 | Create compliance artifacts | Obligations tracked per-package in reports | **covered** |
 | 4.2 | Archive artifacts | Nix store (immutable, content-addressed), SHA-256 integrity | **covered** |
-| 5.1 | Contribution policy | | not possible |
-| 6.1 | Organization conforms | | not possible |
+| 5.1 | Contribution policy | Contribution rules as config (approved licenses, CLA, review) | planned |
+| 6.1 | Organization conforms | Conformance report with checklist of covered/attested requirements | planned |
 | 6.2 | Conformance maintained over time | Runs on every build — continuous, not periodic | **covered** |
 | 6.2+ | Detect license changes between updates | [#37](https://github.com/i-am-logger/nix-license/issues/37) | planned |
 
-**9** covered · **3** planned · **3** not possible (organizational — requires humans, not software)
+**9** covered · **5** planned · **1** not possible (2.2 staffing — requires humans, not software)
 
 **Enforced by code.** Policy is code. Reviewed in PRs. Enforced on every build. No manual audits, no spreadsheets, no drift.
