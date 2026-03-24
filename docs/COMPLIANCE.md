@@ -1,63 +1,153 @@
-# Standards Compliance
+# Compliance
 
-## License data: SALT
+## How nix-license works
 
-All license data comes from [SALT](https://github.com/i-am-logger/salt) (Software And License Taxonomy). nix-license uses SALT terms directly — no mapping.
+nix-license evaluates every package's license against your organization's declared usage at build time. Non-compliant packages are blocked before they enter your system.
 
-SALT provides 2649 licenses classified with:
-- **Grants**: what the license permits
-- **Obligations**: what you must do
-- **Restrictions**: what the license prohibits (`commercial-use`, `distribution`, `modifications`, `saas`, `endorsement`, `competing-use`)
-- **Disclaimers**: what the license doesn't guarantee
+```mermaid
+graph LR
+    subgraph "Your Organization"
+        U[Usage Declaration] --> E[nix-license]
+        C[Commitments] --> E
+        A[Assurances] --> E
+    end
 
-nix-license's usage flags match SALT restriction keys exactly. If a license restricts `commercial-use` and the user declares `commercial-use = true`, the build fails.
+    subgraph "License Data"
+        S[SALT — 2649 licenses] --> E
+        N[nixpkgs — 289 licenses] --> E
+    end
 
-## Content ratings: OARS 1.1
+    E -->|compliant| PASS[Package installed]
+    E -->|non-compliant| BLOCK[Build blocked]
+    E -->|report| R[Compliance Report]
+```
 
-Content policies use the [Open Age Ratings Service 1.1](https://github.com/hughsie/oars) specification (22 categories, derived from upstream RNC schema at build time).
+## Four compliance checks
 
-## Restriction vocabulary
+Every package is evaluated against four checks. All must pass.
 
-SALT defines its own vocabulary for restrictions (`commercial-use`, `distribution`, `modifications`, `saas`), obligations, and disclaimers. These terms were validated against [OSADL OSLOC](https://github.com/osadl/OSLOC) (Open Source License Obligation Checklists) to ensure alignment with established legal concepts, but SALT is an independent taxonomy — not a mapping of OSADL.
+```mermaid
+graph TD
+    PKG[Package License] --> R{Restrictions}
+    PKG --> AU{Allowed-use}
+    PKG --> O{Obligations}
+    PKG --> D{Disclaimers}
 
-## Build-time enforcement
+    R -->|"Activity restricted?"| U[Usage activities]
+    AU -->|"Type allowed?"| T[Usage type]
+    O -->|"Can fulfill?"| CM[Commitments]
+    D -->|"Guarantee required?"| AS[Assurances]
 
-When `nix-license.enable = true`:
+    U -->|conflict| BLOCK[Blocked]
+    T -->|not in list| BLOCK
+    CM -->|can't fulfill| BLOCK
+    AS -->|disclaims required| BLOCK
+```
 
-1. Every nixpkgs license is mapped to its SALT equivalent (289/289 verified)
-2. Each package's license is evaluated against your declared usage
-3. Usage consistency assertions catch invalid configurations (e.g., `type = "personal"` with `commercial-use = true`)
+| Check | License says | User declares | Blocks when |
+|-------|-------------|---------------|-------------|
+| Restrictions | What the license prohibits | Usage activities | Activity is restricted |
+| Allowed-use | Who the license permits | Usage type | Type not in allowed list |
+| Obligations | What the license requires | Commitments | Obligation triggers and user can't fulfill |
+| Disclaimers | What the license doesn't guarantee | Assurances | License disclaims what user requires |
 
-Two enforcement modes:
+## Compliance operations
+
+### 1. Declare usage
+
+The organization declares who they are and what they do. All fields are required — no implicit assumptions.
+
+```nix
+usage = {
+  type = "commercial";     # who: personal, commercial, educational, research, government, nonprofit
+  commercial-use = true;   # what: for-profit activity
+  distribution = true;     # what: shipping software to others
+  modifications = true;    # what: changing source code
+  saas = false;            # what: hosting as a service
+};
+```
+
+### 2. Declare commitments
+
+The organization declares which license obligations they can fulfill. If an obligation triggers and the commitment is `fulfilled = false`, the package is blocked.
+
+```nix
+commitments.same-license.fulfilled = false;    # can't open-source → blocks GPL
+commitments.disclose-source.fulfilled = false;  # can't share source → blocks copyleft
+```
+
+### 3. Declare assurances
+
+The organization declares what guarantees they require from licenses. If a license disclaims a required guarantee, the package is blocked.
+
+```nix
+assurances.source-available = {
+  required = true;                      # require source code
+  exceptions = [ "nvidia-x11" ];        # except NVIDIA drivers
+};
+assurances.patent-grant.required = true;  # require patent rights
+```
+
+### 4. Enforce
 
 | Mode | Behavior |
 |------|----------|
-| `warn` (default) | Non-compliant packages produce `builtins.trace` warnings but are allowed |
-| `enforce` | Non-compliant packages fail at eval time |
+| `warn` | Non-compliant packages produce warnings but are allowed |
+| `enforce` | Non-compliant packages fail at build time |
 
-nix-license applies an overlay that marks all licenses as `free = false`, ensuring `allowUnfreePredicate` fires for every package — including copyleft licenses like GPL and AGPL. This means commitment checks (e.g., `same-license.fulfilled = false`) correctly block copyleft packages.
+### 5. Report
 
-## License compliance process: OpenChain ISO/IEC 5230
+A compliance report (JSON + HTML) lists every package, its license, and its compliance status. Reports are a commercial feature.
 
-[OpenChain ISO/IEC 5230](https://openchainproject.org/license-compliance) certifies organizational compliance programs. nix-license provides build-time enforcement that supports such programs:
+```bash
+nix build .#nixosConfigurations.myhost.config.nix-license.report
+xdg-open result/index.html
+```
 
-| OpenChain requirement | nix-license role |
+## License data: SALT
+
+All license data comes from [SALT](https://github.com/i-am-logger/salt) (Software And License Taxonomy) — 2649 licenses classified with:
+
+| Term | What it is |
+|------|-----------|
+| Grants | What the license permits |
+| Restrictions | What the license prohibits |
+| Obligations | What the license requires you to do |
+| Disclaimers | What the license doesn't guarantee |
+
+nix-license maps all 289 nixpkgs licenses to SALT classifications. The mapping is verified exhaustively — every license, every usage context, every combination.
+
+## License verification
+
+Commercial licenses are cryptographically signed. nix-license supports any signing algorithm:
+
+| Signer | Algorithm | Verifier |
+|--------|-----------|----------|
+| nix-license (author) | GPG/YubiKey (Ed25519) | `gpg --verify` |
+| Vendors | Any (Ed25519, RSA, ECDSA) | `openssl pkeyutl -verify` |
+
+Vendor public keys are embedded in `keys/vendors/`. In enforce mode, every commercial license must be cryptographically verified — no vendor key means the package is blocked.
+
+## Restriction vocabulary
+
+SALT defines its own vocabulary for restrictions, obligations, and disclaimers. These terms were validated against [OSADL OSLOC](https://github.com/osadl/OSLOC) (Open Source License Obligation Checklists) to ensure alignment with established legal concepts, but SALT is an independent taxonomy.
+
+## Content ratings: OARS 1.1
+
+Per-user content policies use [OARS 1.1](https://github.com/hughsie/oars) (22 categories). Resolved policies are written to `/etc/nix-license/content-policy/` as immutable files for apps to query at runtime.
+
+## Standards alignment
+
+### OpenChain ISO/IEC 5230
+
+[OpenChain ISO/IEC 5230](https://openchainproject.org/license-compliance) certifies organizational compliance programs:
+
+| OpenChain requirement | nix-license |
 |---|---|
-| Written open source policy | Usage declaration in NixOS config is the policy |
-| Process to review licenses | Every package's license is evaluated against declared usage at build time |
-| License identification | All 289 nixpkgs licenses mapped to [SALT](https://github.com/i-am-logger/salt) classifications |
-| Compliance artifacts | Triggered obligations are tracked per-package |
-| Ability to produce SBOM | Future work ([#7](https://github.com/i-am-logger/nix-license/issues/7)) |
+| Written open source policy | Usage declaration in NixOS config |
+| Process to review licenses | Every package evaluated at build time |
+| License identification | 289 nixpkgs licenses mapped to SALT |
+| Compliance artifacts | Obligations tracked per-package |
+| SBOM | [Planned](https://github.com/i-am-logger/nix-license/issues/7) |
 
 See [issue #6](https://github.com/i-am-logger/nix-license/issues/6) for self-certification questionnaire mapping.
-
-## Token verification
-
-Two license verification paths:
-
-| Path | Algorithm | Verifier | Use case |
-|------|-----------|----------|----------|
-| nix-license self-licensing | GPG/YubiKey (Ed25519) | `gpg --verify` | Commercial use of nix-license itself |
-| Vendor package tokens | Any (vendor's choice) | `openssl pkeyutl -verify` | Per-package commercial licenses |
-
-Author public keys are embedded in `keys/`. Vendor public keys are provided via `nix-license.vendorKeys`.
