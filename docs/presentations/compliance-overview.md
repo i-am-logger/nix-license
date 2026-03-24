@@ -29,6 +29,14 @@ style: |
 
 *A scan tells you what's wrong. A build gate prevents it.*
 
+<div style="position:absolute;bottom:80px;display:flex;align-items:center;gap:1em">
+<img src="https://github.com/i-am-logger.png" style="width:60px;border-radius:50%;border:2px solid #30363d">
+<div>
+<div style="font-weight:bold;color:#f0f6fc">Logger</div>
+<div style="color:#8b949e;font-size:0.8em">i-am-logger · nix-license.dev</div>
+</div>
+</div>
+
 ---
 
 # The problem
