@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.11.6](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.5...nix-license-v0.11.6) (2026-03-24)
+
+
+### Bug Fixes
+
+* BOM is planned, not covered ([1fd41a5](https://github.com/i-am-logger/nix-license/commit/1fd41a59ab158910ad81ff071d078a54159a9f49))
+
+
+### Documentation
+
+* add OPENCHAIN.md — full specification mapping with diagrams ([ccf620c](https://github.com/i-am-logger/nix-license/commit/ccf620cf7085e132bce618126205008874435d4d))
+* contribution policy and conformance are planned, not impossible ([b8878f6](https://github.com/i-am-logger/nix-license/commit/b8878f680928b6a7afad1dd74711f9bffc7c2cec))
+* OPENCHAIN.md — checkmarks, issue links, clean icons ([f9b84df](https://github.com/i-am-logger/nix-license/commit/f9b84df9eca7f44fcfb06147551bec52379d7799))
+* OPENCHAIN.md — simple conformance matrix ([ffc33d0](https://github.com/i-am-logger/nix-license/commit/ffc33d0cecbeafdd547fce0816800beafe039569))
+* rewrite OPENCHAIN.md — requirement-by-requirement mapping, enforced by code ([19b7e75](https://github.com/i-am-logger/nix-license/commit/19b7e75d9449cf7c28d20591b93808c196fa6b47))
+
 ## [0.11.5](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.4...nix-license-v0.11.5) (2026-03-24)
 
 
