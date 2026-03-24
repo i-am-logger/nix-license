@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.5](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.4...nix-license-v0.11.5) (2026-03-24)
+
+
+### Documentation
+
+* rewrite COMPLIANCE.md — domain diagrams, operations flow, compliance officer audience ([374a7b0](https://github.com/i-am-logger/nix-license/commit/374a7b0f8ef385492e477614c31725455767eb6d))
+
 ## [0.11.4](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.3...nix-license-v0.11.4) (2026-03-24)
 
 
