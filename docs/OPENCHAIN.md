@@ -6,21 +6,21 @@
 
 | # | OpenChain requirement | nix-license | Status |
 |---|---|---|---|
-| 1.1 | Written open source policy | Usage declaration — type, activities, commitments, assurances | **covered** |
-| 1.2 | Staff aware of the policy | Policy is code in the system repo, reviewed in PRs | **covered** |
-| 1.3 | Staff know where to find the policy | Single config file, version-controlled | **covered** |
-| 1.4 | Program scope is defined | Scope = the NixOS system, every package checked | **covered** |
-| 2.1 | Staff can access relevant information | SALT (2649 licenses), compliance reports | **covered** |
-| 2.2 | Program is staffed and funded | | not possible |
-| 3.1 | Bill of materials process | [#7](https://github.com/i-am-logger/nix-license/issues/7) — SPDX/CycloneDX export | planned |
-| 3.2 | Process to handle each license | Four checks at build time (restrictions, allowed-use, commitments, assurances) | **covered** |
-| 4.1 | Create compliance artifacts | Obligations tracked per-package in reports | **covered** |
-| 4.2 | Archive artifacts | Nix store (immutable, content-addressed), SHA-256 integrity | **covered** |
-| 5.1 | Contribution policy | Contribution rules as config (approved licenses, CLA, review) | planned |
-| 6.1 | Organization conforms | Conformance report with checklist of covered/attested requirements | planned |
-| 6.2 | Conformance maintained over time | Runs on every build — continuous, not periodic | **covered** |
-| 6.2+ | Detect license changes between updates | [#37](https://github.com/i-am-logger/nix-license/issues/37) | planned |
+| 1.1 | Written open source policy | `nix-license.usage` + `commitments` + `assurances` | ✔ |
+| 1.2 | Staff aware of the policy | Policy is code in the system repo, reviewed in PRs | ✔ |
+| 1.3 | Staff know where to find the policy | Single config file, version-controlled | ✔ |
+| 1.4 | Program scope is defined | Scope = the NixOS system, every package checked | ✔ |
+| 2.1 | Staff can access relevant information | [SALT](https://github.com/i-am-logger/salt) (2649 licenses) + [compliance reports](https://i-am-logger.github.io/nix-license/) | ✔ |
+| 2.2 | Program is staffed and funded | | — |
+| 3.1 | Bill of materials process | [#7](https://github.com/i-am-logger/nix-license/issues/7) — SPDX/CycloneDX export | ○ |
+| 3.2 | Process to handle each license | `lib/licensing/check.nix` — restrictions, allowed-use, commitments, assurances | ✔ |
+| 4.1 | Create compliance artifacts | Obligations tracked per-package in reports | ✔ |
+| 4.2 | Archive artifacts | Nix store (immutable, content-addressed), SHA-256 integrity | ✔ |
+| 5.1 | Contribution policy | [#48](https://github.com/i-am-logger/nix-license/issues/48) — contribution rules as config | ○ |
+| 6.1 | Organization conforms | [#49](https://github.com/i-am-logger/nix-license/issues/49) — conformance report with checklist | ○ |
+| 6.2 | Conformance maintained over time | Runs on every build — continuous, not periodic | ✔ |
+| 6.2+ | Detect license changes between updates | [#37](https://github.com/i-am-logger/nix-license/issues/37) | ○ |
 
-**9** covered · **5** planned · **1** not possible (2.2 staffing — requires humans, not software)
+✔ **9** covered · ○ **4** planned · — **1** organizational (2.2 staffing)
 
 **Enforced by code.** Policy is code. Reviewed in PRs. Enforced on every build. No manual audits, no spreadsheets, no drift.
