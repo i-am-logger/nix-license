@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.12.0...nix-license-v0.12.1) (2026-03-24)
+
+
+### Documentation
+
+* add profile to title slide, demo subtitle, presentation polish ([3c137d4](https://github.com/i-am-logger/nix-license/commit/3c137d46379cc5e97d49099190f78fc15e404527))
+
 ## [0.12.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.8...nix-license-v0.12.0) (2026-03-24)
 
 
