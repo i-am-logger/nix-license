@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.11.8](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.7...nix-license-v0.11.8) (2026-03-24)
+
+
+### Documentation
+
+* add proven model section — MPAA, ESRB, TV, music all rate content not viewers ([fd107c0](https://github.com/i-am-logger/nix-license/commit/fd107c02560c82b1adb68e98d0ced8c264a8c491))
+* honest limitation — content policy protects local, not SaaS surveillance ([3e2b3ee](https://github.com/i-am-logger/nix-license/commit/3e2b3ee33f87140821244014451357d253fbccf7))
+* move limitation above proven model — honesty first ([713d48e](https://github.com/i-am-logger/nix-license/commit/713d48e85239b1cdcfecc5bde468bd556b7fd6b0))
+* remove overclaim about PII in content policy ([ae0a58e](https://github.com/i-am-logger/nix-license/commit/ae0a58ec24ebe556c55705f9fc9c6b41ac503c19))
+
 ## [0.11.7](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.6...nix-license-v0.11.7) (2026-03-24)
 
 
