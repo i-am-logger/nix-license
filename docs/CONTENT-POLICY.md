@@ -53,7 +53,24 @@ nix-license provides the policy. Apps enforce it.
 
 ## OARS 1.1
 
-Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oars) (Open Age Ratings Service). 22 content categories derived from the upstream RNC schema:
+Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oars) (Open Age Ratings Service).
+
+### Severity levels
+
+Each category is rated on a four-level scale:
+
+| Level | Meaning |
+|-------|---------|
+| `none` | No content of this type |
+| `mild` | Minor or infrequent |
+| `moderate` | Present but not dominant |
+| `intense` | Frequent or graphic |
+
+A policy of `violence-cartoon = "moderate"` allows packages rated `none`, `mild`, or `moderate` for that category, but blocks `intense`.
+
+### Categories
+
+22 content categories derived from the upstream RNC schema:
 
 | Category | Examples |
 |----------|---------|
@@ -80,7 +97,6 @@ Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oar
 | `money-purchasing` | In-app purchases |
 | `money-gambling` | Gambling |
 
-Each category has a severity level: `none` < `mild` < `moderate` < `intense`
 
 ## Presets
 
