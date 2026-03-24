@@ -20,10 +20,10 @@
 
     # Research licenses
     licenses."mathematica" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
     licenses."matlab" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
   };
 }

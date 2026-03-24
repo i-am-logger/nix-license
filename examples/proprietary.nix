@@ -29,10 +29,10 @@
 
     # Commercial licenses
     licenses."nix-license" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
     licenses."vendor-package" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
   };
 }

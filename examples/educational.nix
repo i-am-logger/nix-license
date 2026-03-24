@@ -14,10 +14,10 @@
 
     # Academic licenses
     licenses."matlab" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
     licenses."jetbrains-idea" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
   };
 }

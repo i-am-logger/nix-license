@@ -34,7 +34,7 @@ in
 
   validTokenPasses =
     let result = sl.validateClaims { claims = validClaims; currentDate = "2026-06-01"; };
-    in assertTrue "valid token passes" result.valid;
+    in assertTrue "valid license passes" result.valid;
 
   validTokenLicensee =
     let result = sl.validateClaims { claims = validClaims; };
@@ -65,7 +65,7 @@ in
 
   expiredTokenFails =
     let result = sl.validateClaims { claims = validClaims; currentDate = "2028-01-01"; };
-    in assertFalse "expired token fails" result.valid;
+    in assertFalse "expired license fails" result.valid;
 
   expiredTokenIsExpired =
     let result = sl.validateClaims { claims = validClaims; currentDate = "2028-01-01"; };

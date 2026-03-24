@@ -190,10 +190,10 @@ in
         };
       };
     in
-    assertTrue "commercial enforce without token triggers assertion"
+    assertTrue "commercial enforce without license triggers assertion"
       (builtins.any (a: !a.assertion && builtins.match ".*commercial use requires.*" a.message != null) cfg.assertions);
 
-  commercialEnforceWithTokenPasses =
+  commercialEnforceWithLicensePasses =
     let
       cfg = evalModule {
         nix-license = {
@@ -201,15 +201,15 @@ in
           usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
           enforcement = "enforce";
           licenses."nix-license" = {
-            licenseFile = "/fake/nix-license.token";
+            licenseFile = "/fake/nix-license.json";
           };
         };
       };
     in
-    assertTrue "commercial enforce with token passes assertion"
+    assertTrue "commercial enforce with license passes assertion"
       (builtins.all (a: a.assertion || builtins.match ".*commercial use requires.*" a.message == null) cfg.assertions);
 
-  commercialWarnNoTokenOk =
+  commercialWarnNoLicenseOk =
     let
       cfg = evalModule {
         nix-license = {
@@ -219,10 +219,10 @@ in
         };
       };
     in
-    assertTrue "commercial warn mode doesn't require token"
+    assertTrue "commercial warn mode doesn't require license"
       (builtins.all (a: a.assertion || builtins.match ".*commercial use requires.*" a.message == null) cfg.assertions);
 
-  personalEnforceNoTokenOk =
+  personalEnforceNoLicenseOk =
     let
       cfg = evalModule {
         nix-license = {
@@ -232,7 +232,7 @@ in
         };
       };
     in
-    assertTrue "personal enforce doesn't require token"
+    assertTrue "personal enforce doesn't require license"
       (builtins.all (a: a.assertion || builtins.match ".*commercial use requires.*" a.message == null) cfg.assertions);
 
   # ── Proprietary company scenario ──────────────────────────────
@@ -246,7 +246,7 @@ in
           commitments.same-license.fulfilled = false;
           commitments.disclose-source.fulfilled = false;
           enforcement = "enforce";
-          licenses."nix-license".licenseFile = "/fake/nix-license.token";
+          licenses."nix-license".licenseFile = "/fake/nix-license.json";
         };
       };
     in
@@ -261,14 +261,14 @@ in
     let
       cfg = evalModule (defaultUsage // {
         nix-license.licenses."vendor-package" = {
-          licenseFile = "/fake/vendor.token";
+          licenseFile = "/fake/vendor.json";
         };
       });
     in
     assertTrue "can set vendor license with licenseFile"
-      (cfg.nix-license.licenses."vendor-package".licenseFile == "/fake/vendor.token");
+      (cfg.nix-license.licenses."vendor-package".licenseFile == "/fake/vendor.json");
 
-  nixLicenseTokenAsOverride =
+  nixLicenseAsOverride =
     let
       cfg = evalModule {
         nix-license = {
@@ -276,13 +276,13 @@ in
           usage = { type = "commercial"; commercial-use = true; distribution = false; modifications = true; saas = false; };
           enforcement = "enforce";
           licenses."nix-license" = {
-            licenseFile = "/fake/nix-license.token";
+            licenseFile = "/fake/nix-license.json";
           };
         };
       };
     in
-    assertTrue "nix-license token via licenses override"
-      (cfg.nix-license.licenses."nix-license".licenseFile == "/fake/nix-license.token");
+    assertTrue "nix-license license via licenses override"
+      (cfg.nix-license.licenses."nix-license".licenseFile == "/fake/nix-license.json");
 
   # ── Vendor keys ────────────────────────────────────────────────
 
@@ -366,7 +366,7 @@ in
   licenseInstallDefault =
     let
       cfg = evalModule (defaultUsage // {
-        nix-license.licenses."some-pkg".licenseFile = "/fake/token";
+        nix-license.licenses."some-pkg".licenseFile = "/fake/license.json";
       });
     in
     assertFalse "install defaults to false"
@@ -378,26 +378,26 @@ in
         nix-license = {
           enable = true;
           licenses."matlab" = {
-            licenseFile = "/fake/matlab.token";
+            licenseFile = "/fake/matlab.json";
             install = true;
           };
         };
       });
     in
     assertTrue "install=true creates etc file"
-      (cfg.environment.etc ? "nix-license/licenses/matlab.token");
+      (cfg.environment.etc ? "nix-license/licenses/matlab.json");
 
   licenseNoInstallNoEtc =
     let
       cfg = evalModule (defaultUsage // {
         nix-license = {
           enable = true;
-          licenses."nix-license".licenseFile = "/fake/nix-license.token";
+          licenses."nix-license".licenseFile = "/fake/nix-license.json";
         };
       });
     in
     assertTrue "install=false does not create etc file"
-      (!(cfg.environment.etc ? "nix-license/licenses/nix-license.token"));
+      (!(cfg.environment.etc ? "nix-license/licenses/nix-license.json"));
 
   licenseInstallPermissions =
     let
@@ -405,12 +405,12 @@ in
         nix-license = {
           enable = true;
           licenses."matlab" = {
-            licenseFile = "/fake/matlab.token";
+            licenseFile = "/fake/matlab.json";
             install = true;
           };
         };
       });
-      etc = cfg.environment.etc."nix-license/licenses/matlab.token";
+      etc = cfg.environment.etc."nix-license/licenses/matlab.json";
     in
     assertTrue "installed license: root:root, 0400"
       (etc.mode == "0400" && etc.user == "root" && etc.group == "root");

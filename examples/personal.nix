@@ -20,7 +20,7 @@
 
     # Personal license for an app
     licenses."sublime-text" = {
-      licenseFile = ./licenses/sublime-text.token;
+      licenseFile = ./licenses/sublime-text.json;
     };
   };
 }

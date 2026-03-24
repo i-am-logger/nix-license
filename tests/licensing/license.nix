@@ -84,63 +84,63 @@ in
   # TOKEN CONSTRUCTION
   # ══════════════════════════════════════════════════════════════════
 
-  mkTokenHasIssuer = assertEq "token has issuer"
+  mkLicenseHasIssuer = assertEq "license has issuer"
     fullToken.issuer "vendor.example.com";
 
-  mkTokenHasLicensee = assertEq "token has licensee"
+  mkLicenseHasLicensee = assertEq "license has licensee"
     fullToken.licenseeName "Acme Corp";
 
-  mkTokenHasPackage = assertEq "token has package"
+  mkLicenseHasPackage = assertEq "license has package"
     fullToken.package "vendor-sdk";
 
-  mkTokenHasVersion = assertEq "token has version"
+  mkLicenseHasVersion = assertEq "license has version"
     fullToken.version ">= 2.0";
 
-  mkTokenHasAuthorizations = assertTrue "token has authorizations"
+  mkLicenseHasAuthorizations = assertTrue "license has authorizations"
     fullToken.authorizations.commercial;
 
-  mkTokenHasValidity = assertEq "token has expiry"
+  mkLicenseHasValidity = assertEq "license has expiry"
     fullToken.validity.expires_at "2025-06-15";
 
-  mkTokenMinimal = assertEq "minimal token has issuer"
+  mkLicenseMinimal = assertEq "minimal license has issuer"
     minimalToken.issuer "small-vendor.io";
 
-  mkTokenMinimalNoExpiry = assertFalse "minimal token has no expiry"
+  mkLicenseMinimalNoExpiry = assertFalse "minimal license has no expiry"
     (minimalToken.validity ? expires_at);
 
   # ══════════════════════════════════════════════════════════════════
   # AUTHORIZATION MATCHING
   # ══════════════════════════════════════════════════════════════════
 
-  # Full token satisfies commercial use
+  # Full license satisfies commercial use
   authCommercialSatisfied =
     let result = lc.evaluateAuthorizations { type = "commercial"; } fullToken.authorizations;
-    in assertTrue "full token satisfies commercial" result.satisfied;
+    in assertTrue "full license satisfies commercial" result.satisfied;
 
-  # Full token satisfies commercial + SaaS
+  # Full license satisfies commercial + SaaS
   authCommercialSaasSatisfied =
     let result = lc.evaluateAuthorizations { type = "commercial"; saas = true; } fullToken.authorizations;
-    in assertTrue "full token satisfies commercial+saas" result.satisfied;
+    in assertTrue "full license satisfies commercial+saas" result.satisfied;
 
   # Full token does NOT satisfy military
   authMilitaryUnsatisfied =
     let result = lc.evaluateAuthorizations { type = "commercial"; military = true; } fullToken.authorizations;
-    in assertFalse "full token denies military" result.satisfied;
+    in assertFalse "full license denies military" result.satisfied;
 
   # Full token does NOT satisfy redistribution
   authRedistUnsatisfied =
     let result = lc.evaluateAuthorizations { type = "personal"; redistribution = true; } fullToken.authorizations;
-    in assertFalse "full token denies redistribution" result.satisfied;
+    in assertFalse "full license denies redistribution" result.satisfied;
 
-  # Educational token satisfies educational use
+  # Educational license satisfies educational use
   authEducationalSatisfied =
     let result = lc.evaluateAuthorizations { type = "educational"; } educationalToken.authorizations;
-    in assertTrue "edu token satisfies educational" result.satisfied;
+    in assertTrue "edu license satisfies educational" result.satisfied;
 
   # Educational token does NOT satisfy commercial
   authEducationalCommercialUnsatisfied =
     let result = lc.evaluateAuthorizations { type = "commercial"; } educationalToken.authorizations;
-    in assertFalse "edu token denies commercial" result.satisfied;
+    in assertFalse "edu license denies commercial" result.satisfied;
 
   # Personal use always satisfied (no special requirements)
   authPersonalAlwaysSatisfied =
@@ -314,7 +314,7 @@ in
         requiredPackage = "vendor-sdk";
       };
     in
-    assertFalse "expired token fails" result.valid;
+    assertFalse "expired license fails" result.valid;
 
   validateInsufficientAuth =
     let
@@ -365,7 +365,7 @@ in
         currentDate = "2025-01-01";
       };
     in
-    assertTrue "edu token valid for educational" result.valid;
+    assertTrue "edu license valid for educational" result.valid;
 
   validateEduCommercialFails =
     let
@@ -375,18 +375,18 @@ in
         currentDate = "2025-01-01";
       };
     in
-    assertFalse "edu token fails for commercial" result.valid;
+    assertFalse "edu license fails for commercial" result.valid;
 
   # ══════════════════════════════════════════════════════════════════
   # TOKEN RESTRICTION PROPERTIES
   # ══════════════════════════════════════════════════════════════════
 
   # Reflexivity: restricting with identity (same values) is valid
-  tokenCanAlwaysBeRestrictedToItself =
+  licenseCanAlwaysBeRestrictedToItself =
     let
       auths = { commercial = true; military = false; seats = 100; expires_at = "2025-12-31"; };
     in
-    assertTrue "token restriction is reflexive (identity is valid)"
+    assertTrue "license restriction is reflexive (identity is valid)"
       (lc.isValidRestriction auths auths);
 
   # Transitivity: if A restricts to B and B restricts to C, then A restricts to C
@@ -396,7 +396,7 @@ in
       b = { commercial = true; military = false; seats = 200; expires_at = "2025-06-15"; };
       c = { commercial = false; military = false; seats = 50; expires_at = "2025-03-01"; };
     in
-    assertTrue "token restriction is transitive (A->B, B->C implies A->C)"
+    assertTrue "license restriction is transitive (A->B, B->C implies A->C)"
       (lc.isValidRestriction a b
         && lc.isValidRestriction b c
         && lc.isValidRestriction a c);
@@ -408,7 +408,7 @@ in
       b = { commercial = true; seats = 100; };
       c = { commercial = true; seats = 50; };
     in
-    assertTrue "token restriction is antisymmetric"
+    assertTrue "license restriction is antisymmetric"
       ((lc.isValidRestriction a b && lc.isValidRestriction b a)  # a = b, both directions valid
         && !(lc.isValidRestriction c a && lc.isValidRestriction a c)); # a != c, not both directions
 
@@ -438,7 +438,7 @@ in
         { type = "personal"; redistribution = true; }
       ];
     in
-    assertTrue "restricted token never grants more than original"
+    assertTrue "restricted license never grants more than original"
       (lc.isValidRestriction original restricted
         && builtins.all
         (u:
@@ -460,7 +460,7 @@ in
       (lc.isValidRestriction any bottom);
 
   # Top element: the original is always a valid self-restriction
-  tokenIsAlwaysValidRestrictionOfItself =
+  licenseIsAlwaysValidRestrictionOfItself =
     let
       any = { commercial = true; military = false; seats = 100; };
     in

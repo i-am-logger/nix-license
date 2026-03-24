@@ -153,23 +153,23 @@ let
 
   # Evaluate token content authorizations against a content policy
   # Token content fields are: content-<category> = "none"|"mild"|"moderate"|"intense"
-  # Returns: { satisfied = bool; violations = [ { category, tokenLevel, policyLevel } ]; }
-  evaluateContentPolicy = contentPolicy: tokenContentAuths:
+  # Returns: { satisfied = bool; violations = [ { category, licenseLevel, policyLevel } ]; }
+  evaluateContentPolicy = contentPolicy: licenseContentAuths:
     let
       severityLevel = import ../content-rating/severity.nix;
       categories = builtins.filter
         (key: builtins.substring 0 8 key == "content-" && key != "content-allow-unrated")
-        (builtins.attrNames tokenContentAuths);
+        (builtins.attrNames licenseContentAuths);
       violations = builtins.filter (v: v != null)
         (map
           (key:
             let
               cat = builtins.substring 8 (builtins.stringLength key - 8) key;
-              tokenLevel = tokenContentAuths.${key};
+              licenseLevel = licenseContentAuths.${key};
               policyLevel = contentPolicy.${cat} or "intense";
             in
-            if (severityLevel.${tokenLevel} or 0) > (severityLevel.${policyLevel} or 3) then
-              { category = cat; inherit tokenLevel policyLevel; }
+            if (severityLevel.${licenseLevel} or 0) > (severityLevel.${policyLevel} or 3) then
+              { category = cat; inherit licenseLevel policyLevel; }
             else
               null
           )
@@ -199,13 +199,13 @@ let
         else claims.package == requiredPackage;
 
       # Check content authorizations if policy provided and token has content fields
-      tokenContentAuths = claims.authorizations or { };
+      licenseContentAuths = claims.authorizations or { };
       hasContentFields = builtins.any
         (key: builtins.substring 0 8 key == "content-")
-        (builtins.attrNames tokenContentAuths);
+        (builtins.attrNames licenseContentAuths);
       contentCheck =
         if contentPolicy != null && hasContentFields then
-          evaluateContentPolicy contentPolicy tokenContentAuths
+          evaluateContentPolicy contentPolicy licenseContentAuths
         else
           { satisfied = true; violations = [ ]; };
     in

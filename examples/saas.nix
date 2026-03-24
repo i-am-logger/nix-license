@@ -23,10 +23,10 @@
 
     # Commercial licenses
     licenses."nix-license" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
     licenses."datadog" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
   };
 }

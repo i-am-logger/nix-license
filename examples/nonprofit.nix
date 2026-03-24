@@ -14,7 +14,7 @@
 
     # Nonprofit licenses
     licenses."slack" = {
-      licenseFile = ./licenses/token.json;
+      licenseFile = ./licenses/license.json;
     };
   };
 }

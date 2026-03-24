@@ -195,7 +195,7 @@ in
       }
       // lib.mapAttrs'
         (pname: licCfg:
-          lib.nameValuePair "nix-license/licenses/${pname}.token" {
+          lib.nameValuePair "nix-license/licenses/${pname}.json" {
             source = licCfg.licenseFile;
             mode = "0400";
             user = "root";
