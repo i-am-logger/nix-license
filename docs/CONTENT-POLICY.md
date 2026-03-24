@@ -1,6 +1,36 @@
 # Content Policy
 
-Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oars) (Open Age Ratings Service). Administrators set what content each user is entitled to. Apps query the policy at runtime.
+## The problem with age verification
+
+California (AB 2273), Colorado, New York, and other states are pushing age verification laws that require platforms to verify users' ages before allowing access to content.
+
+| | Age verification | Content policy |
+|---|---|---|
+| **Privacy** | Requires PII (birth date, ID scan, face scan) | No PII — administrator sets policy |
+| **Who decides** | Each app interprets age differently | Administrator decides once, system enforces |
+| **Enforcement** | App-by-app, inconsistent | System-wide, one policy per user |
+| **Data storage** | Age data stored or verified per app | No user data stored |
+| **Granularity** | Binary (old enough or not) | 22 categories × 4 severity levels |
+| **Control** | User/platform | Parent/admin/organization |
+
+Age verification asks: **"How old is the user?"** and lets every app interpret that differently.
+
+Content policy asks: **"What is this user entitled to?"** and enforces it consistently at the system level.
+
+## No PII by design
+
+nix-license content policy stores **zero personally identifiable information**:
+
+- No birth dates, no age data
+- No ID documents, no biometric data
+- No user accounts, no passwords
+- No network requests to verify identity
+
+The policy file contains only severity levels per content category — what the user is entitled to, not who the user is.
+
+**Are preset names like "child" and "teen" PII?** No. These are policy PRESET names, not user attributes. The system doesn't store that a user IS a child — it stores that a user's content entitlement MATCHES the "child" preset. The resolved policy file contains only severity levels (`"violence-cartoon": "mild"`), not the preset name. Even if leaked, it reveals nothing about the user's identity or age — only their content entitlements.
+
+The username in the filename (e.g., `son.json`) is system configuration set by the administrator, not collected user data. It exists regardless of nix-license — NixOS always has usernames.
 
 ## How it works
 
@@ -21,7 +51,7 @@ nix-license provides the policy. Apps enforce it.
 
 ## OARS 1.1
 
-22 content categories derived from the upstream RNC schema:
+Per-user content entitlements based on [OARS 1.1](https://github.com/hughsie/oars) (Open Age Ratings Service). 22 content categories derived from the upstream RNC schema:
 
 | Category | Examples |
 |----------|---------|
@@ -123,13 +153,15 @@ Resolved policies are written as immutable JSON files:
 }
 ```
 
+No preset name, no age, no identity — just severity levels.
+
 ## Runtime enforcement
 
 Apps read the policy file and decide what to show:
 
 ```python
 # pseudocode
-import json
+import json, os
 
 user = os.getenv("USER")
 path = f"/etc/nix-license/content-policy/{user}.json"
@@ -139,45 +171,10 @@ if not os.path.exists(path):
 policy = json.load(open(path))
 
 if severity_level(app_rating["violence-realistic"]) > severity_level(policy["violence-realistic"]):
-    # content exceeds user's policy
     hide_or_block()
 ```
 
 nix-license does not enforce content policy at runtime — it provides the policy. Enforcement is the app's responsibility.
-
-## Why not age verification?
-
-California (AB 2273), Colorado, New York, and other states are pushing age verification laws that require platforms to verify users' ages before allowing access to content. This approach has fundamental problems:
-
-| | Age verification | Content policy (nix-license) |
-|---|---|---|
-| **Privacy** | Requires PII (birth date, ID scan, face scan) | No PII — policy is set by the administrator, not the user |
-| **Who decides** | Each app decides what age means | Administrator decides once, system enforces consistently |
-| **Enforcement** | App-by-app, inconsistent | System-wide, one policy per user |
-| **Data storage** | Age data must be stored or verified | No user data stored — policy is a config file |
-| **Granularity** | Binary (old enough or not) | 22 categories × 4 severity levels |
-| **Control** | User/platform | Parent/admin/organization |
-
-Age verification asks: **"How old is the user?"** and lets every app interpret that differently.
-
-Content policy asks: **"What is this user entitled to?"** and enforces it consistently at the system level.
-
-A parent sets `my.users.son.contentPolicy = "child"` and every app on the system respects it. No birth dates, no ID scans, no data collection. The policy is immutable — the child cannot change it.
-
-### No PII by design
-
-nix-license content policy stores **zero personally identifiable information**:
-
-- No birth dates
-- No age data
-- No ID documents
-- No biometric data
-- No user accounts or passwords
-- No network requests to verify identity
-
-The policy file contains only severity levels per content category — what the user is entitled to, not who the user is. The administrator (parent, IT admin, school) sets the policy. The user cannot modify it (Nix store symlink, read-only).
-
-Even if the policy file is leaked, it reveals nothing about the user's identity — only that someone named "son" is restricted from gambling content. No harm.
 
 ## Build-time enforcement
 
