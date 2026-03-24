@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.11.7](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.6...nix-license-v0.11.7) (2026-03-24)
+
+
+### Bug Fixes
+
+* last two teen→moderate in CONTENT-POLICY.md ([1c48450](https://github.com/i-am-logger/nix-license/commit/1c48450e83039f3792089464a39dc17230268372))
+
+
+### Code Refactoring
+
+* rename content policy presets for privacy ([d992573](https://github.com/i-am-logger/nix-license/commit/d992573a42ec6ccbe0e299684eda9fe55cd03a0d))
+
+
+### Documentation
+
+* add CONTENT-POLICY.md — OARS 1.1, privacy-first alternative to age verification ([01996f9](https://github.com/i-am-logger/nix-license/commit/01996f9c75c9515ebbcca6af6fbea84c006c95e4))
+* add severity levels table before categories in CONTENT-POLICY.md ([e2b2f55](https://github.com/i-am-logger/nix-license/commit/e2b2f556db371e2c1f2c46605beafd94c7309424))
+* restructure CONTENT-POLICY.md — lead with age verification problem, address PII concern ([9dc1369](https://github.com/i-am-logger/nix-license/commit/9dc13697ab8d72bac0e90b0dd1420a94da0c6458))
+
 ## [0.11.6](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.5...nix-license-v0.11.6) (2026-03-24)
 
 
