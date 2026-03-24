@@ -4,7 +4,7 @@
 { lib }:
 
 let
-  sl = import ../lib/self-license.nix { inherit lib; pkgs = { }; };
+  sl = import ../../lib/licensing/verify.nix { inherit lib; pkgs = { }; };
 
   assertTrue = name: value:
     if value then true
