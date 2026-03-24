@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.11.4](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.3...nix-license-v0.11.4) (2026-03-24)
+
+
+### Bug Fixes
+
+* critical bugs from code review ([fb0dfe7](https://github.com/i-am-logger/nix-license/commit/fb0dfe7621d22434cd1c0133334ac76b376c67c5))
+* remove all 'token' terminology — domain language only ([ae3a5ef](https://github.com/i-am-logger/nix-license/commit/ae3a5ef7b6f35150229645fcbdb697bb5c93f697))
+* stale import path in tests/licensing/verify.nix ([d97357d](https://github.com/i-am-logger/nix-license/commit/d97357dc6b2305b95b7885a8aacb1defad98c65d))
+
+
+### Code Refactoring
+
+* domain naming for test fixtures ([3cb5fc8](https://github.com/i-am-logger/nix-license/commit/3cb5fc8a4a4783b2598160ae9a0c04570639feb2))
+* domain terminology — rename token→license, licenses→salt ([27a4f28](https://github.com/i-am-logger/nix-license/commit/27a4f280cde5dc2286b024726def3bbd3a359945))
+* extract shared context, constants, fix naming ([a9ff99b](https://github.com/i-am-logger/nix-license/commit/a9ff99b3e92993ffc57fd41c5d05cc32444af371))
+* organize lib/ into domain modules ([bcfc706](https://github.com/i-am-logger/nix-license/commit/bcfc706bf06e4e4ed44414edc21656c223f87acc))
+* organize tests/ to mirror lib/ structure ([65fb0a2](https://github.com/i-am-logger/nix-license/commit/65fb0a2eb27e20099ef93601af58c636e8cf6578))
+* split monolithic properties.nix into SRP test files ([7c29f91](https://github.com/i-am-logger/nix-license/commit/7c29f91852bd059ea40c7540aa629d86a4c385a0))
+
+
+### Documentation
+
+* update ARCHITECTURE.md and DEVELOPMENT.md to match new structure ([0260763](https://github.com/i-am-logger/nix-license/commit/026076305d55a779ce368947a4f8774689f7a207))
+* use domain terminology (license, not token) in user-facing text ([a2bb688](https://github.com/i-am-logger/nix-license/commit/a2bb688e05f28191c9412f2ce4daf1f17e862fcc))
+
 ## [0.11.3](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.11.2...nix-license-v0.11.3) (2026-03-23)
 
 
