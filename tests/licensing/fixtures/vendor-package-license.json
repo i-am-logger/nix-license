@@ -1,8 +1,8 @@
 {
-  "package": "vendor-sdk",
+  "package": "vendor-package",
   "commercial": true,
-  "licensee": "Test Corp",
-  "licensee_id": "test-001",
-  "issued_at": "2026-03-22",
-  "expires_at": "2027-03-22"
+  "licensee": "Acme Corp",
+  "licensee_id": "acme-2026-001",
+  "issued_at": "2026-01-15",
+  "expires_at": "2027-01-15"
 }
