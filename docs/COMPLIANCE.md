@@ -124,9 +124,11 @@ Commercial licenses are self-validating — the signer's public key is embedded 
 ```json
 {
   "package": "vendor-package",
+  "commercial": true,
   "licensee": "Acme Corp",
   "expires_at": "2027-01-15",
-  "publicKey": "MCowBQYDK2VwAyEA..."
+  "publicKey": "MCowBQYDK2VwAyEA...",
+  "integrity": { "algorithm": "sha256", "digest": "23e02d..." }
 }
 ```
 
@@ -153,8 +155,9 @@ Commercial licenses are self-validating — the signer's public key is embedded 
 | `issued_at` | no | When the license was issued (ISO 8601) |
 | `expires_at` | no | When the license expires (ISO 8601) |
 | `publicKey` | yes | Signer's public key (base64) |
+| `integrity` | yes | `{ algorithm, digest }` — SHA-256 hash of the license content (excluding integrity field) |
 
-The license file + detached signature (`.sig`) form a complete, self-validating credential. The signature covers the entire JSON — any tampering invalidates it.
+The license file + detached signature (`.sig`) form a complete, self-validating credential. The signature covers the entire JSON — any tampering invalidates it. The integrity hash enables quick comparison and future chain linking.
 
 ### Two levels of verification
 
