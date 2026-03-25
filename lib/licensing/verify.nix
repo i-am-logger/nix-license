@@ -29,15 +29,18 @@ let
       isCommercial = claims.commercial or false;
       expiresAt = claims.expires_at or null;
       isExpired = expiresAt != null && currentDate > expiresAt;
+      hasPublicKey = claims ? publicKey && claims.publicKey != null;
       licensee = claims.licensee or "unknown";
     in
     {
-      valid = isNixLicense && isCommercial && !isExpired;
-      inherit isNixLicense isCommercial isExpired licensee expiresAt;
+      valid = isNixLicense && isCommercial && !isExpired && hasPublicKey;
+      inherit isNixLicense isCommercial isExpired hasPublicKey licensee expiresAt;
+      publicKey = claims.publicKey or null;
       errors =
-        (if !isNixLicense then [ "Token is not for nix-license (package = '${claims.package or "missing"}')" ] else [ ])
-        ++ (if !isCommercial then [ "Token does not grant commercial use" ] else [ ])
-        ++ (if isExpired then [ "Token expired on ${expiresAt}" ] else [ ]);
+        (if !isNixLicense then [ "License is not for nix-license (package = '${claims.package or "missing"}')" ] else [ ])
+        ++ (if !isCommercial then [ "License does not grant commercial use" ] else [ ])
+        ++ (if isExpired then [ "License expired on ${expiresAt}" ] else [ ])
+        ++ (if !hasPublicKey then [ "License missing publicKey field" ] else [ ]);
     };
 
   # Build-time GPG signature verification derivation

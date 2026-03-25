@@ -26,6 +26,7 @@ let
     licensee_id = "test-001";
     issued_at = "2026-03-22";
     expires_at = "2027-03-22";
+    publicKey = "MCowBQYDK2VwAyEAtest...";
   };
 
 in
@@ -102,6 +103,17 @@ in
   missingCommercialFails =
     let result = sl.validateClaims { claims = { package = "nix-license"; }; };
     in assertFalse "missing commercial fails" result.valid;
+
+  missingPublicKeyFails =
+    let
+      claims = builtins.removeAttrs validClaims [ "publicKey" ];
+      result = sl.validateClaims { inherit claims; };
+    in
+    assertFalse "missing publicKey fails" result.valid;
+
+  hasPublicKeyField =
+    let result = sl.validateClaims { claims = validClaims; currentDate = "2026-06-01"; };
+    in assertTrue "valid license has publicKey" result.hasPublicKey;
 
   emptyClaimsFails =
     let result = sl.validateClaims { claims = { }; };

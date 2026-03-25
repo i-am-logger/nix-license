@@ -4,5 +4,6 @@
   "licensee": "Acme Corp",
   "licensee_id": "acme-2026-001",
   "issued_at": "2026-01-15",
-  "expires_at": "2027-01-15"
+  "expires_at": "2027-01-15",
+  "publicKey": "MCowBQYDK2VwAyEAGaZOCF4+DCJn/NADwTXRLun4xXahjwvjiOizMh8sKVY="
 }
