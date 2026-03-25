@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.13.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.12.1...nix-license-v0.13.0) (2026-03-25)
+
+
+### Features
+
+* integrity hash on licenses — SHA-256 for self-verification and future chaining ([1a78d00](https://github.com/i-am-logger/nix-license/commit/1a78d00581582910bed005eb2077e40464eff33a))
+* self-validating licenses — public key embedded in license file ([734dcac](https://github.com/i-am-logger/nix-license/commit/734dcacc3a4b9beebe0c32e46e938a1514f195a7))
+
+
+### Bug Fixes
+
+* actionable error messages with remediation (closes [#28](https://github.com/i-am-logger/nix-license/issues/28)) ([a8736f8](https://github.com/i-am-logger/nix-license/commit/a8736f8b77df3a75853f547c9d8a5b33c4ad10d8))
+* set usage.saas = false, or add licenses."mongodb".licenseFile" ([a8736f8](https://github.com/i-am-logger/nix-license/commit/a8736f8b77df3a75853f547c9d8a5b33c4ad10d8))
+* vendor license fixture — different licensee, package name, dates, new key ([92a7495](https://github.com/i-am-logger/nix-license/commit/92a74958a4fe668b0d328e6f96b310042640ae1b))
+
+
+### Code Refactoring
+
+* rename integrity→checksum in licenses, reports, and docs ([4f47f92](https://github.com/i-am-logger/nix-license/commit/4f47f924008e6c9e4d1112a3b3cc5bb618492ceb))
+
+
+### Documentation
+
+* license format, self-validation, publicKey field in COMPLIANCE.md and USAGE.md ([05dca4d](https://github.com/i-am-logger/nix-license/commit/05dca4dd9ba52225ac5208b361cbb34967a6e4dd))
+
 ## [0.12.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.12.0...nix-license-v0.12.1) (2026-03-24)
 
 
