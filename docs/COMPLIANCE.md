@@ -119,7 +119,51 @@ nix-license maps all 289 nixpkgs licenses to SALT classifications. The mapping i
 
 ## License verification
 
-Commercial licenses are cryptographically signed. nix-license supports any signing algorithm:
+Commercial licenses are self-validating — the signer's public key is embedded in the license file:
+
+```json
+{
+  "package": "vendor-package",
+  "licensee": "Acme Corp",
+  "expires_at": "2027-01-15",
+  "publicKey": "MCowBQYDK2VwAyEA..."
+}
+```
+
+### License format
+
+```json
+{
+  "package": "vendor-package",
+  "commercial": true,
+  "licensee": "Acme Corp",
+  "licensee_id": "acme-2026-001",
+  "issued_at": "2026-01-15",
+  "expires_at": "2027-01-15",
+  "publicKey": "MCowBQYDK2VwAyEA..."
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `package` | yes | Package name this license covers |
+| `commercial` | yes | Grants commercial use |
+| `licensee` | yes | Organization or person licensed |
+| `licensee_id` | no | License ID for records |
+| `issued_at` | no | When the license was issued (ISO 8601) |
+| `expires_at` | no | When the license expires (ISO 8601) |
+| `publicKey` | yes | Signer's public key (base64) |
+
+The license file + detached signature (`.sig`) form a complete, self-validating credential. The signature covers the entire JSON — any tampering invalidates it.
+
+### Two levels of verification
+
+| Level | What it checks | Who can do it |
+|-------|---------------|---------------|
+| Self-validation | Signature matches the `publicKey` in the license | Anyone holding the license |
+| Trust validation | `publicKey` matches the vendor key in `keys/vendors/` | nix-license |
+
+nix-license supports any signing algorithm:
 
 | Signer | Algorithm | Verifier |
 |--------|-----------|----------|

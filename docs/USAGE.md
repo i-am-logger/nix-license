@@ -266,7 +266,7 @@ nix-license = {
 };
 ```
 
-Vendors sign tokens with their own keys (any algorithm — Ed25519, RSA, ECDSA). Vendor public keys are embedded in nix-license at `keys/vendors/`. In enforce mode, every license must be cryptographically verified — no vendor key means the package is blocked.
+Each license file is self-validating — it contains the signer's `publicKey`. nix-license additionally verifies the key matches the trusted vendor key in `keys/vendors/`. Vendors sign with any algorithm (Ed25519, RSA, ECDSA). In enforce mode, every license must be cryptographically verified — no vendor key means the package is blocked.
 
 For vendors not yet integrated into nix-license, provide the key manually:
 
