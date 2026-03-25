@@ -80,11 +80,29 @@ let
       licenseConflict = !(builtins.all (r: r.allowed) results) || missingLicenseBlocks || sourceConflict;
 
       conflicts = builtins.concatMap (r: r.conflicts) results;
+      licenseNames = lib.concatMapStringsSep ", " (l: l.fullName or l.shortName or "unknown") rawLicenses;
+
+      # Build actionable error message with remediation
+      mkConflictMsg = c:
+        let
+          base = "${c.reason}";
+          fix =
+            if c.restriction == "commitment" then
+              "set commitments.${builtins.replaceStrings ["Cannot fulfill obligation '"] [""] (builtins.replaceStrings ["'"] [""] c.reason)}.fulfilled = true, or add '${pname}' to its exceptions"
+            else if c.restriction == "assurance" then
+              "set the assurance to required = false, or add '${pname}' to its exceptions"
+            else if c.restriction == "allowed-use" then
+              "change usage.type, or contact the license holder"
+            else
+              "set usage.${c.restriction} = false, or add licenses.\"${pname}\".licenseFile";
+        in
+        "${base}\n    Fix: ${fix}";
+
       conflictMsg =
-        if sourceConflict then "closed source (source-available assurance required)"
-        else if missingLicenseBlocks then "no license declared (commercial use requires explicit license)"
+        if sourceConflict then "closed source — assurances.source-available.required = true\n    Fix: add '${pname}' to assurances.source-available.exceptions"
+        else if missingLicenseBlocks then "no license declared — commercial use requires explicit license\n    Fix: add licenses.\"${pname}\".licenseFile"
         else if missingLicenseWarns then "no license declared"
-        else lib.concatMapStringsSep ", " (c: c.reason) conflicts;
+        else lib.concatMapStringsSep "\n  " mkConflictMsg conflicts;
 
       # License override: if a conflict exists but the user has a
       # license for this package, allow it (vendor key verified at build time)
@@ -106,8 +124,8 @@ let
         builtins.trace "nix-license: WARNING: ${pname} has no license declared" true
       else true
     else if isEnforce then
-      builtins.trace "nix-license: BLOCKED: ${pname}: ${conflictMsg}" false
-    else builtins.trace "nix-license: WARNING: ${pname}: ${conflictMsg}" true;
+      builtins.trace "nix-license: BLOCKED: ${pname} (${licenseNames})\n  ${conflictMsg}" false
+    else builtins.trace "nix-license: WARNING: ${pname} (${licenseNames})\n  ${conflictMsg}" true;
 
 in
 {
