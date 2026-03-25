@@ -15,7 +15,7 @@
 | 3.1 | Bill of materials process | [#7](https://github.com/i-am-logger/nix-license/issues/7) — SPDX/CycloneDX export | ○ |
 | 3.2 | Process to handle each license | `lib/licensing/check.nix` — restrictions, allowed-use, commitments, assurances | ✔ |
 | 4.1 | Create compliance artifacts | Obligations tracked per-package in reports | ✔ |
-| 4.2 | Archive artifacts | Nix store (immutable, content-addressed), SHA-256 integrity | ✔ |
+| 4.2 | Archive artifacts | Nix store (immutable, content-addressed), SHA-256 checksum | ✔ |
 | 5.1 | Contribution policy | [#48](https://github.com/i-am-logger/nix-license/issues/48) — contribution rules as config | ○ |
 | 6.1 | Organization conforms | [#49](https://github.com/i-am-logger/nix-license/issues/49) — conformance report with checklist | ○ |
 | 6.2 | Conformance maintained over time | Runs on every build — continuous, not periodic | ✔ |

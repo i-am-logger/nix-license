@@ -65,7 +65,7 @@ let
         overridden = builtins.length overridden;
         noLicense = builtins.length noLicense;
       };
-      # Hash the content for integrity
+      # Hash the content for checksum
       contentHash = builtins.hashString "sha256"
         (builtins.toJSON { inherit usage summary; packages = map (p: p.pname) evaluated; });
     in
@@ -76,7 +76,7 @@ let
         version = lib.strings.trim (builtins.readFile ../../../version.txt);
         generatedAt = builtins.currentTime or 0;
         compliant = builtins.length blocked == 0;
-        integrity = contentHash;
+        checksum = contentHash;
       };
       inherit usage summary;
       packages = evaluated;

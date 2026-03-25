@@ -5,9 +5,9 @@
   "licensee_id": "acme-2026-001",
   "issued_at": "2026-01-15",
   "expires_at": "2027-01-15",
-  "publicKey": "MCowBQYDK2VwAyEAac4fV4stg3/L6hyH0/xGaQ5FCn4XHbxZZK1YAvNQJJU=",
-  "integrity": {
+  "publicKey": "MCowBQYDK2VwAyEA+BueGgICDMgomsW16VbSpeI5CLU3nFPW4686smO2Kds=",
+  "checksum": {
     "algorithm": "sha256",
-    "digest": "0f3e885568caccd2b8a22334b66a8792d90b024d060772e077637f44cdc707b7"
+    "digest": "37b84035344b5b8bf955790c02c56a79ceca46fe48af3854da1cb82a09d325f4"
   }
 }
