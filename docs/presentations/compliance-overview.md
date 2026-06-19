@@ -1,5 +1,9 @@
 ---
 marp: true
+title: "nix-license — license compliance for NixOS at build time"
+description: "nix-license is a NixOS module that enforces software license compliance at build time against your declared usage — SPDX-aware, SBOM-ready, with a GitHub Action and signed reports."
+keywords: "NixOS, license compliance, SPDX, SBOM, allowUnfree, supply chain, OpenChain"
+url: "https://nix-license.dev/"
 theme: default
 paginate: true
 backgroundColor: #0d1117
