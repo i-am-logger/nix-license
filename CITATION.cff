@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use nix-license, please cite it using these metadata."
+title: nix-license
+abstract: >-
+  A NixOS module that checks every package's license against your declared
+  usage at build time, replacing the global allowUnfree flag. You declare your
+  usage context (personal/commercial, distribution, modifications, SaaS) and
+  required assurances (source-available, patent grants, warranty); the module
+  enforces per-package, per-context license restrictions and obligations. It
+  carries the SALT license classification, full nixpkgs license coverage, an
+  OARS content policy, a GitHub Action, JSON/HTML compliance reports, and
+  GPG/YubiKey cryptographic verification.
+type: software
+authors:
+  - given-names: Ido
+    family-names: Samuelson
+    website: "https://github.com/i-am-logger"
+repository-code: "https://github.com/i-am-logger/nix-license"
+url: "https://nix-license.dev/"
+license: CC-BY-NC-SA-4.0
+version: 0.13.0
+keywords:
+  - nixos
+  - license-compliance
+  - spdx
+  - sbom
+  - software-composition-analysis
+  - supply-chain-security
