@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.13.0...nix-license-v0.13.1) (2026-06-19)
+
+
+### Documentation
+
+* add CITATION.cff + landing-page meta description (discoverability) ([#61](https://github.com/i-am-logger/nix-license/issues/61)) ([dc383ef](https://github.com/i-am-logger/nix-license/commit/dc383ef9cc4b1dbfcf0a1e8f0929025f818059dd))
+
 ## [0.13.0](https://github.com/i-am-logger/nix-license/compare/nix-license-v0.12.1...nix-license-v0.13.0) (2026-03-25)
 
 
